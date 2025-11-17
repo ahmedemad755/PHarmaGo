@@ -54,6 +54,6 @@ class CartEntity {
         return element;
       }
     }
-    return CartItemEntity(productIntety: product, count: 1);
+    return CartItemEntity(productIntety: product, quantty: 1);
   }
 }

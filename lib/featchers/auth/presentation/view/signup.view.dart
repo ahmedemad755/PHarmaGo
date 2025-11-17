@@ -2,7 +2,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_commerce/core/functions_helper/build_error_bar.dart';
+import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/widgets/custom_button.dart';
@@ -41,7 +41,7 @@ class _SignupState extends State<Signup> {
         const Duration(seconds: 1),
         () => setState(() => _shouldShake = false),
       );
-      showErrorBar(context, 'يجب الموافقة على الشروط والأحكام أولاً');
+      showBar(context, 'يجب الموافقة على الشروط والأحكام أولاً');
       return;
     }
 
@@ -51,7 +51,7 @@ class _SignupState extends State<Signup> {
       print("🔍 [Signup] email=$email, password=$password");
 
       if (email.trim().isEmpty || password.trim().isEmpty) {
-        showErrorBar(context, 'الرجاء ملء الحقول بشكل صحيح');
+        showBar(context, 'الرجاء ملء الحقول بشكل صحيح');
         return;
       }
 
@@ -63,7 +63,7 @@ class _SignupState extends State<Signup> {
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          showErrorBar(context, 'البريد الإلكتروني مستخدم بالفعل');
+          showBar(context, 'البريد الإلكتروني مستخدم بالفعل');
           return;
         }
 
@@ -74,7 +74,7 @@ class _SignupState extends State<Signup> {
           role: role,
         );
       } catch (e) {
-        showErrorBar(context, "حدث خطأ أثناء الاتصال بالخادم: $e");
+        showBar(context, "حدث خطأ أثناء الاتصال بالخادم: $e");
         print("=================Error during signup: $e");
       }
     } else {
@@ -171,7 +171,7 @@ class _SignupState extends State<Signup> {
               () => Navigator.of(context).pushReplacementNamed(AppRoutes.login),
             );
           } else if (state is SugnupFailure) {
-            showErrorBar(context, state.message);
+            showBar(context, state.message);
           }
         },
         builder: (context, state) {

@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
-import 'package:e_commerce/core/repos/products_repo.dart';
+import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
 import 'package:meta/meta.dart';
 
 part 'products_state.dart';

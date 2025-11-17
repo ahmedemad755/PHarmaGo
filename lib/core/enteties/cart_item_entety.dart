@@ -8,25 +8,25 @@ import 'package:equatable/equatable.dart';
 class CartItemEntity extends Equatable {
   final AddProductIntety productIntety;
 
-  int count;
+  int quantty;
 
-  CartItemEntity({required this.productIntety, this.count = 0});
+  CartItemEntity({required this.productIntety, this.quantty = 0});
 
   num calculateTotalPrice() {
-    return productIntety.price * count;
+    return productIntety.price * quantty;
   }
 
   num calculateTotalWeight() {
-    return productIntety.unitAmount * count;
+    return productIntety.unitAmount * quantty;
   }
 
-  incrementCount() {
-    count++;
+  incrementquantty() {
+    quantty++;
   }
 
-  decrementCount() {
-    if (count > 0) {
-      count--;
+  decrementquantty() {
+    if (quantty > 0) {
+      quantty--;
     }
   }
 

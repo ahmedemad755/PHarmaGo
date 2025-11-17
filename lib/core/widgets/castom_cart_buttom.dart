@@ -1,4 +1,4 @@
-import 'package:e_commerce/core/functions_helper/build_error_bar.dart';
+import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_item_cubit/cart_item_cubit.dart';
@@ -28,7 +28,7 @@ class CustomCartButton extends StatelessWidget {
                 arguments: context.read<CartCubit>().cartEntity,
               );
             } else {
-              showErrorBar(context, 'لا يوجد منتجات في السلة');
+              showBar(context, 'لا يوجد منتجات في السلة');
             }
           },
 

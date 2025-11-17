@@ -18,11 +18,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Prefs.init();
   setupGetit();
-
   // تحديد البداية بناءً على الحالة
   final isOnBoardingSeen = Prefs.getBool(kIsOnBoardingViewSeen);
   var isLoggedIn = getIt<FirebaseAuthService>().isLoggedIn();
-
   String initialRoute;
   if (!isOnBoardingSeen) {
     initialRoute = AppRoutes.onboarding;

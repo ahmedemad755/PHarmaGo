@@ -65,10 +65,6 @@ void showOverlayToast(
 }
 
 // تحديث دالتك المساعدة
-void showErrorBar(
-  BuildContext context,
-  String message, {
-  Color color = Colors.red,
-}) {
+void showBar(BuildContext context, String message, {Color color = Colors.red}) {
   showOverlayToast(context, message, color: color);
 }

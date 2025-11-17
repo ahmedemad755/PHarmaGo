@@ -1,5 +1,7 @@
-import 'package:e_commerce/core/repos/products_repo.dart';
-import 'package:e_commerce/core/repos/products_repo_impl.dart';
+import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
+import 'package:e_commerce/core/repos/order_repo/orders_repo_impl.dart';
+import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
+import 'package:e_commerce/core/repos/products_repo/products_repo_impl.dart';
 import 'package:e_commerce/core/services/cloud_fire_store_service.dart';
 import 'package:e_commerce/core/services/database_service.dart';
 import 'package:e_commerce/core/services/firebase_auth_service.dart';
@@ -39,4 +41,5 @@ void setupGetit() {
   getIt.registerFactory<SugnupCubit>(() => SugnupCubit(getIt()));
   getIt.registerSingleton<LoginCubit>(LoginCubit(getIt()));
   getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt()));
+  getIt.registerSingleton<OrdersRepo>(OrdersRepoImpl(getIt<DatabaseService>()));
 }

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddressInputSection extends StatelessWidget {
+class AddressInputSection extends StatefulWidget {
   const AddressInputSection({
     super.key,
     required this.formKey,
@@ -13,18 +13,50 @@ class AddressInputSection extends StatelessWidget {
 
   final GlobalKey<FormState> formKey;
   final ValueListenable<AutovalidateMode> valueListenable;
+
+  @override
+  State<AddressInputSection> createState() => _AddressInputSectionState();
+}
+
+class _AddressInputSectionState extends State<AddressInputSection>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // ✅ يحافظ على الحالة
+
+  // 🧠 نعرف الكنترولرز عشان القيم تفضل موجودة
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController floorController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    // تنظيف الكنترولرز
+    nameController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    cityController.dispose();
+    floorController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); // ✅ ضروري مع AutomaticKeepAliveClientMixin
     return ValueListenableBuilder<AutovalidateMode>(
-      valueListenable: valueListenable,
+      valueListenable: widget.valueListenable,
       builder: (context, value, child) => SingleChildScrollView(
         child: Form(
-          key: formKey,
+          key: widget.formKey,
           autovalidateMode: value,
           child: Column(
             children: [
               const SizedBox(height: 24),
               CustomTextFormField(
+                controller: nameController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.name =
                       value!;
@@ -34,15 +66,17 @@ class AddressInputSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
+                controller: emailController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.email =
                       value!;
                 },
                 hintText: 'البريد الإلكتروني',
-                textInputType: TextInputType.text,
+                textInputType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
+                controller: addressController,
                 onSaved: (value) {
                   context
                           .read<OrderInputEntity>()
@@ -55,6 +89,7 @@ class AddressInputSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
+                controller: cityController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.city =
                       value!;
@@ -64,6 +99,7 @@ class AddressInputSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
+                controller: floorController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.floor =
                       value!;
@@ -73,6 +109,7 @@ class AddressInputSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
+                controller: phoneController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.phone =
                       value!;

@@ -1,6 +1,12 @@
+import 'dart:developer';
+
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
+import 'package:e_commerce/core/services/paypal_debugger.dart';
+import 'package:e_commerce/core/utils/app_key.dart';
 import 'package:e_commerce/core/widgets/custom_button.dart';
+import 'package:e_commerce/featchers/checkout/data/transaction_model.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
+import 'package:e_commerce/featchers/checkout/presentation/manger/add_order_cubit/add_order_cubit.dart';
 import 'package:e_commerce/featchers/checkout/widgets/check_out_steps_pageview.dart';
 import 'package:e_commerce/featchers/checkout/widgets/checkout_steps.dart';
 import 'package:flutter/material.dart';
@@ -20,13 +26,13 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     AutovalidateMode.disabled,
   );
 
+  int currentPageIndex = 0;
+
   @override
   void initState() {
     pageController = PageController();
     pageController.addListener(() {
-      setState(() {
-        currentPageIndex = pageController.page!.toInt();
-      });
+      setState(() => currentPageIndex = pageController.page!.toInt());
     });
     super.initState();
   }
@@ -38,8 +44,6 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     super.dispose();
   }
 
-  int currentPageIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -47,15 +51,18 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
       child: Column(
         children: [
           const SizedBox(height: 20),
+
+          /// الخطوات
           CheckoutSteps(
             currentIndex: currentPageIndex,
-            onTap: (index) {
-              setState(() => currentPageIndex = index);
-            },
+            onTap: (index) => setState(() => currentPageIndex = index),
             pageController: pageController,
-            formKey: formKey, // ✅ أضف المفتاح هنا
+            formKey: formKey,
           ),
+
           const SizedBox(height: 20),
+
+          /// محتوى الصفحات
           Expanded(
             child: CheckOutStepsPageView(
               pageController: pageController,
@@ -63,7 +70,10 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               valueListenable: valueListenable,
             ),
           ),
+
           const SizedBox(height: 20),
+
+          /// زر التالي / الدفع
           CustomButtn(
             text: getNextButtonText(currentPageIndex),
             onPressed: () {
@@ -71,17 +81,21 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
                 _handleShippingSectionValidation(context);
               } else if (currentPageIndex == 1) {
                 _handleAddressValidation();
+              } else {
+                _processPayment(context);
               }
             },
           ),
+
           const SizedBox(height: 32),
         ],
       ),
     );
   }
 
+  /// ------------------------------------------------------------------------
+
   void _handleShippingSectionValidation(BuildContext context) {
-    //بشوف انا ف اخر صفحه ولا لا
     if (context.read<OrderInputEntity>().payWithCash != null) {
       if (currentPageIndex < getsteps().length - 1) {
         pageController.nextPage(
@@ -90,14 +104,13 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
         );
       }
     } else {
-      showErrorBar(context, 'يرجي تحديد طريقه الدفع');
+      showBar(context, 'يرجي تحديد طريقة الدفع');
     }
   }
 
-  String getNextButtonText(int currentPageIndex) {
-    switch (currentPageIndex) {
+  String getNextButtonText(int page) {
+    switch (page) {
       case 0:
-        return 'التالي';
       case 1:
         return 'التالي';
       case 2:
@@ -109,7 +122,6 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
 
   void _handleAddressValidation() {
     if (formKey.currentState!.validate()) {
-      // ✅ تأكد من وجود دالة الحفظ هنا أيضاً
       formKey.currentState!.save();
       pageController.animateToPage(
         currentPageIndex + 1,
@@ -118,7 +130,47 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
       );
     } else {
       valueListenable.value = AutovalidateMode.always;
-      showErrorBar(context, 'يرجى تصحيح الأخطاء في حقول العنوان.');
+      showBar(context, 'يرجى تصحيح الأخطاء.');
     }
+  }
+
+  /// ================== 🔥 PayPal Payment with Debugging ==================
+  void _processPayment(BuildContext context) {
+    var orderEntity = context.read<OrderInputEntity>();
+    var addOrderCubit = context.read<AddOrderCubit>();
+
+    TransactionModel transactionModel = TransactionModel.fromEntity(
+      orderEntity,
+    );
+
+    log("🟦 Sending Transaction to PayPal:");
+    log(transactionModel.toJson().toString());
+
+    PayPalDebugger.checkout(
+      context: context,
+      clientId: clientPaypalKeyId,
+      secretKey: secretpaypalKey,
+      transactions: [transactionModel.toJson()],
+
+      onSuccess: (response) {
+        addOrderCubit.addOrder(order: orderEntity);
+        // showBar(
+        //   context,
+        //   "تم الدفع بنجاح",
+        //   color: const Color.fromARGB(255, 76, 86, 175),
+        // );
+        Navigator.pop(context);
+      },
+
+      onError: (error) {
+        showBar(context, "فشلت عملية الدفع!", color: Colors.red);
+        Navigator.pop(context);
+      },
+
+      onCancel: () {
+        showBar(context, "تم إلغاء عملية الدفع");
+        Navigator.pop(context);
+      },
+    );
   }
 }

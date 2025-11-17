@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // Hide conflicting Column from drift
-import 'package:e_commerce/core/functions_helper/build_error_bar.dart';
+import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/app_imags.dart';
@@ -39,7 +39,7 @@ class _LoginViewState extends State<LoginView> {
             Navigator.of(context).pushReplacementNamed(AppRoutes.home);
           }
           if (state is LoginFailure) {
-            showErrorBar(context, state.message);
+            showBar(context, state.message);
           }
         },
         builder: (context, state) {

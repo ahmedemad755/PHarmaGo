@@ -1,0 +1,3 @@
+String getcurrency() {
+  return "USD";
+}

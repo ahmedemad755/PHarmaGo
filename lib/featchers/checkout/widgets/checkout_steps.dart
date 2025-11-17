@@ -33,14 +33,14 @@ class CheckoutSteps extends StatelessWidget {
 
               // 2. منع القفز لأكثر من خطوة واحدة للأمام (e.g., من 0 إلى 2)
               if (index > currentIndex + 1) {
-                showErrorBar(context, "يجب إكمال الخطوات بالترتيب.");
+                showBar(context, "يجب إكمال الخطوات بالترتيب.");
                 return;
               }
               // 3. التحقق من صحة الخطوة الحالية (currentIndex) قبل الانتقال للخطوة التالية (index)
               // التحقق الخاص بصفحة الشحن (Index 0)
               if (currentIndex == 0) {
                 if (context.read<OrderInputEntity>().payWithCash == null) {
-                  showErrorBar(context, "يرجى اختيار طريقة الدفع");
+                  showBar(context, "يرجى اختيار طريقة الدفع");
                   return;
                 }
               }
@@ -49,7 +49,7 @@ class CheckoutSteps extends StatelessWidget {
                 // يتم التحقق من الـ formKey فقط إذا كنا على صفحة العنوان ونريد الانتقال للأمام
                 final formState = formKey.currentState;
                 if (formState == null || !formState.validate()) {
-                  showErrorBar(context, "يرجى ملء جميع حقول العنوان");
+                  showBar(context, "يرجى ملء جميع حقول العنوان");
                   return;
                 }
                 // 💡 الحل: حفظ البيانات المدخلة قبل الانتقال إلى الخطوة التالية (الدفع)

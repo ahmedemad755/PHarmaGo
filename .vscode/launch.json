@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Flutter (lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart"
+        },
+        {
+            "name": "Flutter (lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart"
+        }
+    ]
+}

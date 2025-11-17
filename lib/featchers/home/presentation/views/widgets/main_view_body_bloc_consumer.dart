@@ -13,10 +13,10 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
       body: BlocListener<CartCubit, CartState>(
         listener: (context, state) {
           if (state is CartItemAdd) {
-            showErrorBar(context, 'تمت العملية بنجاح', color: Colors.green);
+            showBar(context, 'تمت العملية بنجاح', color: Colors.green);
           }
           if (state is CartItemRemove) {
-            showErrorBar(
+            showBar(
               context,
               'تم حذف العنصر بنجاح',
               color: const Color.fromARGB(134, 76, 175, 79),

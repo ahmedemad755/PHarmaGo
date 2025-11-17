@@ -11,15 +11,15 @@ class OrderSummryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final order = context.read<OrderInputEntity>();
+    // final double totalPrice = order.cartEntity.getTotalPrice().toDouble();
+
+    // /// ✅ لو الدفع كاش = 50 توصيل، لو اونلاين = 0
+    // final double deliveryPrice = order.payWithCash == true ? 50 : 0;
+
+    // /// الإجمالي النهائي
+    // final double finalPrice = totalPrice + deliveryPrice;
     final order = context.read<OrderInputEntity>();
-    final double totalPrice = order.cartEntity.getTotalPrice().toDouble();
-
-    /// ✅ لو الدفع كاش = 50 توصيل، لو اونلاين = 0
-    final double deliveryPrice = order.payWithCash == true ? 50 : 0;
-
-    /// الإجمالي النهائي
-    final double finalPrice = totalPrice + deliveryPrice;
-
     return PaymentItem(
       tile: 'ملخص الطلب',
       child: Column(
@@ -34,7 +34,7 @@ class OrderSummryWidget extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '$totalPrice جنيه',
+                '${order.totalPrice} جنيه',
                 textAlign: TextAlign.right,
                 style: TextStyles.semiBold16,
               ),
@@ -51,7 +51,7 @@ class OrderSummryWidget extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '${getDeliveryPrice(totalPrice: totalPrice, finalPrice: finalPrice)} جنيه',
+                '${order.deliveryPrice} جنيه',
                 textAlign: TextAlign.right,
                 style: TextStyles.regular13.copyWith(
                   color: const Color(0xFF4E5556),
@@ -66,7 +66,7 @@ class OrderSummryWidget extends StatelessWidget {
             children: [
               const Text('الكلي', style: TextStyles.bold16),
               const Spacer(),
-              Text('$finalPrice جنيه', style: TextStyles.bold16),
+              Text('${order.finalPrice} جنيه', style: TextStyles.bold16),
             ],
           ),
         ],

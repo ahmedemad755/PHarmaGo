@@ -17,7 +17,7 @@ class _ShippingSectionState extends State<ShippingSection>
   Widget build(BuildContext context) {
     final order = context.read<OrderInputEntity>();
     final double totalPrice = order.cartEntity.getTotalPrice().toDouble();
-    final double cashOnDeliveryPrice = totalPrice + 40;
+    final double cashOnDeliveryPrice = totalPrice + 50;
     super.build(context);
     return Column(
       children: [
