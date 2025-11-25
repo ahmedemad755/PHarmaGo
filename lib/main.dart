@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize dependency injection
@@ -27,7 +28,7 @@ void main() async {
   } else if (isLoggedIn) {
     initialRoute = AppRoutes.home;
   } else {
-    initialRoute = AppRoutes.splash;
+    initialRoute = AppRoutes.login;
   }
   runApp(FuitHub(initialRoute: initialRoute));
 }
@@ -40,6 +41,7 @@ class FuitHub extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
         fontFamily:
             'Almarai-Regular', // ← اسم الفونت اللي عرفته في pubspec.yaml
       ),

@@ -4,7 +4,7 @@ class Assets {
 
   /// Assets for appIcon
   /// assets/app_icon.png
-  static const String appIcon = "assets/app_icon.png";
+  static const String appIcon = "assets/AppIcon.png";
 
   /// Assets for background2Onboarding
   /// assets/background2_onboarding.svg

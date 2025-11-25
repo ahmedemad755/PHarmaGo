@@ -1,4 +1,5 @@
 import 'package:e_commerce/core/di/injection.dart';
+import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
@@ -37,8 +38,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (_) => const SplashView());
     case AppRoutes.onboarding:
       return MaterialPageRoute(builder: (_) => const OnboardingView());
-    case AppRoutes.bestFruites:
-      return MaterialPageRoute(builder: (_) => const BestSelilingFruitesView());
+case AppRoutes.bestFruites:
+  return MaterialPageRoute(
+    builder: (_) => BlocProvider(
+      create: (_) => getIt<ProductsCubit>()..fetchBestSelling(topN: 5),
+      child: const BestSellingFruitesView(),
+    ),
+  );
+
+
     case AppRoutes.login:
       return MaterialPageRoute(
         builder: (_) {

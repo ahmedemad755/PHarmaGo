@@ -12,23 +12,23 @@ class BottomNavigationbarEntety {
 
 List<BottomNavigationbarEntety> get bottomNavigationbarEntetie => [
   BottomNavigationbarEntety(
-    activimag: "assets/fillters.svg",
-    inactivimag: "assets/fillters.svg",
+    activimag: "assets/active_home.svg",
+    inactivimag: "assets/inactive_home.svg",
     name: "الرئيسيه",
   ),
   BottomNavigationbarEntety(
-    activimag: "assets/fillters.svg",
-    inactivimag: "assets/fillters.svg",
+    activimag: "assets/active_product.svg",
+    inactivimag: "assets/inactive_product.svg",
     name: "المنتجات",
   ),
   BottomNavigationbarEntety(
-    activimag: "assets/fillters.svg",
-    inactivimag: "assets/fillters.svg",
+    activimag: "assets/active_shopping-cart.svg",
+    inactivimag: "assets/inactive_shopping-cart.svg",
     name: "سلة التسوق",
   ),
   BottomNavigationbarEntety(
-    activimag: "assets/fillters.svg",
-    inactivimag: "assets/fillters.svg",
+    activimag: "assets/active_user.svg",
+    inactivimag: "assets/inactive_user.svg",
     name: "الشخصيه",
   ),
 ];

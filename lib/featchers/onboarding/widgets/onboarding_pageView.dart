@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/app_imags.dart';
 import 'package:e_commerce/featchers/onboarding/widgets/page_view_items.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +17,20 @@ class OnboardingPageview extends StatelessWidget {
     return PageView(
       controller: pageController,
       children: [
+      //  docimageandbackground(  
+      //         isVisible: pageController.hasClients
+      //         ? pageController.page?.round() == 0
+      //         : true,),
+      //   docimageandbackground(
+      //             isVisible: pageController.hasClients
+      //         ? pageController.page?.round() != 0
+      //         : false,
+        // ),
         PageViewItems(
           image: Assets.fruitbasket1,
           backgroundimag: Assets.background2Onboarding,
           subtitle:
-              'اكتشف تجربة تسوق فريدة مع FruitHUB. استكشف مجموعتنا الواسعة من الفواكه الطازجة الممتازة واحصل على أفضل العروض والجودة العالية.',
+              "تشكيلة من الفواكه المجففة بالتبريد، طبيعية 100٪ سناكس صحي وخفيف… بدون سكر مضاف وبدون مواد حافظة",
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -29,19 +39,19 @@ class OnboardingPageview extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               ),
               Text(
-                '  HUB',
+                '  fruits',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 23,
-                  color: Color(0xFFF4A91F),
+                  color: AppColors.primaryColor,
                 ),
               ),
               Text(
-                'Fruit',
+                'ZANATY',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 23,
-                  color: Color(0xff1F5E3B),
+                  color: AppColors.darkBlue,
                 ),
               ),
             ],
@@ -56,12 +66,12 @@ class OnboardingPageview extends StatelessWidget {
           image: Assets.imag2,
           backgroundimag: Assets.background2Onboarding,
           subtitle:
-              "نقدم لك أفضل الفواكه المختارة بعناية. اطلع على التفاصيل والصور والتقييمات لتتأكد من اختيار الفاكهة المثالية",
+                 'نقدم لك أفضل الفواكه المختارة بعناية. اطلع على التفاصيل والصور والتقييمات لتتأكد من اختيار الفاكهة المثالية',
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'ابحث وتسوق',
+               " ابحث وتسوق",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               ),
             ],

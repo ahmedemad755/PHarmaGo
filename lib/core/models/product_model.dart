@@ -88,6 +88,7 @@ class AddProductModel {
       isOrganic: isOrganic,
       numberOfcalories: numberOfcalories,
       imageurl: imageurl,
+       sellingcount: sellingcount
     );
   }
 

@@ -11,28 +11,26 @@ class ProductsRepoImpl extends ProductsRepo {
 
   ProductsRepoImpl(this.databaseService);
   @override
-  Future<Either<Faliur, List<AddProductIntety>>>
-  getBestSellingProducts() async {
+  Future<Either<Faliur, List<AddProductIntety>>> getBestSellingProducts({int topN = 10}) async {
     try {
-      var data =
-          await databaseService.getData(
-                path: BackendPoints.getBestSellingProducts,
-                query: {
-                  'limit': 10,
-                  'orderBy': 'sellingcount',
-                  'descending': true,
-                },
-              )
-              as List<Map<String, dynamic>>;
+      var data = await databaseService.getData(
+        path: BackendPoints.getBestSellingProducts,
+        query: {
+          'limit': topN,
+          'orderBy': 'sellingcount', // make sure this field exists in DB
+          'descending': true,
+        },
+      ) as List<Map<String, dynamic>>;
 
-      List<AddProductIntety> products = data
-          .map((e) => AddProductModel.fromJson(e).toEntity())
-          .toList();
+      List<AddProductIntety> products =
+          data.map((e) => AddProductModel.fromJson(e).toEntity()).toList();
+
+      print('✅ Best-selling products loaded: ${products.length}');
       return right(products);
     } catch (e, s) {
       print('🔥 Error in getBestSellingProducts: $e');
       print(s);
-      return left(ServerFaliur('Failed to get products'));
+      return left(ServerFaliur('Failed to get best-selling products'));
     }
   }
 

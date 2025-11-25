@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 ///Custom widgets for the LoginView
@@ -24,7 +25,7 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? Colors.green[800],
+        backgroundColor: backgroundColor ?? AppColors.primaryColor,
         padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),

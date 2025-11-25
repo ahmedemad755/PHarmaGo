@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
+import 'package:e_commerce/core/errors/faliur.dart';
 import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
 import 'package:meta/meta.dart';
 
@@ -19,14 +21,14 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  Future<void> getBestSellingProducts() async {
+
+  Future<void> fetchBestSelling({int topN = 10}) async {
     emit(ProductsLoading());
-    final result = await productsRepo.getBestSellingProducts();
-    result.fold((failure) => emit(ProductsFailure(failure.message)), (
-      products,
-    ) {
-      productsLength += products.length;
-      emit(ProductsSuccess(products));
-    });
+    final Either<Faliur, List<AddProductIntety>> result =
+        await productsRepo.getBestSellingProducts(topN: topN);
+    result.fold(
+      (failure) => emit(ProductsFailure(failure.message)),
+      (products) => emit(ProductsSuccess(products)),
+    );
   }
 }

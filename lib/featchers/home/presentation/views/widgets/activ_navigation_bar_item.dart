@@ -21,8 +21,8 @@ class ActiveImag extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 24,
-              height: 24,
+              width: 25,
+              height: 25,
               decoration: ShapeDecoration(
                 color: Color(0xFF185E37),
                 shape: RoundedRectangleBorder(

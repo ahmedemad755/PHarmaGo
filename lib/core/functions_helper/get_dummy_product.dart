@@ -11,7 +11,7 @@ AddProductIntety getDummyProduct() {
     unitAmount: 1,
     isOrganic: true,
     imageurl: null,
-    numberOfcalories: 100,
+    numberOfcalories: 100, sellingcount: 20,
   );
 }
 

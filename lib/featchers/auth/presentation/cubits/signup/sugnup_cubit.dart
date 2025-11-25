@@ -16,7 +16,7 @@ class SugnupCubit extends Cubit<SugnupState> {
     required String email,
     required String password,
     required String name,
-    required String role,
+    // required String role,
   }) async {
     emit(SugnupLoading());
 
@@ -34,7 +34,7 @@ class SugnupCubit extends Cubit<SugnupState> {
         email: email,
         password: password,
         name: name,
-        role: role,
+        // role: role,
       );
 
       result.fold((failure) => emit(SugnupFailure(failure.message)), (

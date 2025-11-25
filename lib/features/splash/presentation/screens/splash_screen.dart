@@ -23,22 +23,21 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // Plant slide up animation
-    _plantSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
+    _plantSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+          ),
+        );
 
     // Footer fade in animation
-    _opacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.4, 0.8, curve: Curves.easeIn),
-    ));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.4, 0.8, curve: Curves.easeIn),
+      ),
+    );
 
     _animationController.forward().then((_) {
       // Navigate to home screen after animation completes
@@ -60,13 +59,9 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           // Center logo
           Center(
-            child: Image.asset(
-              'assets/logo_splash.png',
-              width: 200,
-              height: 200,
-            ),
+            child: Image.asset('assets/AppIcon.png', width: 200, height: 200),
           ),
-          
+
           // Animated plant
           Positioned.fill(
             child: SlideTransition(
@@ -80,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          
+
           // Footer with fade animation
           Positioned(
             bottom: 30,

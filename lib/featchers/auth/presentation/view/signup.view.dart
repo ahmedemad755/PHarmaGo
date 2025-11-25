@@ -1,6 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
@@ -71,7 +69,7 @@ class _SignupState extends State<Signup> {
           email: email,
           password: password,
           name: userName,
-          role: role,
+          // role: role,
         );
       } catch (e) {
         showBar(context, "حدث خطأ أثناء الاتصال بالخادم: $e");
@@ -84,35 +82,27 @@ class _SignupState extends State<Signup> {
 
   Widget _buildTermsCheckbox() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center, // مهم جداً
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          transform: Matrix4.identity()
-            ..scale(1.5)
-            ..rotateZ(
-              _shouldShake
-                  ? 0.1 *
-                        sin(
-                          10 *
-                              pi *
-                              DateTime.now().millisecondsSinceEpoch /
-                              1000,
-                        )
-                  : 0,
-            ),
+          // transform: Matrix4.identity()..scale(1.5),
           child: Checkbox(
             value: _isTermsAccepted,
             onChanged: (value) => setTermsAccepted(value!),
-            activeColor: AppColors.lightPrimaryColor,
+            activeColor: AppColors.primaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),
             side: const BorderSide(color: Colors.grey, width: 1.5),
           ),
         ),
-        Expanded(
+
+        const SizedBox(width: 8),
+
+        Flexible(
           child: RichText(
+            textAlign: TextAlign.start,
             text: TextSpan(
               text: 'من خلال إنشاء حساب، فإنك توافق على ',
               style: TextStyle(
@@ -202,32 +192,32 @@ class _SignupState extends State<Signup> {
                         const SizedBox(height: 16),
                         PasswordField(onSaved: (value) => password = value!),
                         const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: "النوع",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'user',
-                              child: Text('مستخدم'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'technician',
-                              child: Text('فني'),
-                            ),
-                          ],
-                          onChanged: (value) => setState(() => role = value!),
-                          onSaved: (value) => role = value!,
-                          validator: (value) =>
-                              value == null ? 'يرجى اختيار النوع' : null,
-                        ),
+                        // DropdownButtonFormField<String>(
+                        //   decoration: InputDecoration(
+                        //     labelText: "النوع",
+                        //     border: OutlineInputBorder(
+                        //       borderRadius: BorderRadius.circular(8),
+                        //     ),
+                        //     contentPadding: const EdgeInsets.symmetric(
+                        //       horizontal: 16,
+                        //       vertical: 12,
+                        //     ),
+                        //   ),
+                        //   items: const [
+                        //     DropdownMenuItem(
+                        //       value: 'user',
+                        //       child: Text('مستخدم'),
+                        //     ),
+                        //     DropdownMenuItem(
+                        //       value: 'technician',
+                        //       child: Text('فني'),
+                        //     ),
+                        //   ],
+                        //   onChanged: (value) => setState(() => role = value!),
+                        //   onSaved: (value) => role = value!,
+                        //   validator: (value) =>
+                        //       value == null ? 'يرجى اختيار النوع' : null,
+                        // ),
                         const SizedBox(height: 8),
                         _buildTermsCheckbox(),
                         const SizedBox(height: 24),
@@ -248,7 +238,7 @@ class _SignupState extends State<Signup> {
                                 TextSpan(
                                   text: 'تسجيل دخول',
                                   style: TextStyle(
-                                    color: AppColors.lightPrimaryColor,
+                                    color: AppColors.secondaryColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   recognizer: TapGestureRecognizer()

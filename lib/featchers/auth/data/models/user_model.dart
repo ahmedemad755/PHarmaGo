@@ -7,7 +7,7 @@ class UserModel extends UserEntity {
     // required super.password,
     required super.name,
     required super.uId,
-    required super.role,
+    // required super.role,
 
     // required super.cardImageUrl,
   });
@@ -17,7 +17,7 @@ class UserModel extends UserEntity {
       email: user.email ?? "",
       name: user.displayName ?? '',
       uId: user.uid,
-      role: '',
+      // role: '',
 
       // cardImageUrl: user.photoURL ?? '',
       // password: '',
@@ -29,7 +29,7 @@ class UserModel extends UserEntity {
       email: map['email'] ?? '',
       name: map['name'] ?? '',
       uId: map['uId'] ?? '',
-      role: map['role'] ?? '',
+      // role: map['role'] ?? '',
       // cardImageUrl: map['cardImageUrl'] ?? '',
       // password: map['password'] ?? '',
     );
@@ -41,7 +41,7 @@ class UserModel extends UserEntity {
       uId: entity.uId,
       email: entity.email,
       name: entity.name,
-      role: entity.role,
+      // role: entity.role,
     );
   }
 
@@ -50,7 +50,7 @@ class UserModel extends UserEntity {
       'email': email,
       'name': name,
       'uId': uId,
-      'role': role,
+      // 'role': role,
 
       // 'cardImageUrl': cardImageUrl,
     };

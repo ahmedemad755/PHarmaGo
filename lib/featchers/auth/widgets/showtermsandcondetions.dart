@@ -77,7 +77,10 @@ void showTermsAndConditionsDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              onAccept(false);
+            },
             child: Text("إلغاء"),
           ),
           ElevatedButton(

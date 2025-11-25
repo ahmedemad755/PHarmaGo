@@ -70,7 +70,6 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               valueListenable: valueListenable,
             ),
           ),
-
           const SizedBox(height: 20),
 
           /// زر التالي / الدفع

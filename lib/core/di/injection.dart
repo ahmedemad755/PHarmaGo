@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo_impl.dart';
 import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
@@ -42,4 +43,9 @@ void setupGetit() {
   getIt.registerSingleton<LoginCubit>(LoginCubit(getIt()));
   getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt()));
   getIt.registerSingleton<OrdersRepo>(OrdersRepoImpl(getIt<DatabaseService>()));
+
+    // ✅ Register ProductsCubit now
+  getIt.registerFactory<ProductsCubit>(
+    () => ProductsCubit(getIt<ProductsRepo>()),
+  );
 }

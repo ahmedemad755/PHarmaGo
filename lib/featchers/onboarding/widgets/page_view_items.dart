@@ -13,7 +13,8 @@ class PageViewItems extends StatelessWidget {
     required this.title,
     required this.isVisible,
   });
-  final String image, backgroundimag;
+  final String image;
+  final String backgroundimag;
   final String subtitle;
   final Widget title;
   final bool isVisible;
@@ -32,12 +33,17 @@ class PageViewItems extends StatelessWidget {
                 Positioned.fill(
                   child: SvgPicture.asset(backgroundimag, fit: BoxFit.fill),
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: SvgPicture.asset(image),
-                ),
+Positioned(
+
+bottom: 0,
+
+left: 0,
+
+right: 0,
+
+child: SvgPicture.asset(image, ),
+
+),
 
                 Visibility(
                   visible: isVisible,

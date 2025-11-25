@@ -8,7 +8,7 @@ abstract class AuthRepo {
     required String email,
     required String password,
     required String name,
-    required String role,
+    // required String role,
   });
 
   Future<Either<Faliur, UserEntity>> signInWithEmailAndPassword({

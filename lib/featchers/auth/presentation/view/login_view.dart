@@ -88,7 +88,7 @@ class _LoginViewState extends State<LoginView> {
                             child: Text(
                               'نسيت كلمة .المرور؟',
                               style: TextStyle(
-                                color: AppColors.lightPrimaryColor,
+                                color: AppColors.secondaryColor,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
                               ),
@@ -128,7 +128,7 @@ class _LoginViewState extends State<LoginView> {
                                 TextSpan(
                                   text: 'قم بإنشاء حساب',
                                   style: TextStyle(
-                                    color: AppColors.lightPrimaryColor,
+                                    color: AppColors.secondaryColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   recognizer: TapGestureRecognizer()

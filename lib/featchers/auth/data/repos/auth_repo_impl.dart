@@ -29,7 +29,7 @@ class AuthRepoImpl extends AuthRepo {
     required String email,
     required String password,
     required String name,
-    required String role,
+    // required String role,
     // required String cardImageUrl,
   }) async {
     User? user;
@@ -43,7 +43,7 @@ class AuthRepoImpl extends AuthRepo {
         email: email,
         name: name,
         uId: user.uid,
-        role: role,
+        // role: role,
 
         // cardImageUrl: cardImageUrl,
       );

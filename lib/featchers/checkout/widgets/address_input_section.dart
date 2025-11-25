@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/functions_helper/valedator.dart';
 import 'package:e_commerce/featchers/auth/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
 import 'package:flutter/foundation.dart';
@@ -63,6 +64,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'الاسم كامل',
                 textInputType: TextInputType.text,
+                validator: Validators.validateName,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
@@ -73,6 +75,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'البريد الإلكتروني',
                 textInputType: TextInputType.emailAddress,
+                validator: Validators.validateEmail,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
@@ -86,6 +89,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'العنوان',
                 textInputType: TextInputType.text,
+                validator: Validators.validateAddress,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
@@ -96,6 +100,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'المدينه',
                 textInputType: TextInputType.text,
+                validator: Validators.validateCity,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
@@ -106,6 +111,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'رقم الطابق , رقم الشقه ..',
                 textInputType: TextInputType.text,
+                validator: Validators.validateFloor,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
@@ -116,6 +122,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
                 },
                 hintText: 'رقم الهاتف',
                 textInputType: TextInputType.number,
+                validator: Validators.validatePhone,
               ),
               const SizedBox(height: 16),
             ],
