@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// Hide conflicting Column from drift
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
@@ -7,16 +5,16 @@ import 'package:e_commerce/core/utils/app_imags.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_state.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/build_app_bar.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/customProgressLoading.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/password_field.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/socialbutton.dart';
+import 'package:e_commerce/featchers/auth/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'; // Single import for Flutter
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+// ----------------- LoginView -----------------
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -28,11 +26,20 @@ class _LoginViewState extends State<LoginView> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
   late String email, password;
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
-      appBar: buildAppBar(context, title: 'تسجيل دخول', showBackButton: false),
+      resizeToAvoidBottomInset: true, // ✅ لتجنب overflow مع الكيبورد
+      appBar: buildAppBar(
+        context,
+        title: 'تسجيل دخول',
+        showBackButton: false,
+        showNotification: false,
+      ),
       body: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
@@ -44,33 +51,84 @@ class _LoginViewState extends State<LoginView> {
         },
         builder: (context, state) {
           return CustomProgresIndecatorHUD(
-            isLoading: state is LoginLoading ? true : false,
+            isLoading: state is LoginLoading,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 40,
+                  vertical: 32,
+                ),
                 child: SingleChildScrollView(
+                  reverse: true, // ✅ يحافظ على Scroll عند الكيبورد
                   child: Form(
                     key: formKey,
                     autovalidateMode: autovalidateMode,
                     child: Column(
-                      // Now correctly references Flutter's Column
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          'مرحباً بعودتك',
+                          style: TextStyle(
+                            fontSize: isMobile ? 28 : 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'سجل دخولك للمتابعة',
+                          style: TextStyle(
+                            fontSize: isMobile ? 14 : 16,
+                            color: AppColors.darkGray,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                         const SizedBox(height: 40),
+
+                        // Email Field مع validator
                         CustomTextFormField(
-                          onSaved: (value) {
-                            email = value!;
-                          },
                           hintText: 'البريد الإلكتروني',
-                          textInputType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 16),
-                        PasswordField(
-                          onSaved: (value) {
-                            password = value!;
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          onSaved: (value) => email = value!,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'الرجاء إدخال البريد الإلكتروني';
+                            }
+                            final emailRegex = RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                            );
+                            if (!emailRegex.hasMatch(value)) {
+                              return 'البريد الإلكتروني غير صالح';
+                            }
+                            return null;
                           },
                         ),
-                        const SizedBox(height: 8),
+
+                        const SizedBox(height: 16),
+
+                        // Password Field مع validator
+                        CustomTextFormField(
+                          hintText: 'كلمة المرور',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: _obscurePassword,
+                          onSaved: (value) => password = value!,
+                          toggleObscure: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'الرجاء إدخال كلمة المرور';
+                            }
+                            if (value.length < 6) {
+                              return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                            }
+                            return null;
+                          },
+                        ),
+
                         Align(
                           alignment: Alignment.centerLeft,
                           child: TextButton(
@@ -80,15 +138,14 @@ class _LoginViewState extends State<LoginView> {
                               ).pushNamed(AppRoutes.forgotPassword);
                             },
                             style: TextButton.styleFrom(
-                              padding: EdgeInsets
-                                  .zero, // يخلي الزر بشكل نص فقط بدون مساحة إضافية
-                              minimumSize: Size(0, 0),
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 0),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: Text(
-                              'نسيت كلمة .المرور؟',
+                              'نسيت كلمة المرور؟',
                               style: TextStyle(
-                                color: AppColors.secondaryColor,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
                               ),
@@ -96,9 +153,9 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
 
-                        const SizedBox(height: 24),
-                        CustomButton(
-                          text: 'تسجيل دخول',
+                        const SizedBox(height: 32),
+                        GradientButton(
+                          label: 'تسجيل دخول',
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
                               formKey.currentState!.save();
@@ -115,7 +172,8 @@ class _LoginViewState extends State<LoginView> {
                             }
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
+
                         Center(
                           child: RichText(
                             text: TextSpan(
@@ -128,7 +186,7 @@ class _LoginViewState extends State<LoginView> {
                                 TextSpan(
                                   text: 'قم بإنشاء حساب',
                                   style: TextStyle(
-                                    color: AppColors.secondaryColor,
+                                    color: AppColors.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   recognizer: TapGestureRecognizer()
@@ -142,6 +200,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 24),
                         Row(
                           children: const [
@@ -161,28 +220,6 @@ class _LoginViewState extends State<LoginView> {
                           icon: SvgPicture.asset(Assets.socialIconsGoogle),
                           text: 'تسجيل بواسطة جوجل',
                         ),
-                        const SizedBox(height: 12),
-                        // SocialButton(
-                        //   icon: SizedBox(
-                        //     width: 24,
-                        //     height: 24,
-                        //     child: SvgPicture.asset(Assets.vectorApple),
-                        //   ),
-                        //   text: 'تسجيل بواسطة أبل',
-                        //   onPressed: () {},
-                        // ),
-                        // const SizedBox(height: 12),
-                        // SocialButton(
-                        //   icon: SvgPicture.asset(
-                        //     Assets.facebook,
-                        //     width: 40,
-                        //     height: 20,
-                        //   ),
-                        //   text: 'تسجيل بواسطة فيسبوك',
-                        //   onPressed: () {
-                        //     context.read<LoginCubit>().signInWithFacebook();
-                        //   },
-                        // ),
                       ],
                     ),
                   ),

@@ -1,6 +1,6 @@
 import 'package:e_commerce/core/services/firebase_auth_service.dart';
-import 'package:e_commerce/core/widgets/custom_button.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
+import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -59,8 +59,8 @@ class _SendResetPasswordState extends State<SendResetPassword> {
               const SizedBox(height: 24),
               _isLoading
                   ? const CircularProgressIndicator()
-                  : CustomButtn(
-                      text: 'إرسال رابط إعادة التعيين',
+                  : GradientButton(
+                      label: 'إرسال رابط إعادة التعيين',
                       onPressed: _submit,
                     ),
             ],

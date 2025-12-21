@@ -3,6 +3,7 @@ import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_state.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
+import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -97,7 +98,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                       const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
+                        child: GradientButton(
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
                               final rawPhone = phoneController.text.trim();
@@ -109,17 +110,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                               context.read<OTPCubit>().sendOTP(formattedPhone);
                             }
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1D6139), // أخضر
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'ارسال رمز التحقق',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
+                          label: 'ارسال رمز التحقق',
                         ),
                       ),
                     ],

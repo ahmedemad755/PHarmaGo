@@ -3,12 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/core/widgets/custom_button.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/signup/sugnup_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/build_app_bar.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/password_field.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/showtermsandcondetions.dart';
+import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,7 +90,7 @@ class _SignupState extends State<Signup> {
           child: Checkbox(
             value: _isTermsAccepted,
             onChanged: (value) => setTermsAccepted(value!),
-            activeColor: AppColors.primaryColor,
+            activeColor: AppColors.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),
@@ -129,7 +129,12 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context, title: ' حساب جديد'),
+      appBar: buildAppBar(
+        context,
+        title: ' حساب جديد',
+        showBackButton: false,
+        showNotification: false,
+      ),
       body: BlocConsumer<SugnupCubit, SugnupState>(
         listener: (context, state) {
           if (state is SugnupSuccess) {
@@ -221,8 +226,8 @@ class _SignupState extends State<Signup> {
                         const SizedBox(height: 8),
                         _buildTermsCheckbox(),
                         const SizedBox(height: 24),
-                        CustomButtn(
-                          text: ' إنشاء حساب جديد',
+                        GradientButton(
+                          label: ' إنشاء حساب جديد',
                           onPressed: _submitForm,
                         ),
                         const SizedBox(height: 16),
@@ -238,8 +243,9 @@ class _SignupState extends State<Signup> {
                                 TextSpan(
                                   text: 'تسجيل دخول',
                                   style: TextStyle(
-                                    color: AppColors.secondaryColor,
-                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () => Navigator.of(

@@ -19,6 +19,11 @@ class CartEntity {
     await Prefs.setString(kCartData, jsonEncode(cartItems));
   }
 
+  /// تحديث السلة في SharedPreferences
+  Future<void> updateCartInStorage() async {
+    await Prefs.setString(kCartData, jsonEncode(cartItems));
+  }
+
   removeCarItem(CartItemEntity carItem) {
     cartItems.remove(carItem);
   }

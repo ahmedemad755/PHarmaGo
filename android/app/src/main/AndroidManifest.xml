@@ -8,7 +8,7 @@
 <!-- للكتابة على الذاكرة حتى Android 9 -->
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <application
-        android:label="ZanatyFruits"
+        android:label="PHarmaGo"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"

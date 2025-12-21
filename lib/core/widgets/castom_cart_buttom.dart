@@ -13,7 +13,7 @@ class CustomCartButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CartItemCubit, CartItemState>(
       builder: (context, state) {
-        return CustomButton(
+        return GradientButton(
           onPressed: () {
             if (context.read<CartCubit>().cartEntity.cartItems.isNotEmpty) {
               // نطبع اللوج في الكونسول للتأكد
@@ -32,7 +32,7 @@ class CustomCartButton extends StatelessWidget {
             }
           },
 
-          text:
+          label:
               'الدفع  ${context.watch<CartCubit>().cartEntity.getTotalPrice()} جنيه',
         );
       },

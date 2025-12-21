@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/functions_helper/valedator.dart';
-import 'package:e_commerce/featchers/auth/widgets/cusstom_textfield.dart';
+import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

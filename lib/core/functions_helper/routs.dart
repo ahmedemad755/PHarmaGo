@@ -1,4 +1,5 @@
 import 'package:e_commerce/core/di/injection.dart';
+import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
@@ -13,7 +14,12 @@ import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
 import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/best_seliling_fruites_view.dart';
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_body.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
 import 'package:e_commerce/featchers/onboarding/views/onboarding_view.dart';
 import 'package:e_commerce/featchers/splash/presentation/views/splash_view.dart';
 import 'package:flutter/material.dart';
@@ -30,46 +36,80 @@ class AppRoutes {
   static const String sendResetPassword = 'sendResetPassword';
   static const String bestFruites = 'bestFruites';
   static const String checkout = 'checkout';
-}
+  static const String pharmacyHome = 'pharmacyHome';
+  static const String productDetails = 'productDetails';
+  static const String uploadPrescription = 'uploadPrescription';
+ static const String ChatbootBody = "ChatbootBody";
 
+}
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.splash:
       return MaterialPageRoute(builder: (_) => const SplashView());
+
     case AppRoutes.onboarding:
       return MaterialPageRoute(builder: (_) => const OnboardingView());
-case AppRoutes.bestFruites:
-  return MaterialPageRoute(
-    builder: (_) => BlocProvider(
-      create: (_) => getIt<ProductsCubit>()..fetchBestSelling(topN: 5),
-      child: const BestSellingFruitesView(),
-    ),
-  );
 
+    case AppRoutes.bestFruites:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => getIt<ProductsCubit>()..fetchBestSelling(topN: 5),
+          child: const BestSellingFruitesView(),
+        ),
+      );
 
     case AppRoutes.login:
       return MaterialPageRoute(
-        builder: (_) {
-          return BlocProvider(
-            create: (context) => LoginCubit(getIt<AuthRepo>()),
-            child: Builder(builder: (context) => const LoginView()),
-          );
-        },
+        settings: const RouteSettings(name: AppRoutes.login), // تحديد الاسم صراحة
+        builder: (_) => BlocProvider(
+          create: (context) => LoginCubit(getIt<AuthRepo>()),
+          child: const LoginView(),
+        ),
       );
+
     case AppRoutes.home:
       return MaterialPageRoute(
         builder: (_) => MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
       );
+
     case AppRoutes.checkout:
+      final cartEntity = settings.arguments as CartEntity;
       return MaterialPageRoute(
-        builder: (_) =>
-            CheckOutView(cartEntity: settings.arguments as CartEntity),
+        builder: (_) => CheckOutView(cartEntity: cartEntity),
       );
+
+  case AppRoutes.pharmacyHome:
+  return MaterialPageRoute(
+    builder: (_) => BlocProvider(
+      create: (context) => getIt<CartCubit>(), // سيبدأ العمل فقط عند دخول الصفحة
+      child: const PharmacyHomeScreen(), // استبدل الاسم باسم صفحة الـ Home عندك
+    ),
+  );
+
+    case AppRoutes.uploadPrescription:
+      return MaterialPageRoute(builder: (_) => const Uploadprescription());
+
+    case AppRoutes.ChatbootBody:
+      return MaterialPageRoute(builder: (_) => const ChatbootBody());
+
+    case AppRoutes.productDetails:
+      // تأكد من وجود arguments لمنع الـ Crash
+      if (settings.arguments is AddProductIntety) {
+        final product = settings.arguments as AddProductIntety;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => getIt<CartCubit>(),
+            child: DetailsScreen(product: product),
+          ),
+        );
+      }
+      return _errorRoute();
+
     case AppRoutes.forgotPassword:
       return MaterialPageRoute(
         builder: (_) => BlocProvider(
           create: (context) => getIt<OTPCubit>(),
-          child: ForgotPasswordScreen(),
+          child: const ForgotPasswordScreen(),
         ),
       );
 
@@ -94,7 +134,18 @@ case AppRoutes.bestFruites:
           child: const Signup(),
         ),
       );
+
     default:
-      return MaterialPageRoute(builder: (_) => Scaffold());
+      return _errorRoute();
   }
+}
+
+// دالة مساعدة للتعامل مع المسارات غير الموجودة
+Route<dynamic> _errorRoute() {
+  return MaterialPageRoute(
+    builder: (_) => Scaffold(
+      appBar: AppBar(title: const Text("خطأ في المسار")),
+      body: const Center(child: Text("عذراً، هذا المسار غير موجود!")),
+    ),
+  );
 }

@@ -1,4 +1,6 @@
+import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
+import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/CustomBottomNavigationBar.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/main_view_body_bloc_consumer.dart';
@@ -17,14 +19,10 @@ class _MainVeiwState extends State<MainVeiw> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CartCubit(),
+      // بدلاً من تمرير الباراميترز يدوياً، اطلب النسخة الجاهزة من getIt
+      create: (context) => getIt<CartCubit>(), 
       child: Scaffold(
-        bottomNavigationBar: CustomBottomNavigationBar(
-          onItemTapped: (int value) {
-            currentViewIndex = value;
-            setState(() {});
-          },
-        ),
+        bottomNavigationBar: BottomNavPage(),
         body: SafeArea(
           child: MainViewBodyBlocConsumer(currentViewIndex: currentViewIndex),
         ),

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:e_commerce/core/functions_helper/get_dummy_product.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/core/widgets/custom_error_widget.dart';
@@ -16,17 +14,13 @@ class ProductsGridViewBlocBuilder extends StatelessWidget {
     return BlocBuilder<ProductsCubit, ProductsState>(
       builder: (context, state) {
         if (state is ProductsSuccess) {
-          // ✅ الحالة الناجحة ترجّع SliverGrid مباشرة
-          log("✅ Products loaded: ${state.products.length}");
+          // تم حذف SliverToBoxAdapter لأن الأب هو Padding عادي
           return ProductsGridView(products: state.products);
         } else if (state is ProductsFailure) {
-          // ❌ CustomErrorWidget عادية، فلازم نحطها جوه SliverToBoxAdapter
-          return SliverToBoxAdapter(
-            child: CustomErrorWidget(text: state.errMessage),
-          );
+          return CustomErrorWidget(text: state.errMessage);
         } else {
-          // 🦴 حالة التحميل – ترجّع Sliver برضو (Skeletonizer.sliver)
-          return Skeletonizer.sliver(
+          return Skeletonizer(
+            key: const ValueKey('products_skeleton_active'),
             enabled: true,
             child: ProductsGridView(products: getDummyProducts()),
           );

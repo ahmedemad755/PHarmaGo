@@ -95,23 +95,33 @@ class FirebaseAuthService {
     return await _firebaseAuth.signInWithCredential(credential);
   }
 
-  Future<UserCredential> signInWithFacebook() async {
-    final result = await FacebookAuth.instance.login();
+  // Future<UserCredential> signInWithFacebook() async {
+  //   final result = await FacebookAuth.instance.login();
 
-    final credential = FacebookAuthProvider.credential(
-      result.accessToken!.tokenString,
-    );
+  //   final credential = FacebookAuthProvider.credential(
+  //     result.accessToken!.tokenString,
+  //   );
 
-    return await _firebaseAuth.signInWithCredential(credential);
-  }
+  //   return await _firebaseAuth.signInWithCredential(credential);
+  // }
 
   bool isLoggedIn() {
     return _firebaseAuth.currentUser != null;
   }
 
-  Future<void> logout() async {
-    await GoogleSignIn().signOut();
-    await _firebaseAuth.signOut();
+Future<void> logout() async {
+    try {
+      await GoogleSignIn().signOut(); // تسجيل الخروج من جوجل
+      // await FacebookAuth.instance.logOut(); // تسجيل الخروج من فيسبوك
+      await _firebaseAuth.signOut();  // تسجيل الخروج من Firebase
+    } on FirebaseAuthException catch (e) {
+      developer.log("[logout] FirebaseAuthException: ${e.code} - ${e.message}");
+      // رمي CustomException ليلتقطها الـ Repo
+      throw CustomException(message: e.message ?? 'فشل تسجيل الخروج من Firebase');
+    } catch (e) {
+      developer.log("[logout] Unknown error: $e");
+      rethrow;
+    }
   }
 
   Future<void> deleteUserWithReauthentication({String? storedPassword}) async {

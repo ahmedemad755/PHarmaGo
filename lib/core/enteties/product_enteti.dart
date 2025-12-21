@@ -7,16 +7,17 @@ class AddProductIntety extends Equatable {
   final String code;
   final String description;
   final String? imageurl;
-  final int expirationDate;
+  final DateTime expirationDate;
   final int unitAmount;
-  final bool isOrganic;
-  final num numberOfcalories;
   final num averageRating;
   final int ratingcount;
   final num sellingcount;
   final List<ReviewEntite> reviews;
+  final String category; // New: Product category field
+  final num discountPercentage;
+  bool get hasDiscount => discountPercentage > 0;
 
-  AddProductIntety({
+  AddProductIntety( {
     required this.name,
     required this.price,
     required this.code,
@@ -24,14 +25,14 @@ class AddProductIntety extends Equatable {
     this.imageurl,
     required this.expirationDate,
     required this.unitAmount,
-    this.isOrganic = false,
-    required this.numberOfcalories,
     this.averageRating = 0,
     this.ratingcount = 0,
     required this.sellingcount,
     required this.reviews,
+    this.discountPercentage=0,
+    this.category = 'الأدوية', // Default category
   });
 
   @override
-  List<Object?> get props => [code];
+  List<Object?> get props => [code,discountPercentage];
 }

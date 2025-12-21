@@ -22,8 +22,13 @@ class Prefs {
   static getString(String key) {
     return _instance.getString(key) ?? "";
   }
-
-  static Future<void> clear() async {
+static Future<void> remove(String key) async {
+    await _instance.remove(key);
+  }
+  static Future<void> clear(String s) async {
     await _instance.clear();
+  }
+  static bool containsKey(String key) {
+    return _instance.containsKey(key);
   }
 }

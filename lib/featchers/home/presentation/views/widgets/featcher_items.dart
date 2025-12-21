@@ -11,6 +11,8 @@ class FeaturedItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var itemWidth = MediaQuery.sizeOf(context).width - 32;
+    // final size = MediaQuery.of(context).size;
+    // final isMobile = size.width < 600;
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: SizedBox(

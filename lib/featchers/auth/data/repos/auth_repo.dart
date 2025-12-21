@@ -20,7 +20,7 @@ abstract class AuthRepo {
   Future<Either<Faliur, UserEntity>> signInWithGoogle();
 
   // Facebook Sign-In method
-  Future<Either<Faliur, UserEntity>> signInWithFacebook();
+  // Future<Either<Faliur, UserEntity>> signInWithFacebook();
 
   Future addUserData({
     required UserEntity user,
@@ -32,8 +32,12 @@ abstract class AuthRepo {
 
   Future<UserEntity> getUserData({required String uid});
 
+  // ✅ إضافة دالة تسجيل الخروج: ترجع Either<Faliur, void>
+  Future<Either<Faliur, void>> logout();
+
   // // Apple Sign-In method
   // Future<Either<Faliur, UserEntity>> signInWithApple();
+ 
 
   Future<void> verifyPhoneNumber({
     required String phoneNumber,

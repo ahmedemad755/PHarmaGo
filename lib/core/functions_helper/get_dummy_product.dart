@@ -2,16 +2,18 @@ import 'package:e_commerce/core/enteties/product_enteti.dart';
 
 AddProductIntety getDummyProduct() {
   return AddProductIntety(
-    name: 'Apple',
-    code: '123',
-    description: 'Fresh apple',
-    price: 2.5,
+    name: 'Paracetamol 500mg',
+    code: 'PH-123456',
+    description: 'مسكن للألم وخافض للحرارة',
+    price: 25.0,
     reviews: [],
-    expirationDate: 6,
-    unitAmount: 1,
-    isOrganic: true,
+    expirationDate: DateTime(2026, 4, 12), // 12-4-2026
+    unitAmount: 20, // عدد الأقراص
     imageurl: null,
-    numberOfcalories: 100, sellingcount: 20,
+    sellingcount: 0,
+    category: 'الأدوية',
+    averageRating: 0,
+    ratingcount: 0,
   );
 }
 

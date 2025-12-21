@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_state.dart';
@@ -17,9 +19,39 @@ class OTPVerificationScreen extends StatefulWidget {
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController codeController = TextEditingController();
+  int _remainingSeconds = 60;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel(); // إلغاء أي تايمر قديم
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+
+      if (_remainingSeconds > 0) {
+        setState(() => _remainingSeconds--);
+      } else {
+        timer.cancel(); // إيقاف التايمر
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // مهم جدًا عشان ميعملش setState بعد dispose
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       body: BlocConsumer<OTPCubit, OTPState>(
         listener: (context, state) async {
@@ -43,10 +75,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               context,
             ).showSnackBar(const SnackBar(content: Text('تم التحقق بنجاح ✅')));
 
-            Navigator.pushNamed(
-              context,
-              AppRoutes.sendResetPassword, // تأكد تستخدم widget.phoneNumber
-            );
+            Navigator.pushNamed(context, AppRoutes.sendResetPassword);
           } else if (state is OTPError) {
             ScaffoldMessenger.of(
               context,
@@ -56,76 +85,124 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         builder: (context, state) {
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 40,
+                vertical: 60,
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const BackButton(),
                   const SizedBox(height: 20),
+
+                  // Icon Circle
                   Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'التحقق من الرمز',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'أدخل الرمز الذي أرسلناه إلى رقم الهاتف التالي:',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          widget.phoneNumber ?? 'رقم غير متوفر',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 24),
-                        // حقل إدخال كود OTP
-                        buildOTPInputField(context, codeController),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final code = codeController.text.trim();
-                              if (code.length == 6) {
-                                context.read<OTPCubit>().verifyCode(code);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'من فضلك أدخل رمز مكون من 6 أرقام',
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[800],
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE6FBFF),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: const Icon(
+                        Icons.phone_android_outlined,
+                        size: 40,
+                        color: Color(0xFF007BBB),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Title
+                  Center(
+                    child: Text(
+                      'التحقق من الرمز',
+                      style: TextStyle(
+                        fontSize: isMobile ? 24 : 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Description
+                  Center(
+                    child: Text(
+                      'أدخل الرمز الذي أرسلناه إلى رقم الهاتف التالي:\n${widget.phoneNumber ?? 'رقم غير متوفر'}',
+                      style: TextStyle(
+                        fontSize: isMobile ? 14 : 16,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // OTP Input
+                  buildOTPInputField(context, codeController),
+                  const SizedBox(height: 32),
+
+                  // Timer / Resend
+                  Center(
+                    child: _remainingSeconds > 0
+                        ? Text(
+                            'إعادة إرسال الرمز خلال $_remainingSeconds ثانية',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
                             ),
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              final phone = widget.phoneNumber!;
+                              context.read<OTPCubit>().sendOTP(phone);
+                              setState(() => _remainingSeconds = 60);
+                              _startTimer();
+                            },
                             child: const Text(
-                              'تحقق من الرمز',
+                              'إعادة إرسال الرمز',
                               style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
+                                color: Color(0xFF007BBB),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
                               ),
                             ),
                           ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Verify Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final code = codeController.text.trim();
+                        if (code.length == 6) {
+                          context.read<OTPCubit>().verifyCode(code);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('من فضلك أدخل رمز مكون من 6 أرقام'),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF007BBB),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () {
-                            final phone = widget.phoneNumber!;
-                            context.read<OTPCubit>().sendOTP(phone);
-                          },
-                          child: const Text(
-                            'إعادة إرسال الرمز',
-                            style: TextStyle(color: Colors.green),
-                          ),
+                      ),
+                      child: const Text(
+                        'تحقق من الرمز',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],

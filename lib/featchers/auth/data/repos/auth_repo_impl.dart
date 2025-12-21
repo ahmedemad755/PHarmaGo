@@ -129,31 +129,31 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
-  @override
-  Future<Either<Faliur, UserEntity>> signInWithFacebook() async {
-    User? user;
-    try {
-      final userCredential = await firebaseAuthService.signInWithFacebook();
-      user = userCredential.user;
-      UserEntity userentity = UserModel.fromfirebaseUser(user!);
-      await addUserData(user: userentity, email: user.email!);
-      await saveUserData(user: userentity);
+  // @override
+  // Future<Either<Faliur, UserEntity>> signInWithFacebook() async {
+  //   User? user;
+  //   try {
+  //     final userCredential = await firebaseAuthService.signInWithFacebook();
+  //     user = userCredential.user;
+  //     UserEntity userentity = UserModel.fromfirebaseUser(user!);
+  //     await addUserData(user: userentity, email: user.email!);
+  //     await saveUserData(user: userentity);
 
-      // if (userentity == null) {
-      //   return Left(ServerFaliur('Failed to sign in with Facebook'));
-      // }
-      return Right(userentity);
-    } on CustomException catch (e) {
-      await deletUser(user);
-      return Left(ServerFaliur(e.message));
-    } catch (e) {
-      await deletUser(user);
-      developer.log(
-        'Exception in AuthRepoImpl.signInWithFacebook: ${e.toString()}',
-      );
-      return Left(ServerFaliur('حدث خطاء ما. الرجاء المحاولة مرة اخرى.'));
-    }
-  }
+  //     // if (userentity == null) {
+  //     //   return Left(ServerFaliur('Failed to sign in with Facebook'));
+  //     // }
+  //     return Right(userentity);
+  //   } on CustomException catch (e) {
+  //     await deletUser(user);
+  //     return Left(ServerFaliur(e.message));
+  //   } catch (e) {
+  //     await deletUser(user);
+  //     developer.log(
+  //       'Exception in AuthRepoImpl.signInWithFacebook: ${e.toString()}',
+  //     );
+  //     return Left(ServerFaliur('حدث خطاء ما. الرجاء المحاولة مرة اخرى.'));
+  //   }
+  // }
 
   @override
   Future addUserData({
@@ -173,6 +173,31 @@ class AuthRepoImpl extends AuthRepo {
         data: UserModel.fromEntity(user).toMap(),
         documentId: user.uId,
       );
+    }
+  }
+
+  // ✅ تنفيذ دالة تسجيل الخروج الجديدة
+@override
+  Future<Either<Faliur, void>> logout() async {
+    try {
+      // 1. تسجيل الخروج من فيربيز
+      await firebaseAuthService.logout();
+
+      // 2. مسح بيانات المستخدم من التخزين المحلي
+      // أضفنا فحصاً بسيطاً هنا للتأكد أن العملية تمت
+      await Prefs.remove(kUserData);
+
+      return const Right(null); 
+      
+    } on CustomException catch (e) {
+      developer.log('CustomException: ${e.message}', name: 'AuthRepoImpl');
+      return Left(ServerFaliur(e.message));
+    } catch (e) {
+      // ⚠️ التعديل الأهم: إظهار الخطأ الحقيقي (e.toString) في الرسالة 
+      // لكي نعرف ما هو السبب الفعلي بدلاً من كلمة "فشل عام"
+      developer.log('Unexpected Error: ${e.toString()}', name: 'AuthRepoImpl');
+      
+      return Left(ServerFaliur('حدث خطأ تقني: ${e.toString()}'));
     }
   }
 
@@ -218,4 +243,15 @@ class AuthRepoImpl extends AuthRepo {
     var jsonData = jsonEncode(UserModel.fromEntity(user).toMap());
     await Prefs.setString(kUserData, jsonData);
   }
+  
+  // @override
+  // Future<Either<Faliur, UserEntity>> signInWithFacebook() {
+  //   // TODO: implement signInWithFacebook
+  //   throw UnimplementedError();
+  // }
+  
+
+
+
+
 }

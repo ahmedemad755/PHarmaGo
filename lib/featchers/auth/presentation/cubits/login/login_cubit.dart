@@ -7,6 +7,7 @@ class LoginCubit extends Cubit<LoginState> {
   LoginCubit(this.authRepo) : super(LoginInitial());
 
   final AuthRepo authRepo;
+  //  final AuthRepoImpl authRepoImpl;
 
   Future<void> signInWithEmailAndPassword({
     required String email,
@@ -58,13 +59,58 @@ class LoginCubit extends Cubit<LoginState> {
     });
   }
 
-  Future<void> signInWithFacebook() async {
-    emit(LoginLoading());
-    final result = await authRepo.signInWithFacebook();
+  // Future<void> signInWithFacebook() async {
+  //   emit(LoginLoading());
+  //   final result = await authRepo.signInWithFacebook();
 
-    result.fold((failure) => emit(LoginFailure(failure.message)), (userEntity) {
-      Prefs.setBool("isLoggedIn", true); // ✅ أضف هنا كمان
-      emit(LoginSuccess(userEntity: userEntity));
-    });
+  //   result.fold((failure) => emit(LoginFailure(failure.message)), (userEntity) {
+  //     Prefs.setBool("isLoggedIn", true); // ✅ أضف هنا كمان
+  //     emit(LoginSuccess(userEntity: userEntity));
+  //   });
+  // }
+
+  // داخل كلاس LoginCubit
+  Future<void> logout() async {
+    print("Log: تم بدء عملية تسجيل الخروج..."); // تتبع الاستدعاء
+    emit(LogoutLoading());
+
+    try {
+      final result = await authRepo.logout();
+
+      result.fold(
+        (failure) {
+          print("Log: فشل تسجيل الخروج: ${failure.message}"); // تتبع الفشل
+          emit(LogoutFailure(failure.message));
+        },
+        (success) {
+          print("Log: تم تسجيل الخروج بنجاح"); // تتبع النجاح
+          emit(LogoutSuccess());
+        },
+      );
+    } catch (e) {
+      print("Log: حدث خطأ غير متوقع: $e");
+      emit(LogoutFailure("حدث خطأ غير متوقع: $e"));
+    }
   }
+
+  // Future<void> logout() async {
+  //     emit(LogoutLoading());
+  //     try {
+  //       final result = await authRepo.logout;
+  //       await result.fold(
+  //         (failure) {
+  //           emit(LogoutFailure(failure.message));
+  //         },
+  //         (_) async {
+  //           // تنظيف البيانات المحلية (يفضل استخدام remove وليس clear)
+  //           await Prefs.clear("isLoggedIn");
+  //           await Prefs.clear("userPassword");
+
+  //           emit(LogoutSuccess());
+  //         },
+  //       );
+  //     } catch (e) {
+  //       emit(LogoutFailure('حدث خطأ غير متوقع أثناء تسجيل الخروج.'));
+  //     }
+  //   }
 }

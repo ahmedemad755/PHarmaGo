@@ -70,6 +70,13 @@ dependencies:
   flutter_paypal_payment: ^1.0.8
   freezed_annotation: ^2.4.1
   uuid: ^4.5.2
+  image_picker: ^1.2.1
+  markdown_widget: ^2.3.2+8
+  http: ^1.5.0
+  flutter_markdown_plus: ^1.0.5
+  flutter_markdown_latex: ^0.3.4
+  google_ml_kit: ^0.20.0
+  
 
 dev_dependencies:
   build_runner: ^2.4.6
@@ -84,6 +91,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   vector_graphics_compiler: ^1.1.7
   freezed: ^2.4.1
+  flutter_lints: ^5.0.0
 
 
 # For information on the generic Dart part of this file, see the
@@ -128,7 +136,7 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/AppIcon.png"
+  image_path: "assets/logosmartpharma.PNG"
   min_sdk_android: 21 # android min sdk min:16, default 21
 
 flutter_assets:

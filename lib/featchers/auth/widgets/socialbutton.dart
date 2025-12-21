@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// SocialButton widget for the LoginView
@@ -20,6 +21,7 @@ class SocialButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: BorderSide(color: Colors.grey[300]!),
+        backgroundColor: AppColors.mediumGray,
       ),
       onPressed: onPressed,
       icon: icon,

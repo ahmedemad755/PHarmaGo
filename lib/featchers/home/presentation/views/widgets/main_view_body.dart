@@ -1,5 +1,5 @@
 import 'package:e_commerce/featchers/home/presentation/views/widgets/cart_view.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/home_view.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/product_view.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +12,7 @@ class MainViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return IndexedStack(
       index: currentViewIndex,
-      children: const [HomeView(), ProductsView(), CartView(), CartView()],
+      children: const [PharmacyHomeScreen(), ProductsView(), CartView(), CartView()],
     );
   }
 }

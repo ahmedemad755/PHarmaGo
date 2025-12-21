@@ -17,14 +17,14 @@ class OnboardingPageview extends StatelessWidget {
     return PageView(
       controller: pageController,
       children: [
-      //  docimageandbackground(  
-      //         isVisible: pageController.hasClients
-      //         ? pageController.page?.round() == 0
-      //         : true,),
-      //   docimageandbackground(
-      //             isVisible: pageController.hasClients
-      //         ? pageController.page?.round() != 0
-      //         : false,
+        //  docimageandbackground(
+        //         isVisible: pageController.hasClients
+        //         ? pageController.page?.round() == 0
+        //         : true,),
+        //   docimageandbackground(
+        //             isVisible: pageController.hasClients
+        //         ? pageController.page?.round() != 0
+        //         : false,
         // ),
         PageViewItems(
           image: Assets.fruitbasket1,
@@ -66,12 +66,12 @@ class OnboardingPageview extends StatelessWidget {
           image: Assets.imag2,
           backgroundimag: Assets.background2Onboarding,
           subtitle:
-                 'نقدم لك أفضل الفواكه المختارة بعناية. اطلع على التفاصيل والصور والتقييمات لتتأكد من اختيار الفاكهة المثالية',
+              'نقدم لك أفضل الفواكه المختارة بعناية. اطلع على التفاصيل والصور والتقييمات لتتأكد من اختيار الفاكهة المثالية',
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-               " ابحث وتسوق",
+                " ابحث وتسوق",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               ),
             ],
@@ -84,3 +84,5 @@ class OnboardingPageview extends StatelessWidget {
     );
   }
 }
+
+// ################

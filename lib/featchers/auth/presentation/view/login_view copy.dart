@@ -1,197 +1,137 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// Hide conflicting Column from drift
-import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
-import 'package:e_commerce/core/functions_helper/routs.dart';
-import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/core/utils/app_imags.dart';
-import 'package:e_commerce/core/widgets/custom_button.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_state.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/build_app_bar.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/customProgressLoading.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/password_field.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/socialbutton.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'; // Single import for Flutter
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class AppColors {
+  // ==================== Primary Gradient Colors ====================
+  /// Light Turquoise - Top of primary gradient
+  static const Color primaryLight = Color(0xFFB1E5F6);
 
-  @override
-  State<LoginView> createState() => _LoginViewState();
-}
+  /// Medium Turquoise - Middle of primary gradient
+  static const Color primaryMid = Color(0xFF67B0E6);
 
-class _LoginViewState extends State<LoginView> {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
-  late String email, password;
+  /// Deep Blue - Bottom of primary gradient
+  static const Color primaryDark = Color(0xFF4A90D9);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: buildAppBar(context, title: 'تسجيل دخول', showBackButton: false),
-      body: BlocConsumer<LoginCubit, LoginState>(
-        listener: (context, state) {
-          if (state is LoginSuccess) {
-            Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-          }
-          if (state is LoginFailure) {
-            showBar(context, state.message);
-          }
-        },
-        builder: (context, state) {
-          return CustomProgresIndecatorHUD(
-            isLoading: state is LoginLoading ? true : false,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: formKey,
-                    autovalidateMode: autovalidateMode,
-                    child: Column(
-                      // Now correctly references Flutter's Column
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 40),
-                        CustomTextFormField(
-                          onSaved: (value) {
-                            email = value!;
-                          },
-                          hintText: 'البريد الإلكتروني',
-                          textInputType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 16),
-                        PasswordField(
-                          onSaved: (value) {
-                            password = value!;
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(
-                                context,
-                              ).pushNamed(AppRoutes.forgotPassword);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets
-                                  .zero, // يخلي الزر بشكل نص فقط بدون مساحة إضافية
-                              minimumSize: Size(0, 0),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              'نسيت كلمة .المرور؟',
-                              style: TextStyle(
-                                color: AppColors.lightPrimaryColor,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
+  // ==================== Auth & Navigation Colors ====================
+  /// Primary brand color - used in buttons, icons, navigation
+  static const Color primary = Color(0xFF007BBB);
 
-                        const SizedBox(height: 24),
-                        CustomButtn(
-                          text: 'تسجيل دخول',
-                          onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              formKey.currentState!.save();
-                              context
-                                  .read<LoginCubit>()
-                                  .signInWithEmailAndPassword(
-                                    email: email,
-                                    password: password,
-                                  );
-                            } else {
-                              setState(() {
-                                autovalidateMode = AutovalidateMode.always;
-                              });
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: RichText(
-                            text: TextSpan(
-                              text: 'لا تمتلك حساب؟ ',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontWeight: FontWeight.w600,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: 'قم بإنشاء حساب',
-                                  style: TextStyle(
-                                    color: AppColors.lightPrimaryColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.of(
-                                        context,
-                                      ).pushReplacementNamed(AppRoutes.signup);
-                                    },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: const [
-                            Expanded(child: Divider()),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 18.0),
-                              child: Text('أو', style: TextStyle(fontSize: 16)),
-                            ),
-                            Expanded(child: Divider()),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SocialButton(
-                          onPressed: () {
-                            context.read<LoginCubit>().signInWithGoogle();
-                          },
-                          icon: SvgPicture.asset(Assets.socialIconsGoogle),
-                          text: 'تسجيل بواسطة جوجل',
-                        ),
-                        const SizedBox(height: 12),
-                        // SocialButton(
-                        //   icon: SizedBox(
-                        //     width: 24,
-                        //     height: 24,
-                        //     child: SvgPicture.asset(Assets.vectorApple),
-                        //   ),
-                        //   text: 'تسجيل بواسطة أبل',
-                        //   onPressed: () {},
-                        // ),
-                        // const SizedBox(height: 12),
-                        // SocialButton(
-                        //   icon: SvgPicture.asset(
-                        //     Assets.facebook,
-                        //     width: 40,
-                        //     height: 20,
-                        //   ),
-                        //   text: 'تسجيل بواسطة فيسبوك',
-                        //   onPressed: () {
-                        //     context.read<LoginCubit>().signInWithFacebook();
-                        //   },
-                        // ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  /// Active background for navigation items
+  static const Color activeBg = Color(0xFFE6FBFF);
+
+  /// Border color for navigation
+  static const Color borderColor = Color(0xFFDDEFF3);
+
+  // ==================== Accent Color Schemes ====================
+  /// Page 1 Accent: Bright Cyan
+  static const Color accentCyan1 = Color(0xFF00D4FF);
+
+  /// Page 1 Accent: Deep Blue
+  static const Color accentDeepBlue1 = Color(0xFF0084FF);
+
+  /// Page 2 Accent: Cyan
+  static const Color accentCyan2 = Color(0xFF00C6FF);
+
+  /// Page 2 Accent: Sky Blue
+  static const Color accentSkyBlue = Color(0xFF00A8E8);
+
+  /// Page 3 Accent: Light Cyan
+  static const Color accentLightCyan = Color(0xFF00E5FF);
+
+  /// Page 3 Accent: Blue
+  static const Color accentBlue = Color(0xFF0090FF);
+
+  // ==================== Neutral Colors ====================
+  /// White color
+  static const Color white = Color(0xFFFFFFFF);
+
+  /// Black color
+  static const Color black = Color(0xFF000000);
+
+  /// Transparent color
+  static const Color transparent = Color(0x00000000);
+
+  /// Light gray for disabled states
+  static const Color lightGray = Color(0xFFF5F5F5);
+
+  /// Medium gray for borders
+  static const Color mediumGray = Color(0xFFE0E0E0);
+
+  /// Dark gray for text
+  static const Color darkGray = Color(0xFF424242);
+
+  // ==================== Error & Status Colors ====================
+  /// Error/Red color for validation errors
+  static const Color error = Color(0xFFFF0000);
+
+  /// Red color
+  static const Color red = Color(0xFFFF0000);
+
+  /// Success/Green color
+  static const Color success = Color(0xFF4CAF50);
+
+  /// Warning/Orange color
+  static const Color warning = Color(0xFFFFA500);
+
+  // ==================== Gradients ====================
+  /// Primary gradient for backgrounds (Light Turquoise → Deep Blue)
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      AppColors.primaryLight,
+      AppColors.primaryMid,
+      AppColors.primaryDark,
+    ],
+    stops: [0.0, 0.5, 1.0],
+  );
+
+  /// Accent gradient for Page 1 (Bright Cyan → Deep Blue)
+  static const LinearGradient accentGradient1 = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.accentCyan1, AppColors.accentDeepBlue1],
+  );
+
+  /// Accent gradient for Page 2 (Cyan → Sky Blue)
+  static const LinearGradient accentGradient2 = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.accentCyan2, AppColors.accentSkyBlue],
+  );
+
+  /// Accent gradient for Page 3 (Light Cyan → Blue)
+  static const LinearGradient accentGradient3 = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.accentLightCyan, AppColors.accentBlue],
+  );
+
+  // ==================== Helper Methods ====================
+  /// Get accent gradient by page index (1, 2, 3)
+  static LinearGradient getAccentGradientByPage(int pageIndex) {
+    switch (pageIndex) {
+      case 1:
+        return accentGradient1;
+      case 2:
+        return accentGradient2;
+      case 3:
+        return accentGradient3;
+      default:
+        return accentGradient1;
+    }
+  }
+
+  /// Get accent colors (color1, color2) by page index
+  static (Color, Color) getAccentColorsByPage(int pageIndex) {
+    switch (pageIndex) {
+      case 1:
+        return (accentCyan1, accentDeepBlue1);
+      case 2:
+        return (accentCyan2, accentSkyBlue);
+      case 3:
+        return (accentLightCyan, accentBlue);
+      default:
+        return (accentCyan1, accentDeepBlue1);
+    }
   }
 }
