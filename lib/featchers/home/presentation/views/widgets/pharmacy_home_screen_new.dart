@@ -22,7 +22,7 @@ class Pharmacy {
 // --- Pharmacy Home Screen Widget ---
 
 class PharmacyHomeScreenNew extends StatefulWidget {
-  const PharmacyHomeScreenNew({Key? key}) : super(key: key);
+  const PharmacyHomeScreenNew({super.key});
 
   @override
   State<PharmacyHomeScreenNew> createState() => _PharmacyHomeScreenNewState();
@@ -56,214 +56,240 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   }
 
   // 3. Filter Icon Handler
-// 3. Filter Icon Handler (MODIFIED)
-Future<void> _openFilterOptions() async {
-  final result = await showModalBottomSheet<Map<String, dynamic>>(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (context) {
-      // Local temporary values for the modal
-      String tempCategory = _selectedCategory;
-      String tempSort = 'relevance';
-      // 💡 تم التعديل: استخدام قيمة الخصم بدلاً من منطق (صحيح/خطأ)
-      double minDiscountValue = 0.0; 
+  // 3. Filter Icon Handler (MODIFIED)
+  Future<void> _openFilterOptions() async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        // Local temporary values for the modal
+        String tempCategory = _selectedCategory;
+        String tempSort = 'relevance';
+        // 💡 تم التعديل: استخدام قيمة الخصم بدلاً من منطق (صحيح/خطأ)
+        double minDiscountValue = 0.0;
 
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(4),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
                     ),
-                  ),
-                  const Center(
-                    child: Text(
-                      'تصفية البحث',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Categories
-                  const Text('الفئة', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _categories.map((cat) {
-                      final isSelected = tempCategory == cat;
-                      return ChoiceChip(
-                        label: Text(cat, textDirection: TextDirection.rtl),
-                        selected: isSelected,
-                        onSelected: (_) => setModalState(() => tempCategory = cat),
-                        selectedColor: const Color(0xFF007BBB),
-                        backgroundColor: Colors.grey[200],
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.w600,
+                    const Center(
+                      child: Text(
+                        'تصفية البحث',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    }).toList(),
-                  ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
-                  const SizedBox(height: 12),
+                    // Categories
+                    const Text(
+                      'الفئة',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _categories.map((cat) {
+                        final isSelected = tempCategory == cat;
+                        return ChoiceChip(
+                          label: Text(cat, textDirection: TextDirection.rtl),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              setModalState(() => tempCategory = cat),
+                          selectedColor: const Color(0xFF007BBB),
+                          backgroundColor: Colors.grey[200],
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      }).toList(),
+                    ),
 
-                  // Sort options
-                  const Text('ترتيب حسب', style: TextStyle(fontWeight: FontWeight.w600)),
-                  RadioListTile<String>(
-                    contentPadding: EdgeInsets.zero,
-                    value: 'relevance',
-                    groupValue: tempSort,
-                    onChanged: (v) => setModalState(() => tempSort = v ?? 'relevance'),
-                    title: const Text('الأكثر صلة'),
-                  ),
-                  RadioListTile<String>(
-                    contentPadding: EdgeInsets.zero,
-                    value: 'price_asc',
-                    groupValue: tempSort,
-                    onChanged: (v) => setModalState(() => tempSort = v ?? 'price_asc'),
-                    title: const Text('السعر من الأقل للأعلى'),
-                  ),
-                  RadioListTile<String>(
-                    contentPadding: EdgeInsets.zero,
-                    value: 'price_desc',
-                    groupValue: tempSort,
-                    onChanged: (v) => setModalState(() => tempSort = v ?? 'price_desc'),
-                    title: const Text('السعر من الأعلى للأقل'),
-                  ),
+                    const SizedBox(height: 12),
 
-                  const SizedBox(height: 8),
-                  // // 💡 تمت الإضافة: Slider لنسبة الخصم
-                  // const Text('الحد الأدنى للخصم', style: TextStyle(fontWeight: FontWeight.w600)),
-                  // const SizedBox(height: 8),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(
-                  //       '${minDiscountValue.round()}%',
-                  //       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF007BBB)),
-                  //     ),
-                  //     Expanded(
-                  //       child: Slider(
-                  //         value: minDiscountValue,
-                  //         min: 0,
-                  //         max: 50, 
-                  //         divisions: 10,
-                  //         label: '${minDiscountValue.round()}%',
-                  //         activeColor: const Color(0xFF007BBB),
-                  //         inactiveColor: Colors.grey[300],
-                  //         onChanged: (double newValue) {
-                  //           setModalState(() {
-                  //             minDiscountValue = newValue;
-                  //           });
-                  //         },
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // ------------------------------------------
+                    // Sort options
+                    const Text(
+                      'ترتيب حسب',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      value: 'relevance',
+                      groupValue: tempSort,
+                      onChanged: (v) =>
+                          setModalState(() => tempSort = v ?? 'relevance'),
+                      title: const Text('الأكثر صلة'),
+                    ),
+                    RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      value: 'price_asc',
+                      groupValue: tempSort,
+                      onChanged: (v) =>
+                          setModalState(() => tempSort = v ?? 'price_asc'),
+                      title: const Text('السعر من الأقل للأعلى'),
+                    ),
+                    RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      value: 'price_desc',
+                      groupValue: tempSort,
+                      onChanged: (v) =>
+                          setModalState(() => tempSort = v ?? 'price_desc'),
+                      title: const Text('السعر من الأعلى للأقل'),
+                    ),
 
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-onPressed: () {
+                    const SizedBox(height: 8),
+
+                    // // 💡 تمت الإضافة: Slider لنسبة الخصم
+                    // const Text('الحد الأدنى للخصم', style: TextStyle(fontWeight: FontWeight.w600)),
+                    // const SizedBox(height: 8),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     Text(
+                    //       '${minDiscountValue.round()}%',
+                    //       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF007BBB)),
+                    //     ),
+                    //     Expanded(
+                    //       child: Slider(
+                    //         value: minDiscountValue,
+                    //         min: 0,
+                    //         max: 50,
+                    //         divisions: 10,
+                    //         label: '${minDiscountValue.round()}%',
+                    //         activeColor: const Color(0xFF007BBB),
+                    //         inactiveColor: Colors.grey[300],
+                    //         onChanged: (double newValue) {
+                    //           setModalState(() {
+                    //             minDiscountValue = newValue;
+                    //           });
+                    //         },
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    // ------------------------------------------
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
                               // 🛑 التعديل هنا: استدعاء دالة resetFilters() في الـ Cubit
-                              context.read<ProductsCubit>().resetFilters(); 
-                              
+                              context.read<ProductsCubit>().resetFilters();
+
                               // إغلاق الـ Modal Bottom Sheet بعد إعادة التعيين
-                              Navigator.of(context).pop(); 
-                              
+                              Navigator.of(context).pop();
+
                               // تحديث الحالة المحلية لشاشة الـ Home لتنعكس فئة الأدوية الافتراضية
                               setState(() {
                                 _selectedCategory = 'الأدوية';
-                              });},
-                          child: const Text('إعادة تعيين'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop({
-                              'category': tempCategory,
-                              'sort': tempSort,
-                              // 💡 تم التعديل: إرسال القيمة كرقم صحيح
-                              'minDiscountValue': minDiscountValue.round(), 
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF007BBB),
+                              });
+                            },
+                            child: const Text('إعادة تعيين'),
                           ),
-                          child: const Text('تطبيق', style: TextStyle(color: Colors.white)),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop({
+                                'category': tempCategory,
+                                'sort': tempSort,
+                                // 💡 تم التعديل: إرسال القيمة كرقم صحيح
+                                'minDiscountValue': minDiscountValue.round(),
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF007BBB),
+                            ),
+                            child: const Text(
+                              'تطبيق',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
+            );
+          },
+        );
+      },
+    );
+
+    // Apply the returned filters if any
+    if (result != null) {
+      // ignore: avoid_print
+      print('Filter result: $result');
+
+      if (!mounted) return;
+
+      setState(() {
+        _selectedCategory = result['category'] ?? _selectedCategory;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          // Apply all filters to ProductsCubit
+          context.read<ProductsCubit>().applyCategoryFilter(_selectedCategory);
+          context.read<ProductsCubit>().applySortFilter(
+            result['sort'] ?? 'relevance',
+          );
+          // 💡 تم التعديل: إرسال الحد الأدنى للخصم (الرقم)
+          context.read<ProductsCubit>().applyDiscountFilter(
+            result['minDiscountValue'] ?? 0,
+          );
+        } catch (_) {
+          // ignore: no-empty
+        }
+
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        if (messenger != null) {
+          messenger.clearSnackBars();
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'تم تطبيق الفلاتر: ${result['category']} - ${result['sort']} - خصم ${result['minDiscountValue']}%',
+              ),
+              duration: const Duration(seconds: 2),
             ),
           );
-        },
-      );
-    },
-  );
-
-  // Apply the returned filters if any
-  if (result != null) {
-    // ignore: avoid_print
-    print('Filter result: $result');
-
-    if (!mounted) return;
-
-    setState(() {
-      _selectedCategory = result['category'] ?? _selectedCategory;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        // Apply all filters to ProductsCubit
-        context.read<ProductsCubit>().applyCategoryFilter(_selectedCategory);
-        context.read<ProductsCubit>().applySortFilter(result['sort'] ?? 'relevance');
-        // 💡 تم التعديل: إرسال الحد الأدنى للخصم (الرقم)
-        context.read<ProductsCubit>().applyDiscountFilter(result['minDiscountValue'] ?? 0); 
-      } catch (_) {
-        // ignore: no-empty
-      }
-
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      if (messenger != null) {
-        messenger.clearSnackBars();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('تم تطبيق الفلاتر: ${result['category']} - ${result['sort']} - خصم ${result['minDiscountValue']}%'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    });
+        }
+      });
+    }
   }
-}
 
   @override
   void initState() {
@@ -290,9 +316,9 @@ onPressed: () {
     return Scaffold(
       backgroundColor: AppColors.primaryLight,
       body: SafeArea(
-        // FIX: Replaced SingleChildScrollView with CustomScrollView 
+        // FIX: Replaced SingleChildScrollView with CustomScrollView
         // to correctly contain the GridView as a Box within a Sliver context.
-        child: CustomScrollView( 
+        child: CustomScrollView(
           slivers: [
             // 1. SliverToBoxAdapter for ALL static content (AppBar, Search, Promo, Upload, Categories, Pharmacies)
             SliverToBoxAdapter(
@@ -305,7 +331,7 @@ onPressed: () {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const CustomHomeAppBar(),
-                    
+
                     // --- ENHANCED SEARCH BAR IMPLEMENTATION ---
                     Container(
                       height: 48,
@@ -320,12 +346,16 @@ onPressed: () {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextField(
-                              controller: _searchController, // <-- Use the controller
-                              textDirection: TextDirection.rtl, // For Arabic input
+                              controller:
+                                  _searchController, // <-- Use the controller
+                              textDirection:
+                                  TextDirection.rtl, // For Arabic input
                               textAlign: TextAlign.right, // For Arabic input
                               decoration: InputDecoration(
                                 hintText: "ابحث عن منتج...",
-                                hintStyle: const TextStyle(color: Colors.black45),
+                                hintStyle: const TextStyle(
+                                  color: Colors.black45,
+                                ),
                                 border: InputBorder.none,
                                 isDense: true,
                                 // Show a clear button when there is text
@@ -345,16 +375,20 @@ onPressed: () {
                           const SizedBox(width: 8),
                           // Filter Icon Button
                           IconButton(
-                            icon: const Icon(Icons.filter_list, color: Colors.black54),
-                            onPressed: _openFilterOptions, // <-- Interactive filter button
+                            icon: const Icon(
+                              Icons.filter_list,
+                              color: Colors.black54,
+                            ),
+                            onPressed:
+                                _openFilterOptions, // <-- Interactive filter button
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
                         ],
                       ),
                     ),
-                    // ------------------------------------------
 
+                    // ------------------------------------------
                     const SizedBox(height: 16),
 
                     // Promo
@@ -520,7 +554,10 @@ onPressed: () {
                     // Categories Title
                     const Text(
                       "الفئات",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 10),
 
@@ -530,8 +567,8 @@ onPressed: () {
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         // FIX: Added physics to prevent nested scrolling conflict
-                        shrinkWrap: true, 
-                        physics: const NeverScrollableScrollPhysics(), 
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         children: [
                           for (String cat in _categories)
                             Padding(
@@ -545,12 +582,16 @@ onPressed: () {
                                   });
                                   // Apply category filter immediately via cubit
                                   try {
-                                    context.read<ProductsCubit>().applyCategoryFilter(cat);
+                                    context
+                                        .read<ProductsCubit>()
+                                        .applyCategoryFilter(cat);
                                   } catch (_) {
                                     // ignore: no-empty
                                   }
                                   // Show SnackBar feedback
-                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).clearSnackBars();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('تم اختيار: $cat'),
@@ -569,10 +610,13 @@ onPressed: () {
                     // Local Pharmacies Title
                     const Text(
                       'الصيدليات المحلية',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    
+
                     // Local Pharmacies List
                     SizedBox(
                       height: isMobile ? 110 : 130,
@@ -596,7 +640,10 @@ onPressed: () {
                     // Best Selling Title
                     const Text(
                       'الاكثر مبيعا',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -604,17 +651,22 @@ onPressed: () {
               ),
             ),
 
-            // 2. Products Grid: Wrap the Grid Builder in a SliverToBoxAdapter 
+            // 2. Products Grid: Wrap the Grid Builder in a SliverToBoxAdapter
             // to conform to the CustomScrollView (Sliver) structure.
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                child: const ProductsGridViewBlocBuilder(),
+                child: const ProductsGridViewBlocBuilder(limit: 4),
               ),
             ),
 
             // 3. Final Spacer (as a Sliver)
-            const SliverToBoxAdapter(child: SizedBox(height: 60)),
+            // مسافة سفلية إضافية حتى لا يختبئ آخر كرت منتج خلف الـ BottomNavigationBar
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.12 + 24,
+              ),
+            ),
           ],
         ),
       ),
@@ -647,7 +699,9 @@ onPressed: () {
               child: Icon(
                 Icons.circle,
                 size: 10,
-                color: isSelected ? const Color(0xFF007BBB) : const Color(0xFF007BBB),
+                color: isSelected
+                    ? const Color(0xFF007BBB)
+                    : const Color(0xFF007BBB),
               ),
             ),
             const SizedBox(width: 8),

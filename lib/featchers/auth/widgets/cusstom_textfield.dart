@@ -16,7 +16,7 @@ class CustomTextFormField extends StatelessWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
 
-  CustomTextFormField({
+  const CustomTextFormField({
     super.key,
     required this.hintText,
     this.prefixIcon,

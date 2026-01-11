@@ -1,10 +1,9 @@
-import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_state.dart';
-import 'package:e_commerce/main.dart'; // مهم جداً للوصول لـ navigatorKey
+// مهم جداً للوصول لـ navigatorKey
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

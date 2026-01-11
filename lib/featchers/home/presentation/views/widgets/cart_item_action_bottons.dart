@@ -1,7 +1,6 @@
 import 'package:e_commerce/core/enteties/cart_item_entety.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/app_text_styles.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/cart_item_cubit/cart_item_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +9,7 @@ class CartItemActionButtons extends StatelessWidget {
   const CartItemActionButtons({super.key, required this.cartItemEntity});
 
   final CartItemEntity cartItemEntity;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -19,8 +19,10 @@ class CartItemActionButtons extends StatelessWidget {
           icon: Icons.add,
           color: AppColors.primaryColor,
           onPressed: () {
-            cartItemEntity.incrementquantty();
-            context.read<CartItemCubit>().updateCartItem(cartItemEntity);
+            context.read<CartCubit>().updateQuantity(
+              cartItemEntity.productIntety,
+              cartItemEntity.quantty + 1,
+            );
           },
         ),
         Padding(
@@ -36,11 +38,13 @@ class CartItemActionButtons extends StatelessWidget {
           icon: Icons.remove,
           color: const Color(0xFFF3F5F7),
           onPressed: () {
-            cartItemEntity.decrementquantty();
-            if (cartItemEntity.quantty == 0) {
-              context.read<CartCubit>().deleteCarItem(cartItemEntity);
+            if (cartItemEntity.quantty > 1) {
+              context.read<CartCubit>().updateQuantity(
+                cartItemEntity.productIntety,
+                cartItemEntity.quantty - 1,
+              );
             } else {
-              context.read<CartItemCubit>().updateCartItem(cartItemEntity);
+              context.read<CartCubit>().deleteCarItem(cartItemEntity);
             }
           },
         ),

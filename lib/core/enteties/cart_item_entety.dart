@@ -4,13 +4,18 @@ import 'package:equatable/equatable.dart';
 /// يمثل عنصر واحد في السلة (Item). فيه:
 /// productIntety — بيانات المنتج (من AddProductIntety).
 /// count — عدد نفس المنتج داخل السلة.
-// ignore: must_be_immutable
 class CartItemEntity extends Equatable {
   final AddProductIntety productIntety;
+  final int quantty;
 
-  int quantty;
+  const CartItemEntity({required this.productIntety, required this.quantty});
 
-  CartItemEntity({required this.productIntety, this.quantty = 0});
+  CartItemEntity copyWith({AddProductIntety? productIntety, int? quantty}) {
+    return CartItemEntity(
+      productIntety: productIntety ?? this.productIntety,
+      quantty: quantty ?? this.quantty,
+    );
+  }
 
   num calculateTotalPrice() {
     return productIntety.price * quantty;
@@ -20,16 +25,17 @@ class CartItemEntity extends Equatable {
     return productIntety.unitAmount * quantty;
   }
 
-  incrementquantty() {
-    quantty++;
+  CartItemEntity incrementQuantity() {
+    return copyWith(quantty: quantty + 1);
   }
 
-  decrementquantty() {
-    if (quantty > 0) {
-      quantty--;
+  CartItemEntity decrementQuantity() {
+    if (quantty > 1) {
+      return copyWith(quantty: quantty - 1);
     }
+    return this;
   }
 
   @override
-  List<Object?> get props => [productIntety];
+  List<Object?> get props => [productIntety, quantty];
 }

@@ -1,5 +1,4 @@
 import 'package:e_commerce/core/enteties/product_enteti.dart';
-import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
@@ -21,14 +20,17 @@ class _FruitItemState extends State<FruitItem> {
   // دالة وهمية للإضافة إلى السلة. (يمكنك استبدالها لاحقًا بـ Bloc أو Provider)
   void _addToCart() {
     // 💡 يمكن هنا استخدام:
-    context.read<CartCubit>().addItemToCart(widget.productEntity);
+    context.read<CartCubit>().addProduct(
+          widget.productEntity,
+          quantity: 1,
+        );
 
-showOverlayToast(
-      context,
-      'تمت إضافة ${widget.productEntity.name} إلى السلة! 🛒',
-      // يمكنك إرسال لون آخر هنا، الافتراضي هو الأخضر
-      color: Colors.green.shade700,
-    );
+// showOverlayToast(
+//       context,
+//       'تمت إضافة ${widget.productEntity.name} إلى السلة! 🛒',
+//       // يمكنك إرسال لون آخر هنا، الافتراضي هو الأخضر
+//       color: Colors.green.shade700,
+//     );
   }
 
   // Function to handle navigation

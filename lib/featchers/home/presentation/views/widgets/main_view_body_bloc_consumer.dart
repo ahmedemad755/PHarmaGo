@@ -21,10 +21,10 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
             // Re-check context.mounted inside the callback for safety
             if (!context.mounted) return;
 
-            if (state is CartItemAdd) {
+            if (state is CartItemAdded) {
               showBar(context, 'تمت العملية بنجاح', color: Colors.green);
             }
-            if (state is CartItemRemove) {
+            if (state is CartItemRemoved) {
               showBar(
                 context,
                 'تم حذف العنصر بنجاح',

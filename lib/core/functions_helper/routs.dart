@@ -39,9 +39,9 @@ class AppRoutes {
   static const String pharmacyHome = 'pharmacyHome';
   static const String productDetails = 'productDetails';
   static const String uploadPrescription = 'uploadPrescription';
- static const String ChatbootBody = "ChatbootBody";
-
+  static const String ChatbootBody = "ChatbootBody";
 }
+
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.splash:
@@ -60,7 +60,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case AppRoutes.login:
       return MaterialPageRoute(
-        settings: const RouteSettings(name: AppRoutes.login), // تحديد الاسم صراحة
+        settings: const RouteSettings(
+          name: AppRoutes.login,
+        ), // تحديد الاسم صراحة
         builder: (_) => BlocProvider(
           create: (context) => LoginCubit(getIt<AuthRepo>()),
           child: const LoginView(),
@@ -78,13 +80,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => CheckOutView(cartEntity: cartEntity),
       );
 
-  case AppRoutes.pharmacyHome:
-  return MaterialPageRoute(
-    builder: (_) => BlocProvider(
-      create: (context) => getIt<CartCubit>(), // سيبدأ العمل فقط عند دخول الصفحة
-      child: const PharmacyHomeScreen(), // استبدل الاسم باسم صفحة الـ Home عندك
-    ),
-  );
+    case AppRoutes.pharmacyHome:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<CartCubit>(),
+          child: const PharmacyHomeScreen(),
+        ),
+      );
 
     case AppRoutes.uploadPrescription:
       return MaterialPageRoute(builder: (_) => const Uploadprescription());
@@ -97,8 +99,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       if (settings.arguments is AddProductIntety) {
         final product = settings.arguments as AddProductIntety;
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => getIt<CartCubit>(),
+          builder: (_) => BlocProvider.value(
+            value: getIt<CartCubit>(),
             child: DetailsScreen(product: product),
           ),
         );

@@ -1,5 +1,4 @@
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
-import 'package:e_commerce/core/utils/app_imags.dart';
 import 'package:e_commerce/core/utils/app_text_styles.dart';
 import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/widgets/notifecation_widgets.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +10,7 @@ class CustomHomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       trailing: NotifecationWidgets(),
-      leading: Image.asset(Assets.profileimage),
+      // leading: Image.asset(Assets.profileimage),
       title: Text(
         'صباح الخير !..',
         textAlign: TextAlign.right,

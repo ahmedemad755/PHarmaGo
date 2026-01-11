@@ -7,22 +7,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductsGridViewBlocBuilder extends StatelessWidget {
-  const ProductsGridViewBlocBuilder({super.key});
-
+  const ProductsGridViewBlocBuilder({super.key, this.limit});
+final int? limit;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProductsCubit, ProductsState>(
       builder: (context, state) {
         if (state is ProductsSuccess) {
           // تم حذف SliverToBoxAdapter لأن الأب هو Padding عادي
-          return ProductsGridView(products: state.products);
+          return ProductsGridView(products: state.products, limit: limit);
         } else if (state is ProductsFailure) {
           return CustomErrorWidget(text: state.errMessage);
         } else {
           return Skeletonizer(
             key: const ValueKey('products_skeleton_active'),
             enabled: true,
-            child: ProductsGridView(products: getDummyProducts()),
+            child: ProductsGridView(products: getDummyProducts(), limit: limit),
           );
         }
       },

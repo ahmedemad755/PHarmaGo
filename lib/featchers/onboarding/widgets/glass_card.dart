@@ -10,7 +10,7 @@ class GlassCard extends StatelessWidget {
   final List<Color>? gradientColors;
 
   const GlassCard({
-    Key? key,
+    super.key,
     this.width = 120,
     this.height = 150,
     required this.child,
@@ -18,7 +18,7 @@ class GlassCard extends StatelessWidget {
     this.borderRadius = 24,
     this.opacity = 0.2,
     this.gradientColors,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

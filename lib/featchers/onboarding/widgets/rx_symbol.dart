@@ -58,11 +58,11 @@ class RxSymbol extends StatelessWidget {
   final double opacity;
 
   const RxSymbol({
-    Key? key,
+    super.key,
     this.size = 150,
     this.color = Colors.white,
     this.opacity = 0.2,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

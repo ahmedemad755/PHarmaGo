@@ -11,12 +11,17 @@ import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 class CartEntity {
   ///cartItems — لائحة List<CartItemEntity>.
   final List<CartItemEntity> cartItems;
-  CartEntity(this.cartItems);
+  const CartEntity(this.cartItems);
+
+  CartEntity copyWith({List<CartItemEntity>? cartItems}) {
+    return CartEntity(cartItems ?? this.cartItems);
+  }
 
   ///addCartItem التي تضيف عنصر إلى هذه اللائحة.
-  addCartItem(CartItemEntity cartItemEntity) async {
-    cartItems.add(cartItemEntity);
-    await Prefs.setString(kCartData, jsonEncode(cartItems));
+  CartEntity addCartItem(CartItemEntity cartItemEntity) {
+    final newCartItems = List<CartItemEntity>.from(cartItems);
+    newCartItems.add(cartItemEntity);
+    return CartEntity(newCartItems);
   }
 
   /// تحديث السلة في SharedPreferences
@@ -24,8 +29,12 @@ class CartEntity {
     await Prefs.setString(kCartData, jsonEncode(cartItems));
   }
 
-  removeCarItem(CartItemEntity carItem) {
-    cartItems.remove(carItem);
+  CartEntity removeCarItem(CartItemEntity carItem) {
+    final newCartItems = List<CartItemEntity>.from(cartItems);
+    newCartItems.removeWhere(
+      (item) => item.productIntety == carItem.productIntety,
+    );
+    return CartEntity(newCartItems);
   }
 
   double getTotalPrice() {
@@ -53,12 +62,12 @@ class CartEntity {
     return false;
   }
 
-  CartItemEntity getCartItemByProduct(AddProductIntety product) {
+  CartItemEntity? getCartItemByProduct(AddProductIntety product) {
     for (var element in cartItems) {
       if (element.productIntety == product) {
         return element;
       }
     }
-    return CartItemEntity(productIntety: product, quantty: 1);
+    return null;
   }
 }

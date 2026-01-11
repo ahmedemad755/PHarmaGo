@@ -13,9 +13,15 @@ class CartViewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 💡 الحل: نستخدم BlocBuilder للاستماع لتغييرات حالة CartCubit
-    return BlocBuilder<CartCubit, dynamic>(
+    return BlocBuilder<CartCubit, CartState>(
       builder: (context, state) {
-        final cartItems = context.read<CartCubit>().cartEntity.cartItems;
+        final currentCart = switch (state) {
+          CartInitial(cartEntity: final cart) => cart,
+          CartUpdated(cartEntity: final cart) => cart,
+          CartItemAdded(cartEntity: final cart) => cart,
+          CartItemRemoved(cartEntity: final cart) => cart,
+        };
+        final cartItems = currentCart.cartItems;
         final bool isEmpty = cartItems.isEmpty;
 
         return Stack(
@@ -26,37 +32,37 @@ class CartViewBody extends StatelessWidget {
                   child: Column(
                     children: [
                       const SizedBox(height: kTopPaddding),
-                      buildAppBar(context, title: 'السلة', showBackButton: false),
+                      buildAppBar(
+                        context,
+                        title: 'السلة',
+                        showBackButton: false,
+                      ),
                       const SizedBox(height: 16),
                       // يمكن أن تستمع CartHeader هي الأخرى إذا كانت تعرض أرقامًا
-                      const CartHeader(), 
+                      const CartHeader(),
                       const SizedBox(height: 12),
                     ],
                   ),
                 ),
-                
+
                 // 🛑 استخدام المتغير isEmpty لتحديد ما إذا كان سيتم عرض الفاصل
                 SliverToBoxAdapter(
-                  child: isEmpty
-                      ? const SizedBox()
-                      : const CustomDivider(),
+                  child: isEmpty ? const SizedBox() : const CustomDivider(),
                 ),
-                
+
                 // 🛑 استخدام CartItemsList لعرض القائمة
                 CartItemsList(
                   // نمرر القائمة المحدثة
-                  carItems: cartItems, 
+                  carItems: cartItems,
                 ),
-                
+
                 SliverToBoxAdapter(
-                  child: isEmpty
-                      ? const SizedBox()
-                      : const CustomDivider(),
+                  child: isEmpty ? const SizedBox() : const CustomDivider(),
                 ),
 
                 // إذا كانت القائمة غير فارغة، نضيف مساحة أسفل لزر Checkout
                 if (!isEmpty)
-                   const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
             ),
 
@@ -68,7 +74,7 @@ class CartViewBody extends StatelessWidget {
                 bottom: MediaQuery.of(context).size.height * 0.12,
                 child: CustomCartButton(),
               ),
-            
+
             // إذا كانت السلة فارغة، يمكنك عرض رسالة
             if (isEmpty)
               const Center(

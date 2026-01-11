@@ -13,7 +13,8 @@ import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/signup/sugnup_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
-import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart' show CartEntity;
+import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart'
+    show CartEntity;
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:get_it/get_it.dart';
 
@@ -52,15 +53,12 @@ void setupGetit() {
   // تسجيل السلة (تعيش طول فترة تشغيل التطبيق)
   getIt.registerLazySingleton<CartEntity>(() => CartEntity([]));
 
- // تعديل تسجيل الكيوبت ليمرر المتغيرين المطللوبين
-getIt.registerLazySingleton<CartCubit>(
-  () => CartCubit(
-    getIt<CartEntity>(), 
-    getIt<CartRepo>(), // إضافة المتغير الثاني هنا
-  ),
-);
+  // تعديل تسجيل الكيوبت ليمرر المتغيرين المطللوبين
+  getIt.registerLazySingleton<CartCubit>(
+    () => CartCubit(getIt<CartEntity>(), getIt<CartRepo>()),
+  );
 
-    // ✅ Register ProductsCubit now
+  // ✅ Register ProductsCubit now
   getIt.registerFactory<ProductsCubit>(
     () => ProductsCubit(getIt<ProductsRepo>()),
   );
