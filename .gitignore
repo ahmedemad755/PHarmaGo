@@ -45,4 +45,5 @@ app.*.map.json
 /android/app/release
 
 # App Key
-lib\core\utils\app_key.dart
+lib/core/utils/app_key.dart
+lib/core/services/ai_service.dart

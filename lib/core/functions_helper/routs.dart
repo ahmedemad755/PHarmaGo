@@ -15,6 +15,7 @@ import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/be
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_body.dart';
@@ -89,7 +90,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case AppRoutes.uploadPrescription:
-      return MaterialPageRoute(builder: (_) => const Uploadprescription());
+      return MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<PrescriptionCubit>()),
+            BlocProvider.value(
+              value: getIt<CartCubit>(), // التأكد من أن CartCubit موجود
+            ),
+          ],
+          child: const UploadPrescription(),
+        ),
+      );
 
     case AppRoutes.ChatbootBody:
       return MaterialPageRoute(builder: (_) => const ChatbootBody());
