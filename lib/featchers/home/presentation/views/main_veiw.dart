@@ -18,15 +18,6 @@ class _MainVeiwState extends State<MainVeiw> {
   int currentViewIndex = 0;
 
   @override
-  void initState() {
-    super.initState();
-    // تحميل السلة من الـ Repository عند بدء التطبيق
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CartCubit>().loadCartFromRepository();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     // استخدمنا MultiBlocProvider مباشرة وقمنا بجلب النسخ من getIt هنا
     // هذا يضمن توفرها قبل بناء أي Widget تحتها

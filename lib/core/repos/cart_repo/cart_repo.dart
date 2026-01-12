@@ -1,5 +1,5 @@
 abstract class CartRepo {
-  Future<void> saveCartData(String cartJson);
-  String? getCartData();
-  Future<void> clearCart();
+  Future<void> saveCartData(String userId, String cartJson);
+  Future<String?> getCartData(String userId);
+  Future<void> clearCart(String userId);
 }

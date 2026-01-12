@@ -21,15 +21,12 @@ import 'package:get_it/get_it.dart';
 final getIt = GetIt.instance;
 
 void setupGetit() {
-  // 1. تسجيل الخدمات الأساسية
   getIt.registerSingleton<FirebaseAuthService>(FirebaseAuthService());
 
-  // 2. تسجيل FireStoreService مره واحده و تربطه كمان بـ Databaseservice
   final fireStoreService = FireStoreService();
   getIt.registerSingleton<FireStoreService>(fireStoreService);
   getIt.registerSingleton<DatabaseService>(fireStoreService);
 
-  // 3. تسجيل AuthRepo
   getIt.registerSingleton<AuthRepo>(
     AuthRepoImpl(
       firebaseAuthService: getIt<FirebaseAuthService>(),
@@ -42,23 +39,19 @@ void setupGetit() {
     ProductsRepoImpl(getIt<DatabaseService>()),
   );
 
-  // 4. باقي الـ Cubits
   getIt.registerSingleton<AuthRepoImpl>(getIt<AuthRepo>() as AuthRepoImpl);
   getIt.registerFactory<SugnupCubit>(() => SugnupCubit(getIt()));
   getIt.registerSingleton<LoginCubit>(LoginCubit(getIt()));
-  getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt()));
+  getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt<AuthRepo>()));
   getIt.registerSingleton<OrdersRepo>(OrdersRepoImpl(getIt<DatabaseService>()));
 
   getIt.registerSingleton<CartRepo>(CartRepoImpl());
-  // تسجيل السلة (تعيش طول فترة تشغيل التطبيق)
   getIt.registerLazySingleton<CartEntity>(() => CartEntity([]));
 
-  // تعديل تسجيل الكيوبت ليمرر المتغيرين المطللوبين
   getIt.registerLazySingleton<CartCubit>(
     () => CartCubit(getIt<CartEntity>(), getIt<CartRepo>()),
   );
 
-  // ✅ Register ProductsCubit now
   getIt.registerFactory<ProductsCubit>(
     () => ProductsCubit(getIt<ProductsRepo>()),
   );

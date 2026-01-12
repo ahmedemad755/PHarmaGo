@@ -1,3 +1,4 @@
+// نفس الكود اللي بعتهولي من قبل
 import 'package:e_commerce/core/models/message_model.dart';
 import 'package:e_commerce/core/services/ai_service.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ class ChatbootBody extends StatefulWidget {
   State<ChatbootBody> createState() => _ChatbootBodyState();
 }
 
-class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMixin {
+class _ChatbootBodyState extends State<ChatbootBody>
+    with TickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Message> _messages = [];
@@ -72,7 +74,7 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
         _messages.add(
           Message(
             text:
-                "I apolifize, but Im Currently unable to process your request. please try again",
+                "I apologize, but I'm currently unable to process your request. Please try again.",
             isUser: false,
             timestamp: DateTime.now(),
           ),
@@ -180,7 +182,6 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
                       ),
                       child: TextField(
                         controller: _textController,
-
                         maxLines: null,
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
@@ -188,16 +189,11 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
                             color: Color(0xFF9CA3AF),
                             fontSize: 16,
                           ),
-
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 12,
                           ),
                           border: InputBorder.none,
-                          // border: OutlineInputBorder(
-                          // borderRadius: BorderRadius.circular(24),
-                          // borderSide: BorderSide.none,
-                          //),
                         ),
                       ),
                     ),
@@ -235,7 +231,6 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
         mainAxisAlignment: message.isUser
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!message.isUser) ...[
@@ -318,7 +313,6 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: Color(0xFFF3F4F6),
-
               borderRadius: BorderRadius.circular(18),
             ),
             child: Row(
@@ -357,7 +351,3 @@ class _ChatbootBodyState extends State<ChatbootBody> with TickerProviderStateMix
     );
   }
 }
-
-
-
-

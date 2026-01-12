@@ -6,6 +6,7 @@ import 'package:e_commerce/core/services/firebase_auth_service.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:e_commerce/firebase_options.dart';
 import 'package:e_commerce/generated/l10n.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,17 +25,24 @@ void main() async {
   await Prefs.init();
   setupGetit();
 
-  final isOnBoardingSeen = Prefs.getBool(kIsOnBoardingViewSeen);
-  var isLoggedIn = getIt<FirebaseAuthService>().isLoggedIn();
-  String initialRoute;
+  final authService = getIt<FirebaseAuthService>();
+  final isLoggedIn = authService.isLoggedIn();
 
-  if (!isOnBoardingSeen) {
+  // 🔹 استعادة السلة قبل runApp لأي مستخدم مسجل
+  if (isLoggedIn) {
+    final cartCubit = getIt<CartCubit>();
+    await cartCubit.loadCartFromRepository();
+  }
+
+  String initialRoute;
+  if (!Prefs.getBool(kIsOnBoardingViewSeen)) {
     initialRoute = AppRoutes.onboarding;
   } else if (isLoggedIn) {
     initialRoute = AppRoutes.home;
   } else {
     initialRoute = AppRoutes.login;
   }
+
   runApp(FuitHub(initialRoute: initialRoute));
 }
 
@@ -50,7 +58,6 @@ class FuitHub extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) => GradientBackground(
         child: MaterialApp(
-          
           navigatorKey: navigatorKey,
           theme: ThemeData(
             scaffoldBackgroundColor: AppColors.primaryLight,

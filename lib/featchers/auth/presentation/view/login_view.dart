@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:e_commerce/featchers/AUTH/widgets/customProgressLoading.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/socialbutton.dart';
 import 'package:e_commerce/featchers/auth/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,6 +45,8 @@ class _LoginViewState extends State<LoginView> {
       body: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
+            // تحميل بيانات السلة الخاصة بالمستخدم بعد تسجيل الدخول
+            getIt<CartCubit>().loadCartFromRepository();
             Navigator.of(context).pushReplacementNamed(AppRoutes.home);
           }
           if (state is LoginFailure) {
