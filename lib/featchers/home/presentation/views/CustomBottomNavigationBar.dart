@@ -34,11 +34,7 @@ class BottomNavPage extends StatelessWidget {
               children: [
                 _navItem(context, icon: Icons.home, index: 0),
                 _navItem(context, icon: Icons.grid_view, index: 1),
-                _navItem(
-                  context,
-                  image: 'assets/medical-prescription.png',
-                  index: 2,
-                ),
+                _navItem(context, icon: Icons.alarm, index: 2),
                 _navItem(context, image: "assets/chatbot_icon.png", index: 3),
                 _navItem(
                   context,

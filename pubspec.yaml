@@ -78,6 +78,9 @@ dependencies:
   google_ml_kit: ^0.20.0
   string_similarity: ^2.1.1
   diacritic: ^0.1.6
+  timezone: ^0.9.4
+  # flutter_local_notifications: ^17.2.3
+  intl: ^0.20.1
   
 
 dev_dependencies:

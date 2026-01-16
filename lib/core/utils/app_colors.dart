@@ -105,6 +105,7 @@ abstract class AppColors {
     ],
     stops: [0.0, 0.5, 1.0],
   );
+  
 
   /// Accent gradient for Page 1 (Bright Cyan → Deep Blue)
   static const LinearGradient accentGradient1 = LinearGradient(

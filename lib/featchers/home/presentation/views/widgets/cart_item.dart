@@ -54,12 +54,43 @@ class CartItem extends StatelessWidget {
                         ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () {
-                            context.read<CartCubit>().deleteCarItem(
-                              currentItem,
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('تأكيد الحذف'),
+                                  content: const Text(
+                                    'هل أنت متأكد أنك تريد حذف هذا المنتج من الكارت؟',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context, false);
+                                      },
+                                      child: const Text('إلغاء'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context, true);
+                                      },
+                                      child: const Text('حذف'),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
+
+                            if (confirmed == true) {
+                              context.read<CartCubit>().deleteCarItem(
+                                currentItem,
+                              );
+                            }
                           },
-                          child: Icon(Icons.delete, color: Colors.red),
+                          child: const Icon(Icons.delete, color: Colors.red),
                         ),
                       ],
                     ),

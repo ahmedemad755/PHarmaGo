@@ -17,6 +17,7 @@ import 'package:e_commerce/featchers/AUTH/presentation/cubits/signup/sugnup_cubi
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart'
     show CartEntity;
+import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:get_it/get_it.dart';
@@ -67,4 +68,5 @@ void setupGetit() {
   getIt.registerFactory<PrescriptionCubit>(
     () => PrescriptionCubit(getIt<PrescriptionRepo>()),
   );
+  getIt.registerLazySingleton<AlarmsCubit>(() => AlarmsCubit());
 }

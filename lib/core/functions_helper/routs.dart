@@ -14,10 +14,12 @@ import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
 import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/best_seliling_fruites_view.dart';
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/alarmpage.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_body.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
@@ -41,6 +43,8 @@ class AppRoutes {
   static const String productDetails = 'productDetails';
   static const String uploadPrescription = 'uploadPrescription';
   static const String ChatbootBody = "ChatbootBody";
+  static const String alarmsMain = 'alarmsMain';
+  static const String addAlarm = 'addAlarm';
 }
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -104,6 +108,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case AppRoutes.ChatbootBody:
       return MaterialPageRoute(builder: (_) => const ChatbootBody());
+
+    case AppRoutes.alarmsMain:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<AlarmsCubit>(),
+          child: const MainAlarmsView(),
+        ),
+      );
+
+    case AppRoutes.addAlarm:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<AlarmsCubit>(),
+          child: const AddAlarmView(),
+        ),
+      );
 
     case AppRoutes.productDetails:
       // تأكد من وجود arguments لمنع الـ Crash
