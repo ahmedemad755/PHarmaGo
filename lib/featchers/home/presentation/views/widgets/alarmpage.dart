@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-// 1. الصفحة الرئيسية معدلة لحل مشكلة الـ Context
 class MainAlarmsView extends StatelessWidget {
   const MainAlarmsView({super.key});
 
@@ -42,13 +41,74 @@ class MainAlarmsView extends StatelessWidget {
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 12),
                 itemCount: alarms.length,
-                itemBuilder: (context, index) => AlarmCard(alarm: alarms[index]),
+                itemBuilder: (context, index) {
+                  final alarm = alarms[index];
+                  
+                  // تم إضافة الـ Dismissible للحذف بالسحب
+                  return Dismissible(
+                    key: Key(alarm.id),
+                    direction: DismissDirection.horizontal,
+                    
+                    // الخلفية عند السحب
+                    background: _buildDeleteBackground(Alignment.centerRight),
+                    secondaryBackground: _buildDeleteBackground(Alignment.centerLeft),
+
+                    // دايالوج التأكيد
+                    confirmDismiss: (direction) async {
+                      return await _showDeleteConfirmation(context);
+                    },
+
+                    // استدعاء ميثود الحذف الأصلية من الكيوبيت
+                    onDismissed: (direction) {
+                      context.read<AlarmsCubit>().removeAlarm(alarm.id);
+                      showBar(context, "تم حذف المنبه");
+                    },
+                    child: AlarmCard(alarm: alarm),
+                  );
+                },
               ),
             ),
             _buildActionArea(context),
           ],
         );
       },
+    );
+  }
+
+  // ميثود خلفية الحذف
+  Widget _buildDeleteBackground(Alignment alignment) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: AppColors.errorColor.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Icon(Icons.delete_sweep, color: Colors.white, size: 30),
+    );
+  }
+
+  // دايالوج التأكيد
+  Future<bool?> _showDeleteConfirmation(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("حذف المنبه", textAlign: TextAlign.right),
+        content: const Text("هل أنت متأكد من رغبتك في حذف هذا المنبه؟", textAlign: TextAlign.right),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("إلغاء", style: TextStyle(color: AppColors.darkGray)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.errorColor),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("حذف", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -88,7 +148,7 @@ class MainAlarmsView extends StatelessWidget {
       label: "إضافة منبه جديد",
       width: 260,
       icon: Icons.add_alarm_rounded,
-      gradientColors: AppColors.getAccentGradientByPage(2).colors.toList(), // استخدام تدرج الصفحة 2
+      gradientColors: AppColors.getAccentGradientByPage(2).colors.toList(),
       onPressed: () => _navigateToAddTask(context),
     );
   }
@@ -106,8 +166,6 @@ class MainAlarmsView extends StatelessWidget {
     );
   }
 }
-
-// --- 3. Alarm Card Widget ---
 
 class AlarmCard extends StatelessWidget {
   final AlarmEntity alarm;
@@ -173,8 +231,6 @@ class AlarmCard extends StatelessWidget {
   }
 }
 
-// --- 4. Add Alarm View ---
-
 class AddAlarmView extends StatefulWidget {
   const AddAlarmView({super.key});
   @override
@@ -188,6 +244,8 @@ class _AddAlarmViewState extends State<AddAlarmView> {
 
   @override
   Widget build(BuildContext context) {
+    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً" ? 1 : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
+    
     return BlocListener<AlarmsCubit, AlarmsState>(
       listener: (context, state) {
         if (state is AlarmAddedSuccessfully) Navigator.pop(context);
@@ -213,6 +271,15 @@ class _AddAlarmViewState extends State<AddAlarmView> {
               _buildDosageDropdown(),
               const SizedBox(height: 30),
               _buildSectionTitle("مواعيد التذكير"),
+              const SizedBox(height: 8),
+              Text(
+                "يرجى اختيار عدد ($requiredDoses) مواعيد بناءً على الجرعة المحددة",
+                style: TextStyle(
+                  color: _selectedTimes.length == requiredDoses ? Colors.green : AppColors.primary.withOpacity(0.7), 
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               _buildTimePickerTile(context),
               _buildTimeChips(),
               const SizedBox(height: 60),
@@ -271,7 +338,12 @@ class _AddAlarmViewState extends State<AddAlarmView> {
       items: ["جرعة واحدة يومياً", "جرعتين يومياً", "3 جرعات يومياً"]
           .map((label) => DropdownMenuItem(value: label, child: Text(label)))
           .toList(),
-      onChanged: (value) => setState(() => _selectedDosage = value!),
+      onChanged: (value) {
+        setState(() {
+          _selectedDosage = value!;
+          _selectedTimes.clear();
+        });
+      },
     );
   }
 
@@ -325,13 +397,26 @@ class _AddAlarmViewState extends State<AddAlarmView> {
   }
 
   void _saveAlarm() {
-    if (_nameController.text.isEmpty || _selectedTimes.isEmpty) {
-      showBar(context, "يرجى إكمال البيانات واختيار وقت واحد على الأقل");
+    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً" ? 1 : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
+
+    if (_nameController.text.trim().isEmpty) {
+      showBar(context, "يرجى إدخال اسم الدواء");
       return;
     }
+
+    if (_selectedTimes.length < requiredDoses) {
+      showBar(context, "يجب اختيار $requiredDoses مواعيد بناءً على عدد الجرعات المطلوب");
+      return;
+    } 
+    
+    if (_selectedTimes.length > requiredDoses) {
+      showBar(context, "لقد اخترت مواعيد أكثر من عدد الجرعات ($requiredDoses)");
+      return;
+    }
+
     final newAlarm = AlarmEntity(
       id: DateTime.now().toString(),
-      medicationName: _nameController.text,
+      medicationName: _nameController.text.trim(),
       reminderTimes: List.from(_selectedTimes),
       dosage: _selectedDosage,
     );

@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/alarm_entites.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,34 +18,57 @@ class AlarmsError extends AlarmsState {
 }
 class AlarmAddedSuccessfully extends AlarmsState {}
 
+
 class AlarmsCubit extends Cubit<AlarmsState> {
   final List<AlarmEntity> _allAlarms = [];
-  AlarmsCubit() : super(AlarmsInitial());
+  final String _storageKey = "saved_alarms"; // مفتاح التخزين
 
-  // حافظنا على اسم الميثود addAlarm
-  void addAlarm(AlarmEntity alarm) {
+  AlarmsCubit() : super(AlarmsInitial()) {
+    loadAlarms(); // تحميل المنبهات فور إنشاء الـ Cubit
+  }
+
+  // استعادة المنبهات من SharedPreferences
+  void loadAlarms() {
+    try {
+      String jsonString = Prefs.getString(_storageKey);
+      if (jsonString.isNotEmpty) {
+        List<dynamic> jsonList = json.decode(jsonString);
+        _allAlarms.clear();
+        _allAlarms.addAll(jsonList.map((item) => AlarmEntity.fromMap(item)).toList());
+        emit(AlarmsSuccess(List.from(_allAlarms)));
+      }
+    } catch (e) {
+      emit(AlarmsError("فشل في تحميل المنبهات السابقة"));
+    }
+  }
+
+  // حفظ القائمة الحالية في SharedPreferences
+  Future<void> _saveToPrefs() async {
+    List<Map<String, dynamic>> mapList = _allAlarms.map((a) => a.toMap()).toList();
+    String jsonString = json.encode(mapList);
+    await Prefs.setString(_storageKey, jsonString);
+  }
+
+  void addAlarm(AlarmEntity alarm) async {
     if (alarm.medicationName.isEmpty) {
       emit(AlarmsError("يرجى إدخال اسم الدواء"));
       return;
     }
-    if (alarm.reminderTimes.isEmpty) {
-      emit(AlarmsError("يجب اختيار وقت واحد على الأقل"));
-      return;
-    }
-
+    
     emit(AlarmsLoading());
     try {
       _allAlarms.add(alarm);
-      emit(AlarmAddedSuccessfully()); // حالة للعودة التلقائية للصفحة
+      await _saveToPrefs(); // حفظ بعد الإضافة
+      emit(AlarmAddedSuccessfully());
       emit(AlarmsSuccess(List.from(_allAlarms)));
     } catch (e) {
-      emit(AlarmsError("فشل حفظ المنبه، حاول مرة أخرى"));
+      emit(AlarmsError("فشل حفظ المنبه"));
     }
   }
 
-  // حافظنا على اسم الميثود removeAlarm
-  void removeAlarm(String id) {
+  void removeAlarm(String id) async {
     _allAlarms.removeWhere((a) => a.id == id);
+    await _saveToPrefs(); // حفظ بعد الحذف
     emit(AlarmsSuccess(List.from(_allAlarms)));
   }
 }
