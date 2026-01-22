@@ -1,7 +1,7 @@
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/onboarding/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,17 +20,14 @@ class _FruitItemState extends State<FruitItem> {
   // دالة وهمية للإضافة إلى السلة. (يمكنك استبدالها لاحقًا بـ Bloc أو Provider)
   void _addToCart() {
     // 💡 يمكن هنا استخدام:
-    context.read<CartCubit>().addProduct(
-          widget.productEntity,
-          quantity: 1,
-        );
+    context.read<CartCubit>().addProduct(widget.productEntity, quantity: 1);
 
-// showOverlayToast(
-//       context,
-//       'تمت إضافة ${widget.productEntity.name} إلى السلة! 🛒',
-//       // يمكنك إرسال لون آخر هنا، الافتراضي هو الأخضر
-//       color: Colors.green.shade700,
-//     );
+    // showOverlayToast(
+    //       context,
+    //       'تمت إضافة ${widget.productEntity.name} إلى السلة! 🛒',
+    //       // يمكنك إرسال لون آخر هنا، الافتراضي هو الأخضر
+    //       color: Colors.green.shade700,
+    //     );
   }
 
   // Function to handle navigation
@@ -44,7 +41,7 @@ class _FruitItemState extends State<FruitItem> {
 
   @override
   Widget build(BuildContext context) {
-final num discount = widget.productEntity.discountPercentage;
+    final num discount = widget.productEntity.discountPercentage;
     final bool hasDiscount = discount > 0;
     return GestureDetector(
       onTap: _navigateToDetails,
@@ -77,26 +74,25 @@ final num discount = widget.productEntity.discountPercentage;
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (hasDiscount)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        "$discount%",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "$discount%",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
                         ),
                       ),
-                    ),
-                    if (!hasDiscount) 
-                       const SizedBox(width: 42),
+                    if (!hasDiscount) const SizedBox(width: 42),
                     IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -174,29 +170,29 @@ final num discount = widget.productEntity.discountPercentage;
                     ),
 
                     // ➕ زر الإضافة إلى السلة
-                    GestureDetector(
-                      onTap: _addToCart, // ⬅️ استدعاء دالة الإضافة
-                      child: Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade700, // لون مميز للزر
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: _addToCart, // ⬅️ استدعاء دالة الإضافة
+                    //   child: Container(
+                    //     height: 30,
+                    //     width: 30,
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.blue.shade700, // لون مميز للزر
+                    //       shape: BoxShape.circle,
+                    //       boxShadow: [
+                    //         BoxShadow(
+                    //           color: Colors.blue.withOpacity(0.3),
+                    //           blurRadius: 4,
+                    //           offset: const Offset(0, 2),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //     child: const Icon(
+                    //       Icons.add,
+                    //       color: Colors.white,
+                    //       size: 18,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ],

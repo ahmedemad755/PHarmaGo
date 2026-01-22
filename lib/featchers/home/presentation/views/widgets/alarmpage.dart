@@ -18,7 +18,10 @@ class MainAlarmsView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.lightGray,
         appBar: AppBar(
-          title: const GradientText("منبه الدواء", gradient: AppColors.accentGradient2),
+          title: const GradientText(
+            "منبه الدواء",
+            gradient: AppColors.accentGradient2,
+          ),
           centerTitle: true,
           backgroundColor: AppColors.white,
           elevation: 0,
@@ -31,7 +34,9 @@ class MainAlarmsView extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return BlocBuilder<AlarmsCubit, AlarmsState>(
       builder: (context, state) {
-        final alarms = (state is AlarmsSuccess) ? state.alarms : <AlarmEntity>[];
+        final alarms = (state is AlarmsSuccess)
+            ? state.alarms
+            : <AlarmEntity>[];
 
         if (alarms.isEmpty) return _buildEmptyState(context);
 
@@ -43,15 +48,17 @@ class MainAlarmsView extends StatelessWidget {
                 itemCount: alarms.length,
                 itemBuilder: (context, index) {
                   final alarm = alarms[index];
-                  
+
                   // تم إضافة الـ Dismissible للحذف بالسحب
                   return Dismissible(
                     key: Key(alarm.id),
                     direction: DismissDirection.horizontal,
-                    
+
                     // الخلفية عند السحب
                     background: _buildDeleteBackground(Alignment.centerRight),
-                    secondaryBackground: _buildDeleteBackground(Alignment.centerLeft),
+                    secondaryBackground: _buildDeleteBackground(
+                      Alignment.centerLeft,
+                    ),
 
                     // دايالوج التأكيد
                     confirmDismiss: (direction) async {
@@ -96,14 +103,22 @@ class MainAlarmsView extends StatelessWidget {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text("حذف المنبه", textAlign: TextAlign.right),
-        content: const Text("هل أنت متأكد من رغبتك في حذف هذا المنبه؟", textAlign: TextAlign.right),
+        content: const Text(
+          "هل أنت متأكد من رغبتك في حذف هذا المنبه؟",
+          textAlign: TextAlign.right,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("إلغاء", style: TextStyle(color: AppColors.darkGray)),
+            child: const Text(
+              "إلغاء",
+              style: TextStyle(color: AppColors.darkGray),
+            ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.errorColor),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorColor,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text("حذف", style: TextStyle(color: Colors.white)),
           ),
@@ -125,7 +140,11 @@ class MainAlarmsView extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             "لا توجد منبهات حالياً",
-            style: TextStyle(color: AppColors.darkGray, fontSize: 18, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: AppColors.darkGray,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 40),
           _buildAddButton(context),
@@ -158,10 +177,8 @@ class MainAlarmsView extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: cubit,
-          child: const AddAlarmView(),
-        ),
+        builder: (_) =>
+            BlocProvider.value(value: cubit, child: const AddAlarmView()),
       ),
     );
   }
@@ -185,7 +202,7 @@ class AlarmCard extends StatelessWidget {
             color: AppColors.black.withOpacity(0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -213,17 +230,21 @@ class AlarmCard extends StatelessWidget {
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: alarm.reminderTimes.map((t) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(
-                DateFormat.jm().format(t),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.accentSkyBlue,
-                  fontSize: 16,
-                ),
-              ),
-            )).toList(),
+            children: alarm.reminderTimes
+                .map(
+                  (t) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      DateFormat.jm().format(t),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.accentSkyBlue,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
@@ -244,8 +265,10 @@ class _AddAlarmViewState extends State<AddAlarmView> {
 
   @override
   Widget build(BuildContext context) {
-    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً" ? 1 : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
-    
+    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً"
+        ? 1
+        : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
+
     return BlocListener<AlarmsCubit, AlarmsState>(
       listener: (context, state) {
         if (state is AlarmAddedSuccessfully) Navigator.pop(context);
@@ -275,7 +298,9 @@ class _AddAlarmViewState extends State<AddAlarmView> {
               Text(
                 "يرجى اختيار عدد ($requiredDoses) مواعيد بناءً على الجرعة المحددة",
                 style: TextStyle(
-                  color: _selectedTimes.length == requiredDoses ? Colors.green : AppColors.primary.withOpacity(0.7), 
+                  color: _selectedTimes.length == requiredDoses
+                      ? Colors.green
+                      : AppColors.primary.withOpacity(0.7),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -286,7 +311,9 @@ class _AddAlarmViewState extends State<AddAlarmView> {
               Center(
                 child: GradientButton(
                   label: "حفظ المنبه",
-                  gradientColors: AppColors.getAccentGradientByPage(2).colors.toList(),
+                  gradientColors: AppColors.getAccentGradientByPage(
+                    2,
+                  ).colors.toList(),
                   onPressed: _saveAlarm,
                 ),
               ),
@@ -300,7 +327,11 @@ class _AddAlarmViewState extends State<AddAlarmView> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: AppColors.primary,
+      ),
     );
   }
 
@@ -311,7 +342,10 @@ class _AddAlarmViewState extends State<AddAlarmView> {
         hintText: "اسم الدواء (مثال: بنادول)",
         filled: true,
         fillColor: AppColors.white,
-        prefixIcon: const Icon(Icons.medication_liquid_rounded, color: AppColors.primary),
+        prefixIcon: const Icon(
+          Icons.medication_liquid_rounded,
+          color: AppColors.primary,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.borderColor),
@@ -326,7 +360,7 @@ class _AddAlarmViewState extends State<AddAlarmView> {
 
   Widget _buildDosageDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedDosage,
+      initialValue: _selectedDosage,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.white,
@@ -353,7 +387,10 @@ class _AddAlarmViewState extends State<AddAlarmView> {
       title: const Text("اضغط لإضافة وقت"),
       trailing: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppColors.activeBg, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: AppColors.activeBg,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: const Icon(Icons.add_alarm_rounded, color: AppColors.primary),
       ),
       onTap: () => _pickTime(context),
@@ -363,13 +400,23 @@ class _AddAlarmViewState extends State<AddAlarmView> {
   Widget _buildTimeChips() {
     return Wrap(
       spacing: 8,
-      children: _selectedTimes.map((t) => Chip(
-        backgroundColor: AppColors.activeBg,
-        side: const BorderSide(color: AppColors.borderColor),
-        label: Text(DateFormat.jm().format(t), style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-        onDeleted: () => setState(() => _selectedTimes.remove(t)),
-        deleteIconColor: AppColors.errorColor,
-      )).toList(),
+      children: _selectedTimes
+          .map(
+            (t) => Chip(
+              backgroundColor: AppColors.activeBg,
+              side: const BorderSide(color: AppColors.borderColor),
+              label: Text(
+                DateFormat.jm().format(t),
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onDeleted: () => setState(() => _selectedTimes.remove(t)),
+              deleteIconColor: AppColors.errorColor,
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -380,7 +427,7 @@ class _AddAlarmViewState extends State<AddAlarmView> {
       builder: (context, child) => Theme(
         data: ThemeData.light().copyWith(
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primary, 
+            primary: AppColors.primary,
             onSurface: AppColors.darkBlue,
           ),
         ),
@@ -391,13 +438,17 @@ class _AddAlarmViewState extends State<AddAlarmView> {
     if (picked != null) {
       setState(() {
         final now = DateTime.now();
-        _selectedTimes.add(DateTime(now.year, now.month, now.day, picked.hour, picked.minute));
+        _selectedTimes.add(
+          DateTime(now.year, now.month, now.day, picked.hour, picked.minute),
+        );
       });
     }
   }
 
   void _saveAlarm() {
-    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً" ? 1 : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
+    int requiredDoses = _selectedDosage == "جرعة واحدة يومياً"
+        ? 1
+        : (_selectedDosage == "جرعتين يومياً" ? 2 : 3);
 
     if (_nameController.text.trim().isEmpty) {
       showBar(context, "يرجى إدخال اسم الدواء");
@@ -405,10 +456,13 @@ class _AddAlarmViewState extends State<AddAlarmView> {
     }
 
     if (_selectedTimes.length < requiredDoses) {
-      showBar(context, "يجب اختيار $requiredDoses مواعيد بناءً على عدد الجرعات المطلوب");
+      showBar(
+        context,
+        "يجب اختيار $requiredDoses مواعيد بناءً على عدد الجرعات المطلوب",
+      );
       return;
-    } 
-    
+    }
+
     if (_selectedTimes.length > requiredDoses) {
       showBar(context, "لقد اخترت مواعيد أكثر من عدد الجرعات ($requiredDoses)");
       return;

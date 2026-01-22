@@ -10,7 +10,7 @@ import 'package:e_commerce/featchers/AUTH/widgets/customProgressLoading.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/socialbutton.dart';
 import 'package:e_commerce/featchers/auth/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// --- 1. NEW MODEL: Represents a pharmacy selling this specific product ---
 class PharmacyOffer {
   final String id;
   final String name;
@@ -27,7 +27,12 @@ class PharmacyOffer {
 
 class DetailsScreen extends StatefulWidget {
   final AddProductIntety product;
-  const DetailsScreen({super.key, required this.product});
+  final bool isLoading;
+  const DetailsScreen({
+    super.key,
+    required this.product,
+    this.isLoading = false,
+  });
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -37,8 +42,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
   late PageController _pageController;
   int _currentImageIndex = 0;
   int _quantity = 1;
+  bool _isLoading = false;
 
-  // State for the selected pharmacy logic
   PharmacyOffer? _selectedOffer;
   List<PharmacyOffer> _offers = [];
 
@@ -46,65 +51,79 @@ class _DetailsScreenState extends State<DetailsScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _loadPharmacyOffers(); // Simulate fetching data
+    _loadPharmacyOffers();
   }
 
-  // --- 2. LOGIC: Fetch pharmacies selling this item ---
-  void _loadPharmacyOffers() {
-    // In a real app, you would fetch this from API based on User Lat/Long + Product ID
-    final basePrice = widget.product.price.toDouble();
+  void _loadPharmacyOffers() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
 
-    List<PharmacyOffer> mockOffers = [
-      PharmacyOffer(
-        id: '1',
-        name: 'صيدلية النهدي',
-        price: basePrice,
-        distanceKm: 0.5,
-        deliveryTimeMin: 15,
-        rating: 4.8,
-      ),
-      PharmacyOffer(
-        id: '2',
-        name: 'صيدلية الدواء',
-        price: basePrice - 2,
-        distanceKm: 1.2,
-        deliveryTimeMin: 25,
-        rating: 4.5,
-      ), // Cheaper but further
-      PharmacyOffer(
-        id: '3',
-        name: 'صيدلية المجتمع',
-        price: basePrice + 5,
-        distanceKm: 0.2,
-        deliveryTimeMin: 10,
-        rating: 4.2,
-      ), // Expensive but very close
-      PharmacyOffer(
-        id: '4',
-        name: 'أورانج فارمسي',
-        price: basePrice,
-        distanceKm: 3.5,
-        deliveryTimeMin: 45,
-        rating: 4.0,
-      ),
-    ];
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('code', isEqualTo: widget.product.code)
+          .get();
 
-    // Auto-sort by Distance (Nearest First) - The core requirement
-    mockOffers.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+      List<PharmacyOffer> realOffers = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return PharmacyOffer(
+          id: doc.id,
+          name:
+              data['pharmacyName'] ?? data['pharmacyId'] ?? 'صيدلية غير معروفة',
+          price: (data['price'] as num).toDouble(),
+          distanceKm: 1.2,
+          deliveryTimeMin: 20,
+          rating: 4.5,
+        );
+      }).toList();
 
-    setState(() {
-      _offers = mockOffers;
-      // Default select the nearest one (first in list)
-      _selectedOffer = mockOffers.first;
-    });
+      if (!mounted) return;
+
+      setState(() {
+        _offers = realOffers;
+
+        if (_offers.isNotEmpty) {
+          // البحث عن الصيدلية التي تم اختيار المنتج منها في الأصل
+          // إذا لم توجد، نختار أول عرض متاح في القائمة
+          _selectedOffer = _offers.firstWhere(
+            (element) =>
+                element.id == widget.product.pharmacyId ||
+                element.id ==
+                    "${widget.product.code}_${widget.product.pharmacyId}",
+            orElse: () => _offers.first,
+          );
+        } else {
+          _selectedOffer = null;
+        }
+
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("خطأ في تحميل العروض: $e")));
+      }
+    }
   }
 
   void _addToCart() {
-    if (_selectedOffer == null) return;
+    if (_selectedOffer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("من فضلك اختر صيدلية أولاً")),
+      );
+      return;
+    }
 
-    // You might need to update your CartCubit to accept the Pharmacy ID/Price
-    // For now, we use the existing method but visually we know it came from a specific pharmacy
-    context.read<CartCubit>().addProduct(widget.product, quantity: _quantity);
+    // نمرر البيانات من العرض المختار (Offer) إلى الـ Cubit
+    context.read<CartCubit>().addProduct(
+      widget.product,
+      quantity: _quantity,
+      pharmacyId: _selectedOffer!.id, // معرف الصيدلية
+      pharmacyName: _selectedOffer!.name, // اسم الصيدلية
+      priceAtSelection: _selectedOffer!.price, // السعر عند الاختيار
+    );
   }
 
   @override
@@ -120,18 +139,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     return BlocListener<CartCubit, CartState>(
       listenWhen: (p, c) => c is CartItemAdded,
-      listener: (context, state) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: Text(
-        //       '✓ تم إضافة المنتج من ${_selectedOffer?.name} إلى السلة!',
-        //       textDirection: TextDirection.rtl,
-        //     ),
-        //     backgroundColor: Colors.green,
-        //     behavior: SnackBarBehavior.floating,
-        //   ),
-        // );
-      },
+      listener: (context, state) {},
       child: Scaffold(
         backgroundColor: const Color(0xFFF3F5F7),
         appBar: AppBar(
@@ -143,60 +151,60 @@ class _DetailsScreenState extends State<DetailsScreen> {
           ),
           title: const Text(
             "تفاصيل المنتج",
-            style: TextStyle(color: Colors.black87),
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           centerTitle: true,
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildImageCarousel(isMobile),
-                      const SizedBox(height: 16),
-                      _buildProductHeader(),
-                      const SizedBox(height: 24),
-
-                      // --- 3. UI: The Pharmacy Comparison List ---
-                      Text(
-                        'متوفر في ${_offers.length} صيدليات قريبة منك',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildImageCarousel(isMobile),
+                            const SizedBox(height: 16),
+                            _buildProductHeader(),
+                            const SizedBox(height: 24),
+                            Text(
+                              _offers.isEmpty
+                                  ? 'المنتج غير متوفر حالياً'
+                                  : 'متوفر في ${_offers.length} صيدليات قريبة منك',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildPharmacyList(),
+                            const SizedBox(height: 24),
+                            _buildDescription(),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      _buildPharmacyList(),
-
-                      const SizedBox(height: 24),
-                      _buildDescription(),
-                    ],
+                    ),
                   ),
-                ),
+                  _buildBottomActionArea(),
+                ],
               ),
-            ),
-            _buildBottomActionArea(),
-          ],
-        ),
       ),
     );
   }
 
-  // --- WIDGETS ---
-
   Widget _buildImageCarousel(bool isMobile) {
     return Container(
-      height: isMobile
-          ? 250
-          : 350, // Reduced height slightly to fit more content
+      height: isMobile ? 250 : 350,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -208,7 +216,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
             onPageChanged: (index) =>
                 setState(() => _currentImageIndex = index),
             children: [
-              // Assuming generic image placeholder logic for brevity, replace with your loop
               Center(
                 child: widget.product.imageurl != null
                     ? CustomNetworkImage(imageUrl: widget.product.imageurl!)
@@ -229,7 +236,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
               children: List.generate(
                 1,
                 (index) => Container(
-                  // Simulating 1 dot
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
@@ -262,8 +268,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-  // 4. NEW WIDGET: Logic for selecting pharmacy
   Widget _buildPharmacyList() {
+    if (_offers.isEmpty) return const SizedBox();
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -300,7 +307,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
             child: Row(
               children: [
-                // Pharmacy Icon/Logo
                 Container(
                   width: 40,
                   height: 40,
@@ -311,26 +317,25 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   child: const Icon(Icons.store, color: Color(0xFF007BBB)),
                 ),
                 const SizedBox(width: 12),
-
-                // Pharmacy Details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            offer.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          Expanded(
+                            child: Text(
+                              offer.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (isCheapest)
                             Container(
-                              margin: const EdgeInsets.only(
-                                right: 8,
-                              ), // RTL support needed
+                              margin: const EdgeInsets.only(right: 8),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 6,
                                 vertical: 2,
@@ -380,8 +385,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                 ),
-
-                // Price
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -399,8 +402,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       value: offer.id,
                       groupValue: _selectedOffer?.id,
                       activeColor: const Color(0xFF007BBB),
-                      onChanged: (val) =>
-                          setState(() => _selectedOffer = offer),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedOffer = offer);
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -429,7 +435,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-  // --- 5. UI: Bottom Sheet for Action ---
   Widget _buildBottomActionArea() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -446,7 +451,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Quantity
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -475,41 +479,40 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
             ),
             const SizedBox(width: 16),
-
-            // Add to Cart Button (Updates based on selection)
             Expanded(
-              child: ElevatedButton(
-                onPressed: _selectedOffer != null ? _addToCart : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF007BBB),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'إضافة للسلة',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+              child:
+                  // داخل _buildBottomActionArea
+                  ElevatedButton(
+                    onPressed: _selectedOffer != null
+                        ? _addToCart
+                        : null, // استدعاء الميثود المحدثة
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF007BBB),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    if (_selectedOffer != null)
-                      Text(
-                        'من ${_selectedOffer!.name}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withOpacity(0.8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'إضافة للسلة',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              ),
+                        // عرض اسم الصيدلية تحت كلمة إضافة للسلة للتأكيد
+                        if (_selectedOffer != null)
+                          Text(
+                            'من صيدلية: ${_selectedOffer!.name}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
             ),
           ],
         ),

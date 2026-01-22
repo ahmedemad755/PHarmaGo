@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/main_view_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,7 +14,6 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
       // The error is pointing to this Scaffold as the unmounted reference box.
       body: BlocListener<CartCubit, CartState>(
         listener: (context, state) {
-          
           // CRITICAL FIX: Use a post-frame callback to ensure the context
           // is stable and attached before attempting to show the overlay bar.
           WidgetsBinding.instance.addPostFrameCallback((_) {

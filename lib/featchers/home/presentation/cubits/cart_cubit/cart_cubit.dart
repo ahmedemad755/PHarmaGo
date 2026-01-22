@@ -27,11 +27,21 @@ class CartCubit extends Cubit<CartState> {
     CartItemRemoved(cartEntity: final cart) => cart,
   };
 
-  void addProduct(AddProductIntety productEntity, {required int quantity}) {
+  // تعديل: إضافة بارامترات الصيدلية
+  void addProduct(
+    AddProductIntety productEntity, {
+    required int quantity,
+    String? pharmacyId,
+    String? pharmacyName,
+    num? priceAtSelection,
+  }) {
     final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
 
+    // البحث عن المنتج بشرط تماثل الـ ID وتماثل الصيدلية
     final existingItemIndex = currentCartItems.indexWhere(
-      (item) => item.productIntety == productEntity,
+      (item) =>
+          item.productIntety.code == productEntity.code &&
+          item.pharmacyId == pharmacyId,
     );
 
     if (existingItemIndex != -1) {
@@ -41,7 +51,13 @@ class CartCubit extends Cubit<CartState> {
       );
     } else {
       currentCartItems.add(
-        CartItemEntity(productIntety: productEntity, quantty: quantity),
+        CartItemEntity(
+          productIntety: productEntity,
+          quantty: quantity,
+          pharmacyId: pharmacyId,
+          pharmacyName: pharmacyName,
+          priceAtSelection: priceAtSelection,
+        ),
       );
     }
 
@@ -50,15 +66,21 @@ class CartCubit extends Cubit<CartState> {
     emit(CartItemAdded(updatedCart));
   }
 
-  void updateQuantity(AddProductIntety productEntity, int newQuantity) {
+  void updateQuantity(
+    AddProductIntety productEntity,
+    int newQuantity, {
+    String? pharmacyId,
+  }) {
     if (newQuantity <= 0) {
-      deleteCarItemByProduct(productEntity);
+      deleteCarItemByProduct(productEntity, pharmacyId: pharmacyId);
       return;
     }
 
     final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
     final existingItemIndex = currentCartItems.indexWhere(
-      (item) => item.productIntety == productEntity,
+      (item) =>
+          item.productIntety.code == productEntity.code &&
+          item.pharmacyId == pharmacyId,
     );
 
     if (existingItemIndex != -1) {
@@ -74,12 +96,22 @@ class CartCubit extends Cubit<CartState> {
   }
 
   void deleteCarItem(CartItemEntity cartItem) {
-    deleteCarItemByProduct(cartItem.productIntety);
+    deleteCarItemByProduct(
+      cartItem.productIntety,
+      pharmacyId: cartItem.pharmacyId,
+    );
   }
 
-  void deleteCarItemByProduct(AddProductIntety productEntity) {
+  void deleteCarItemByProduct(
+    AddProductIntety productEntity, {
+    String? pharmacyId,
+  }) {
     final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
-    currentCartItems.removeWhere((item) => item.productIntety == productEntity);
+    currentCartItems.removeWhere(
+      (item) =>
+          item.productIntety.code == productEntity.code &&
+          item.pharmacyId == pharmacyId,
+    );
 
     final updatedCart = CartEntity(currentCartItems);
     _saveCartToRepository(updatedCart);
@@ -104,7 +136,6 @@ class CartCubit extends Cubit<CartState> {
 
     try {
       final cartJson = await _cartRepo.getCartData(user.uid);
-
       if (cartJson == null || cartJson.isEmpty) {
         emit(CartUpdated(const CartEntity([])));
         return;
@@ -114,12 +145,18 @@ class CartCubit extends Cubit<CartState> {
       final cartItems = decoded.map<CartItemEntity>((itemData) {
         final map = itemData as Map<String, dynamic>;
         final productJson = map['product'] as Map<String, dynamic>;
-        final quantity = map['quantity'] as int;
         final product = AddProductModel.fromJson(productJson).toEntity();
-        return CartItemEntity(productIntety: product, quantty: quantity);
+
+        return CartItemEntity(
+          productIntety: product,
+          quantty: map['quantity'] as int,
+          pharmacyId: map['pharmacyId'], // استرجاع بيانات الصيدلية
+          pharmacyName: map['pharmacyName'],
+          priceAtSelection: map['priceAtSelection'],
+        );
       }).toList();
-      final cart = CartEntity(cartItems);
-      emit(CartUpdated(cart));
+
+      emit(CartUpdated(CartEntity(cartItems)));
     } catch (_) {
       emit(CartUpdated(const CartEntity([])));
     }
@@ -140,15 +177,16 @@ class CartCubit extends Cubit<CartState> {
       return {
         'product': AddProductModel.fromentity(item.productIntety).toJson(),
         'quantity': item.quantty,
+        'pharmacyId': item.pharmacyId, // حفظ بيانات الصيدلية
+        'pharmacyName': item.pharmacyName,
+        'priceAtSelection': item.priceAtSelection,
       };
     }).toList();
 
-    final cartJson = jsonEncode(cartData);
-    await _cartRepo.saveCartData(user.uid, cartJson);
+    await _cartRepo.saveCartData(user.uid, jsonEncode(cartData));
   }
 
   void clearInMemoryCart() {
-    const emptyCart = CartEntity([]);
-    emit(CartUpdated(emptyCart));
+    emit(CartUpdated(const CartEntity([])));
   }
 }

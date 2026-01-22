@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

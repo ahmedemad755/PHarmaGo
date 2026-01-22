@@ -1,7 +1,7 @@
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/CustomBottomNavigationBar.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/main_view_body_bloc_consumer.dart';
 import 'package:flutter/material.dart';

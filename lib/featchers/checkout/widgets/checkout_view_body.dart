@@ -9,6 +9,7 @@ import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart'
 import 'package:e_commerce/featchers/checkout/presentation/manger/add_order_cubit/add_order_cubit.dart';
 import 'package:e_commerce/featchers/checkout/widgets/check_out_steps_pageview.dart';
 import 'package:e_commerce/featchers/checkout/widgets/checkout_steps.dart';
+import 'package:e_commerce/featchers/checkout/widgets/thankyou_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -153,12 +154,22 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
 
       onSuccess: (response) {
         addOrderCubit.addOrder(order: orderEntity);
-        // showBar(
-        //   context,
-        //   "تم الدفع بنجاح",
-        //   color: const Color.fromARGB(255, 76, 86, 175),
-        // );
+        showBar(
+          context,
+          "تم الدفع بنجاح",
+          color: const Color.fromARGB(255, 76, 86, 175),
+        );
         Navigator.pop(context);
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                // إرسال UniqueKey هو السر في إعادة تشغيل الأنيميشن في كل مرة
+                builder: (context) => ThankYouView(key: UniqueKey()),
+              ),
+            );
+          }
+        });
       },
 
       onError: (error) {

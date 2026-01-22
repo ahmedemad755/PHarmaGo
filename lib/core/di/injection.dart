@@ -18,7 +18,7 @@ import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/ve
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart'
     show CartEntity;
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:get_it/get_it.dart';
 

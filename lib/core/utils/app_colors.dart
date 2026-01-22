@@ -89,6 +89,15 @@ abstract class AppColors {
 
   /// Success/Green color
   static const Color success = Color(0xFF4CAF50);
+  // تدرج أخضر متداخل
+  static const LinearGradient successGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color.fromARGB(255, 96, 252, 117), // أخضر فاتح قليلاً (Light Green)
+      Color.fromARGB(255, 62, 168, 67), // أخضر أغمق (Darker Green)
+    ],
+  );
 
   /// Warning/Orange color
   static const Color warning = Color(0xFFFFA500);
@@ -105,7 +114,6 @@ abstract class AppColors {
     ],
     stops: [0.0, 0.5, 1.0],
   );
-  
 
   /// Accent gradient for Page 1 (Bright Cyan → Deep Blue)
   static const LinearGradient accentGradient1 = LinearGradient(

@@ -1,24 +1,41 @@
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:equatable/equatable.dart';
 
-/// يمثل عنصر واحد في السلة (Item). فيه:
-/// productIntety — بيانات المنتج (من AddProductIntety).
-/// count — عدد نفس المنتج داخل السلة.
 class CartItemEntity extends Equatable {
   final AddProductIntety productIntety;
   final int quantty;
+  // أضفنا هذه الحقول لدعم فلو الصيدليات
+  final String? pharmacyId;
+  final String? pharmacyName;
+  final num? priceAtSelection;
 
-  const CartItemEntity({required this.productIntety, required this.quantty});
+  const CartItemEntity({
+    required this.productIntety,
+    required this.quantty,
+    this.pharmacyId,
+    this.pharmacyName,
+    this.priceAtSelection,
+  });
 
-  CartItemEntity copyWith({AddProductIntety? productIntety, int? quantty}) {
+  CartItemEntity copyWith({
+    AddProductIntety? productIntety,
+    int? quantty,
+    String? pharmacyId,
+    String? pharmacyName,
+    num? priceAtSelection,
+  }) {
     return CartItemEntity(
       productIntety: productIntety ?? this.productIntety,
       quantty: quantty ?? this.quantty,
+      pharmacyId: pharmacyId ?? this.pharmacyId,
+      pharmacyName: pharmacyName ?? this.pharmacyName,
+      priceAtSelection: priceAtSelection ?? this.priceAtSelection,
     );
   }
 
+  // نستخدم السعر المختار من الصيدلية، وإذا لم يوجد نستخدم سعر المنتج الافتراضي
   num calculateTotalPrice() {
-    return productIntety.price * quantty;
+    return (priceAtSelection ?? productIntety.price) * quantty;
   }
 
   num calculateTotalWeight() {
@@ -37,5 +54,5 @@ class CartItemEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [productIntety, quantty];
+  List<Object?> get props => [productIntety, quantty, pharmacyId];
 }

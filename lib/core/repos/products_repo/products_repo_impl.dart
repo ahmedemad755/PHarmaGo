@@ -11,19 +11,25 @@ class ProductsRepoImpl extends ProductsRepo {
 
   ProductsRepoImpl(this.databaseService);
   @override
-  Future<Either<Faliur, List<AddProductIntety>>> getBestSellingProducts({int topN = 10}) async {
+  Future<Either<Faliur, List<AddProductIntety>>> getBestSellingProducts({
+    int topN = 10,
+  }) async {
     try {
-      var data = await databaseService.getData(
-        path: BackendPoints.getBestSellingProducts,
-        query: {
-          'limit': topN,
-          'orderBy': 'sellingcount', // make sure this field exists in DB
-          'descending': true,
-        },
-      ) as List<Map<String, dynamic>>;
+      var data =
+          await databaseService.getData(
+                path: BackendPoints.getBestSellingProducts,
+                query: {
+                  'limit': topN,
+                  'orderBy':
+                      'sellingcount', // make sure this field exists in DB
+                  'descending': true,
+                },
+              )
+              as List<Map<String, dynamic>>;
 
-      List<AddProductIntety> products =
-          data.map((e) => AddProductModel.fromJson(e).toEntity()).toList();
+      List<AddProductIntety> products = data
+          .map((e) => AddProductModel.fromJson(e).toEntity())
+          .toList();
 
       print('✅ Best-selling products loaded: ${products.length}');
       return right(products);
@@ -42,7 +48,9 @@ class ProductsRepoImpl extends ProductsRepo {
               as List<Map<String, dynamic>>;
 
       List<AddProductIntety> products = data
-          .map((e) => AddProductModel.fromJson(e).toEntity())
+          .map(
+            (e) => AddProductModel.fromJson(e).toEntity(),
+          ) // هنا سيتم سحب pharmacyId تلقائياً
           .toList();
       return right(products);
     } catch (e) {

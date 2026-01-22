@@ -15,6 +15,8 @@ class AddProductIntety extends Equatable {
   final List<ReviewEntite> reviews;
   final String category;
   final num discountPercentage;
+  final String pharmacyId; // تم إضافة الحقل هنا
+
   bool get hasDiscount => discountPercentage > 0;
 
   const AddProductIntety({
@@ -31,6 +33,7 @@ class AddProductIntety extends Equatable {
     required this.reviews,
     this.discountPercentage = 0,
     this.category = 'الأدوية',
+    required this.pharmacyId, // تم إضافته هنا
   });
 
   @override
@@ -43,8 +46,10 @@ class AddProductIntety extends Equatable {
     unitAmount,
     discountPercentage,
     category,
+    pharmacyId, // تم إضافته هنا
   ];
 
+  // تم الحفاظ على الـ operator == والـ hashCode كما هي مع إضافة الحقل الجديد
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -56,7 +61,8 @@ class AddProductIntety extends Equatable {
         other.expirationDate == expirationDate &&
         other.unitAmount == unitAmount &&
         other.discountPercentage == discountPercentage &&
-        other.category == category;
+        other.category == category &&
+        other.pharmacyId == pharmacyId;
   }
 
   @override
@@ -69,5 +75,6 @@ class AddProductIntety extends Equatable {
     unitAmount,
     discountPercentage,
     category,
+    pharmacyId,
   );
 }

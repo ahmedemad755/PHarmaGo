@@ -15,7 +15,7 @@ import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/be
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';

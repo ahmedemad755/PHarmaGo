@@ -1,7 +1,7 @@
 import 'package:e_commerce/constants.dart';
 import 'package:e_commerce/core/widgets/castom_cart_buttom.dart';
 import 'package:e_commerce/featchers/auth/widgets/build_app_bar.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/curt_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/CartHeader.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/cart_items_list.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +62,7 @@ class CartViewBody extends StatelessWidget {
 
                 // إذا كانت القائمة غير فارغة، نضيف مساحة أسفل لزر Checkout
                 if (!isEmpty)
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 170)),
               ],
             ),
 

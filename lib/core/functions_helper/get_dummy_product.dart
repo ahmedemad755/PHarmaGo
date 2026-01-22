@@ -14,6 +14,7 @@ AddProductIntety getDummyProduct() {
     category: 'الأدوية',
     averageRating: 0,
     ratingcount: 0,
+    pharmacyId: '123',
   );
 }
 
