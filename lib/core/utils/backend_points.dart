@@ -7,4 +7,6 @@ class BackendPoints {
   static const orders = 'orders';
   static const String categoryMedicine = 'الأدوية';
   static const String categoryMedicalEquipment = 'أجهزة صحية';
+  static const banners = 'banners'; // الكولكشن الخاص بالعروض
+  static const bannersImages = 'banners_images';
 }

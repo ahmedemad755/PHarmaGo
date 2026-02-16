@@ -17,7 +17,7 @@ AppBar build_App_Bar(BuildContext context, {required String title}) {
     actions: [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: NotifecationWidgets(),
+        child: NotifecationWidgets(notificationCount: 0,),
       ),
     ],
   );

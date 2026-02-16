@@ -56,7 +56,16 @@ listener: (context, state) {
                         _ProfileOption(
                           icon: Icons.notifications_none,
                           title: "الإشعارات",
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.notificationsView);
+                          },
+                        ),
+                        _ProfileOption(
+                          icon: Icons.shopping_bag_outlined,
+                          title: "طلباتي",
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.myordersView);
+                          },
                         ),
                         _ProfileOption(
                           icon: Icons.language,
@@ -85,7 +94,8 @@ listener: (context, state) {
                       ]),
                       const SizedBox(height: 30),
                       _buildLogoutButton(context, state),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 120
+                      ),
                     ],
                   ),
                 ),

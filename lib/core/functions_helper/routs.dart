@@ -12,19 +12,26 @@ import 'package:e_commerce/featchers/AUTH/presentation/view/oTPVerificationScree
 import 'package:e_commerce/featchers/AUTH/presentation/view/reset_Password.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
 import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/best_seliling_fruites_view.dart';
+import 'package:e_commerce/featchers/checkout/data/order_model.dart';
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/myOrders/my_orders_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/alarmpage.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_body.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/myorders_view.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/notifecation_app_page.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/order_details_view.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
 import 'package:e_commerce/featchers/onboarding/views/onboarding_view.dart';
 import 'package:e_commerce/featchers/splash/presentation/views/splash_view.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -45,6 +52,9 @@ class AppRoutes {
   static const String ChatbootBody = "ChatbootBody";
   static const String alarmsMain = 'alarmsMain';
   static const String addAlarm = 'addAlarm';
+  static const String notificationsView = 'notificationsView';
+  static const String myordersView = 'myordersView';
+  static const String orderDetailsView = 'orderDetailsView';
 }
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -65,9 +75,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case AppRoutes.login:
       return MaterialPageRoute(
-        settings: const RouteSettings(
-          name: AppRoutes.login,
-        ), // تحديد الاسم صراحة
+        settings: const RouteSettings(name: AppRoutes.login),
         builder: (_) => BlocProvider(
           create: (context) => LoginCubit(getIt<AuthRepo>()),
           child: const LoginView(),
@@ -76,33 +84,52 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case AppRoutes.home:
       return MaterialPageRoute(
-        builder: (_) => MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: getIt<CartCubit>()),
+            BlocProvider.value(
+              value: getIt<OrdersCubit>()
+                ..fetchUserOrders(
+                    uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
+            ),
+          ],
+          child: MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
+        ),
       );
 
     case AppRoutes.checkout:
       final cartEntity = settings.arguments as CartEntity;
       return MaterialPageRoute(
-        builder: (_) => CheckOutView(cartEntity: cartEntity),
-      );
-
-    case AppRoutes.pharmacyHome:
-      return MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<CartCubit>(),
-          child: const PharmacyHomeScreen(),
+          child: CheckOutView(cartEntity: cartEntity),
         ),
       );
+
+case AppRoutes.pharmacyHome:
+  return MaterialPageRoute(
+    builder: (_) => MultiBlocProvider(
+      providers: [
+        // تأكد أن BannersCubit هو الاسم المسجل في injection.dart
+        BlocProvider(
+          create: (_) => getIt<BannersCubit>()..getBanners(),
+        ),
+        BlocProvider.value(
+          value: getIt<CartCubit>(),
+        ),
+      ],
+      child: const PharmacyHomeScreen(),
+    ),
+  );
 
     case AppRoutes.uploadPrescription:
       return MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => getIt<PrescriptionCubit>()),
-            BlocProvider.value(
-              value: getIt<CartCubit>(), // التأكد من أن CartCubit موجود
-            ),
+            BlocProvider.value(value: getIt<CartCubit>()),
           ],
-          child: const UploadPrescription(),
+          child: UploadPrescriptionView(),
         ),
       );
 
@@ -126,7 +153,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case AppRoutes.productDetails:
-      // تأكد من وجود arguments لمنع الـ Crash
       if (settings.arguments is AddProductIntety) {
         final product = settings.arguments as AddProductIntety;
         return MaterialPageRoute(
@@ -168,12 +194,41 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    case AppRoutes.notificationsView:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<OrdersCubit>(),
+          child: const NotificationsView(),
+        ),
+      );
+
+    case AppRoutes.myordersView:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<OrdersCubit>()
+            ..fetchUserOrders(
+                uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
+          child: const OrdersView(),
+        ),
+      );
+
+    case AppRoutes.orderDetailsView:
+      final order = settings.arguments as OrderModel;
+      return MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: getIt<OrdersCubit>()),
+            BlocProvider.value(value: getIt<CartCubit>()),
+          ],
+          child: OrderDetailsView(order: order),
+        ),
+      );
+
     default:
       return _errorRoute();
   }
 }
 
-// دالة مساعدة للتعامل مع المسارات غير الموجودة
 Route<dynamic> _errorRoute() {
   return MaterialPageRoute(
     builder: (_) => Scaffold(

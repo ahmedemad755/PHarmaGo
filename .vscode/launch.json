@@ -1,16 +1,19 @@
 {
-    "configurations": [
-        {
-            "name": "Flutter (lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart)",
-            "type": "dart",
-            "request": "launch",
-            "program": "lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart"
-        },
-        {
-            "name": "Flutter (lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart)",
-            "type": "dart",
-            "request": "launch",
-            "program": "lib\\featchers\\checkout\\domain\\paypal_payment_entity\\transaction_model.freezed.dart"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Pharma Go (Production)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_production.dart",
+      "args": ["--flavor", "production"]
+    },
+    {
+      "name": "Pharma Go (Staging)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--flavor", "staging"]
+    }
+  ]
 }

@@ -1,6 +1,8 @@
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ThankYouView extends StatefulWidget {
   const ThankYouView({super.key});
@@ -18,7 +20,13 @@ class _ThankYouViewState extends State<ThankYouView>
   void initState() {
     super.initState();
 
-    // إعداد وحدة التحكم - زيادة المدة لـ 1000ms تعطي تأثير Elastic أجمل
+    // مسح السلة فوراً (محلياً وفي الفايربيس) عند الدخول لصفحة الشكر
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CartCubit>().clearCart();
+      }
+    });
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -26,15 +34,10 @@ class _ThankYouViewState extends State<ThankYouView>
 
     _scaleAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.elasticOut, // حركة قفزة احترافية
+      curve: Curves.elasticOut,
     );
 
-    // التأكد من تشغيل الأنيميشن بعد استقرار رسم الشاشة تماماً
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _controller.forward(from: 0.0);
-      }
-    });
+    _controller.forward();
   }
 
   @override
@@ -47,83 +50,76 @@ class _ThankYouViewState extends State<ThankYouView>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // --- أنيميشن الأيقونة المتداخلة بالأخضر ---
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.successGradient.createShader(
-                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                      ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.white,
-                    size: 120, // تكبير الحجم قليلاً للمسة جمالية
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              const Text(
-                'تم استلام طلبك بنجاح!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              const Text(
-                'شكراً لثقتك بنا. ستصلك رسالة تفصيلية\nبموعد التوصيل وحالة الشحنة قريباً.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
-              ),
-
-              const SizedBox(height: 48),
-
-              // --- زر العودة للرئيسية بالتصميم الأخضر ---
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.successGradient,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.success.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'متابعة التسوق',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
+      body: PopScope(
+        canPop: false, // منع الرجوع لشاشة الدفع
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          // عند محاولة الرجوع يتم توجيهه للرئيسية
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+        },
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: ShaderMask(
+                    shaderCallback: (bounds) =>
+                        AppColors.successGradient.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                        ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 120,
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 32),
+                const Text(
+                  'تم استلام طلبك بنجاح!',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'شكراً لثقتك بنا. ستصلك تفاصيل الشحنة قريباً.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 48),
+                _buildHomeButton(context),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
+      child: Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: AppColors.successGradient,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Text(
+            'متابعة التسوق',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

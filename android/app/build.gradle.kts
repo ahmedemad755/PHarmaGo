@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.fruiet_hub"
+    namespace = "com.pharma.go"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -23,20 +23,46 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.fruiet_hub"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // تم ترك applicationId هنا كمرجع أساسي، ولكن الـ Flavors ستقوم بتغييره تلقائياً
+        applicationId = "com.pharma.go"
         minSdk = flutter.minSdkVersion  
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "default"
+
+    productFlavors {
+        create("staging") {
+            dimension = "default"
+            applicationId = "com.pharma.go.staging"
+            resValue("string", "app_name", "Pharma Go Staging")
+            // يضمن توافق المكتبات مع هذا الـ Flavor
+            matchingFallbacks += listOf("debug", "release")
+        }
+        create("production") {
+            dimension = "default"
+            applicationId = "com.pharma.go"
+            resValue("string", "app_name", "Pharma Go")
+            matchingFallbacks += listOf("debug", "release")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // حل مشكلة الـ R8 و Missing Classes عن طريق إيقاف الـ Minify مؤقتاً
+            // إذا أردت تفعيله لاحقاً، يجب إضافة ملف proguard-rules.pro
+            isMinifyEnabled = false
+            isShrinkResources = false
+            
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        debug {
             signingConfig = signingConfigs.getByName("debug")
         }
     }

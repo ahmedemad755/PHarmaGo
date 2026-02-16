@@ -1,319 +1,278 @@
 import 'dart:io';
 
-import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
+import 'package:e_commerce/core/utils/app_colors.dart';
+import 'package:e_commerce/featchers/home/domain/enteties/medicine_entity.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AppColors {
-  static const Color primaryBlue = Color(0xFF007BBB);
-  static const Color lightBlueBackground = Color(0xFFE6FBFF);
-  static const Color guideCardGradientTop = Color(0xFF8EDFEF);
-  static const Color guideCardGradientBottom = Color(0xFF52A6E9);
-  static const Color white = Colors.white;
-  static const Color black = Colors.black;
-  static const Color greyText = Color(0xFF555555);
-}
-
-// ====================================================================
-// Upload Prescription Screen
-// ====================================================================
-class UploadPrescription extends StatefulWidget {
-  const UploadPrescription({super.key});
+class UploadPrescriptionView extends StatefulWidget {
+  const UploadPrescriptionView({super.key});
 
   @override
-  State<UploadPrescription> createState() => _UploadPrescriptionState();
+  State<UploadPrescriptionView> createState() => _UploadPrescriptionViewState();
 }
 
-class _UploadPrescriptionState extends State<UploadPrescription> {
+class _UploadPrescriptionViewState extends State<UploadPrescriptionView> {
   File? _pickedImage;
-  bool _isProcessing = false;
-  String? _ocrResult;
 
-  // 1️⃣ معالجة الصورة OCR
-  Future<void> _processImageForOCR(File imageFile) async {
-    setState(() {
-      _isProcessing = true;
-      _ocrResult = null;
-    });
-
-    try {
-      final inputImage = InputImage.fromFile(imageFile);
-      final textRecognizer = TextRecognizer();
-      final RecognizedText recognizedText = await textRecognizer.processImage(
-        inputImage,
-      );
-      textRecognizer.close();
-
-      String prescriptionText = recognizedText.text;
-
-      setState(() {
-        _ocrResult = prescriptionText;
-      });
-
-      debugPrint('OCR Result: $prescriptionText');
-
-      // إرسال النص للـ Cubit للمعالجة
-      context.read<PrescriptionCubit>().processOCR(prescriptionText);
-    } catch (e) {
-      debugPrint('Error during OCR processing: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل في معالجة الصورة. حاول مجدداً.')),
-        );
-      }
-      setState(() {
-        _pickedImage = null; // إزالة الصورة عند الفشل
-      });
-    } finally {
-      setState(() {
-        _isProcessing = false;
-      });
-    }
-  }
-
-  // 2️⃣ اختيار صورة من الكاميرا أو المعرض
   Future<void> _pickImage(ImageSource source) async {
-    final XFile? image = await ImagePicker().pickImage(source: source);
+    final XFile? image = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85, // لتحسين سرعة الرفع مع الحفاظ على الجودة
+    );
     if (image != null) {
       final file = File(image.path);
       setState(() => _pickedImage = file);
-      await _processImageForOCR(file);
+      if (mounted) {
+        context.read<PrescriptionCubit>().uploadAndAnalyzePrescription(file);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.lightBlueBackground,
-        appBar: AppBar(
-          title: const Text(
-            'تحميل الوصفة الطبية',
-            style: TextStyle(color: AppColors.primaryBlue),
+    return Scaffold(
+      // خلفية متدرجة تعطي مظهر احترافي
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.lightPrimaryColor.withOpacity(0.4),
+              Colors.white,
+            ],
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: AppColors.primaryBlue),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: BlocConsumer<PrescriptionCubit, PrescriptionState>(
-            listener: (context, state) {
-              if (state is PrescriptionAddDirect) {
-                context.read<CartCubit>().addProduct(
-                  state.product,
-                  quantity: 1,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('تم إضافة الدواء مباشرة للسلة')),
-                );
-              }
-
-              if (state is PrescriptionNeedConfirm) {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text('تأكيد الدواء'),
-                    content: Text('تم العثور بنسبة ${state.score.toInt()}%'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          context.read<CartCubit>().addProduct(
-                            state.product,
-                            quantity: 1,
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: const Text('موافق'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('إلغاء'),
-                      ),
-                    ],
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                _buildHeader(),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: BlocConsumer<PrescriptionCubit, PrescriptionState>(
+                    listener: (context, state) {
+                      if (state is PrescriptionFailure) {
+                        _showErrorSnackBar(context, state.errMessage);
+                      }
+                    },
+                    builder: (context, state) {
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 500),
+                        child: _buildStateContent(state),
+                      );
+                    },
                   ),
-                );
-              }
+                ),
+                const SizedBox(height: 20),
+                _buildImageControls(),
+                const SizedBox(height: 30), // مسافة إضافية لتجنب أزرار النظام
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-              if (state is PrescriptionAISuggest) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'لا يوجد تطابق مباشر. AI يقترح منتجات مشابهة',
-                    ),
-                  ),
-                );
-              }
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        ),
+        const Text(
+          'الماسح الذكي للروشتات',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(width: 40), // موازن للهيدر
+      ],
+    );
+  }
 
-              if (state is PrescriptionFailure) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
-              }
-            },
-            builder: (context, state) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
+  Widget _buildStateContent(PrescriptionState state) {
+    if (state is PrescriptionLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(strokeWidth: 2),
+            const SizedBox(height: 24),
+            Text(
+              "جاري تحليل خط الطبيب...",
+              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      );
+    } else if (state is PrescriptionAnalyzed) {
+      return _buildMedicinesList(state.medicines);
+    }
+    return _buildPlaceholder();
+  }
+
+  Widget _buildPlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          height: 250,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              )
+            ],
+          ),
+          child: _pickedImage != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.file(_pickedImage!, fit: BoxFit.cover),
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const PrescriptionGuideCard(),
-                    const SizedBox(height: 30),
-                    UploadDropZone(
-                      image: _pickedImage,
-                      isProcessing: state is PrescriptionLoading,
-                    ),
-                    const SizedBox(height: 20),
-                    ImageSourceSelection(onPickImage: _pickImage),
+                    Icon(Icons.auto_awesome, size: 64, color: AppColors.primary.withOpacity(0.4)),
+                    const SizedBox(height: 16),
+                    const Text("ارفع صورة الروشتة هنا", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey)),
                   ],
+                ),
+        ),
+        const SizedBox(height: 30),
+        const Text(
+          "تقنية الذكاء الاصطناعي ستساعدك في تحديد الأدوية بدقة عالية",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey, fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMedicinesList(List<MedicineEntity> medicines) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.checklist_rtl, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text("النتائج المستخرجة (${medicines.length})",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Expanded(
+          child: ListView.builder(
+            itemCount: medicines.length,
+            padding: const EdgeInsets.only(bottom: 20),
+            itemBuilder: (context, index) {
+              final item = medicines[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade100),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.lightPrimaryColor,
+                    child: const Icon(Icons.medication, color: AppColors.primary),
+                  ),
+                  title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text("${item.dose ?? ''} | ${item.frequency ?? ''}"),
+                  trailing: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add_shopping_cart, color: Colors.white, size: 20),
+                      onPressed: () {
+                        // كود السلة
+                      },
+                    ),
+                  ),
                 ),
               );
             },
           ),
         ),
-      ),
+      ],
     );
   }
-}
 
-// ======================
-// Prescription Guide Card
-// ======================
-class PrescriptionGuideCard extends StatelessWidget {
-  const PrescriptionGuideCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.guideCardGradientTop,
-            AppColors.guideCardGradientBottom,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'دليل الوصفة الطبية',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white,
+  Widget _buildImageControls() {
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildActionButton(
+              onPressed: () => _pickImage(ImageSource.camera),
+              icon: Icons.camera_enhance_rounded,
+              label: 'تصوير مباشر',
+              isPrimary: true,
             ),
           ),
-          SizedBox(height: 10),
-          _GuideCheckItem(text: 'تحميل صورة واضحة'),
-          _GuideCheckItem(text: 'بيانات الطبيب مطلوبة'),
-          _GuideCheckItem(text: 'تاريخ الوصفة الطبية'),
-          _GuideCheckItem(text: 'بيانات المريض'),
-          _GuideCheckItem(text: 'تفاصيل الجرعة'),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildActionButton(
+              onPressed: () => _pickImage(ImageSource.gallery),
+              icon: Icons.image_search_rounded,
+              label: 'من المعرض',
+              isPrimary: false,
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class _GuideCheckItem extends StatelessWidget {
-  final String text;
-  const _GuideCheckItem({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(Icons.check_box, color: AppColors.white, size: 20),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(color: AppColors.white)),
-      ],
-    );
-  }
-}
-
-// ======================
-// Upload Drop Zone
-// ======================
-class UploadDropZone extends StatelessWidget {
-  final File? image;
-  final bool isProcessing;
-
-  const UploadDropZone({super.key, this.image, required this.isProcessing});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget content;
-    if (isProcessing) {
-      content = const Center(
-        child: CircularProgressIndicator(color: AppColors.primaryBlue),
-      );
-    } else if (image != null) {
-      content = ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.file(
-          image!,
-          width: double.infinity,
-          height: 150,
-          fit: BoxFit.cover,
+  Widget _buildActionButton({required VoidCallback onPressed, required IconData icon, required String label, required bool isPrimary}) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isPrimary ? AppColors.primary : Colors.white,
+        foregroundColor: isPrimary ? Colors.white : AppColors.primary,
+        elevation: isPrimary ? 4 : 0,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isPrimary ? BorderSide.none : const BorderSide(color: AppColors.primary, width: 1.5),
         ),
-      );
-    } else {
-      content = const Center(
-        child: Icon(
-          Icons.cloud_upload_outlined,
-          color: AppColors.primaryBlue,
-          size: 50,
-        ),
-      );
-    }
-
-    return Container(
-      height: 150,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
       ),
-      child: content,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 8),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
-}
 
-// ======================
-// Image Source Selection
-// ======================
-class ImageSourceSelection extends StatelessWidget {
-  final Function(ImageSource) onPickImage;
-  const ImageSourceSelection({super.key, required this.onPickImage});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => onPickImage(ImageSource.camera),
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('كاميرا'),
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => onPickImage(ImageSource.gallery),
-            icon: const Icon(Icons.photo_library),
-            label: const Text('معرض الصور'),
-          ),
-        ),
-      ],
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 }

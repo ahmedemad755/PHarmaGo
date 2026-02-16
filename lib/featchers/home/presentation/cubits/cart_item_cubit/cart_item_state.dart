@@ -7,7 +7,8 @@ sealed class CartItemState {
 final class CartItemInitial extends CartItemState {}
 
 final class CartItemUpdated extends CartItemState {
-  final CartItemEntity cartItemEntity;
+  // تم تغيير النوع إلى List لدعم إضافة أكثر من منتج
+  final List<CartItemEntity> cartItemEntity; 
 
   const CartItemUpdated(this.cartItemEntity);
 }

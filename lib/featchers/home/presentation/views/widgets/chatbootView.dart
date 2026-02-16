@@ -8,93 +8,119 @@ class Chatbootview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Get screen dimensions for responsive padding
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.white, // Ensure a clean background
+      backgroundColor: AppColors.white, 
       appBar: AppBar(
-        title: const Text("محادثة صحية"),
+        title: const Text(
+          "محادثة صحية",
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
-              // Centers the content vertically within the Center widget
               mainAxisAlignment: MainAxisAlignment.center,
-              // Centers the content horizontally
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- 💡 Icon/Visual Element with Gradient (بدون Container) ---
-                // تم إزالة Container الخلفية واستبقاء ShaderMask لتطبيق التدرج
+                const SizedBox(height: 20),
+                // --- 💡 Visual Element ---
                 ShaderMask(
-                  // تطبيق التدرج اللوني (primaryGradient) على الأيقونة
                   shaderCallback: (Rect bounds) {
                     return AppColors.primaryGradient.createShader(bounds);
                   },
-                  // هذا النمط يضمن أن التدرج يظهر فقط حيث توجد الأيقونة
                   blendMode: BlendMode.srcIn,
                   child: Icon(
-                    Icons.medical_services_outlined,
-                    size: screenHeight * 0.1, // Responsive size
-                    // يجب أن يكون لون الأيقونة أبيض أو شفاف حتى يعمل الـ ShaderMask
+                    Icons.medical_services_rounded,
+                    size: screenHeight * 0.12, 
                     color: AppColors.white,
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.03),
+                SizedBox(height: screenHeight * 0.04),
 
                 // --- 📘 Title Text ---
-                Text(
+                const Text(
                   'صحتك… بذكاء',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                  style: TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: AppColors.darkBlue,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'استشارات طبية سريعة',
+                const Text(
+                  'استشارات طبية سريعة بدعم الذكاء الاصطناعي',
                   textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium!.copyWith(color: Colors.grey[600]),
-                ),
-
-                const SizedBox(height: 12),
-
-                // ⚠️ النصيحة الطبية المهمة
-                Text(
-                  'تنبيه هام: هذا المساعد لا يُغني أبدًا عن استشارة الطبيب. '
-                  'مهمتك هنا الحصول على نصائح عامة، وتوضيحات بسيطة، ومقترحات للبدائل المحتملة للأدوية—not توصيات علاجية نهائية. '
-                  'لو عندك أي مشكلة صحية خطيرة، لازم ترجع لطبيب مختص.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: Colors.red[700],
-                    height: 1.4,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.mediumGray,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                SizedBox(height: screenHeight * 0.05),
+                const SizedBox(height: 32),
 
-                // --- 🔘 Action Button (Using GradientButton as requested in context) ---
+                // --- ⚠️ Warning Section ---
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.errorColor.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: AppColors.errorColor, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'تنبيه هام',
+                            style: TextStyle(
+                              color: AppColors.errorColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'هذا المساعد لا يُغني أبدًا عن استشارة الطبيب. مهمتك هنا الحصول على نصائح عامة، وتوضيحات بسيطة، ومقترحات للبدائل المحتملة للأدوية، وليس توصيات علاجية نهائية. في الحالات الطارئة يرجى التوجه لأقرب مستشفى.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.errorColor.withOpacity(0.8),
+                          fontSize: 13,
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: screenHeight * 0.06),
+
+                // --- 🔘 Action Button ---
                 SizedBox(
-                  height: 56, // Fixed height for a comfortable touch target
+                  height: 56,
                   child: GradientButton(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.ChatbootBody);
                     },
-                    label: 'ابدأ الاستشارة الطبية',
+                    label: 'ابدأ الاستشارة الطبية الآن',
                   ),
                 ),
 
-                SizedBox(
-                  height: screenHeight * 0.15,
-                ), // Push content slightly up
+                SizedBox(height: screenHeight * 0.1),
               ],
             ),
           ),

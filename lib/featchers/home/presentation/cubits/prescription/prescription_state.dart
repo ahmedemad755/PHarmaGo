@@ -1,26 +1,28 @@
 part of 'prescription_cubit.dart';
 
-@immutable
-abstract class PrescriptionState {}
+abstract class PrescriptionState extends Equatable {
+  const PrescriptionState();
+  @override
+  List<Object> get props => [];
+}
 
 class PrescriptionInitial extends PrescriptionState {}
 
 class PrescriptionLoading extends PrescriptionState {}
 
-class PrescriptionAddDirect extends PrescriptionState {
-  final AddProductIntety product;
-  PrescriptionAddDirect(this.product);
+// الحالة دي لما الذكاء الاصطناعي يرجع لستة أدوية
+class PrescriptionAnalyzed extends PrescriptionState {
+  final List<MedicineEntity> medicines;
+  const PrescriptionAnalyzed(this.medicines);
+  
+  @override
+  List<Object> get props => [medicines];
 }
-
-class PrescriptionNeedConfirm extends PrescriptionState {
-  final AddProductIntety product;
-  final double score;
-  PrescriptionNeedConfirm(this.product, this.score);
-}
-
-class PrescriptionAISuggest extends PrescriptionState {}
 
 class PrescriptionFailure extends PrescriptionState {
-  final String message;
-  PrescriptionFailure(this.message);
+  final String errMessage;
+  const PrescriptionFailure(this.errMessage);
+  
+  @override
+  List<Object> get props => [errMessage];
 }

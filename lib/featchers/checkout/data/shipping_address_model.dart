@@ -26,6 +26,17 @@ class ShippingAddressModel {
       email: entity.email,
     );
   }
+
+  factory ShippingAddressModel.fromJson(Map<String, dynamic> json) {
+    return ShippingAddressModel(
+      name: json['name']?.toString(),
+      phone: json['phone']?.toString(),
+      address: json['address']?.toString(),
+      floor: json['floor']?.toString(),
+      city: json['city']?.toString(),
+      email: json['email']?.toString(),
+    );
+  }
   @override
   String toString() {
     return '$address $floor $city';

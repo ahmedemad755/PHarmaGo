@@ -39,10 +39,10 @@
               "client_type": 3
             },
             {
-              "client_id": "111940326225-67mikijuoi0flip94sk67kgn15u2bhek.apps.googleusercontent.com",
+              "client_id": "111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.eCommerce"
+                "bundle_id": "com.pharma.go"
               }
             }
           ]
@@ -75,10 +75,82 @@
               "client_type": 3
             },
             {
-              "client_id": "111940326225-67mikijuoi0flip94sk67kgn15u2bhek.apps.googleusercontent.com",
+              "client_id": "111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.eCommerce"
+                "bundle_id": "com.pharma.go"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111940326225:android:406b36dda56a1a4d027970",
+        "android_client_info": {
+          "package_name": "com.pharma.go"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111940326225-tq8fdc1f526l952a1fvrr4visvvsrpdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVhqSTdi4kipHc4DMAGz45nVfbSXeEWzk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111940326225-1kvk0ttff32drqjauqvd5q1hn6458h9t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pharma.go"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111940326225:android:0950addee32072d8027970",
+        "android_client_info": {
+          "package_name": "com.pharma.go.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111940326225-tq8fdc1f526l952a1fvrr4visvvsrpdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVhqSTdi4kipHc4DMAGz45nVfbSXeEWzk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111940326225-1kvk0ttff32drqjauqvd5q1hn6458h9t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pharma.go"
               }
             }
           ]

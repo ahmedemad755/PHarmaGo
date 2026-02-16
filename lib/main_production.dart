@@ -44,12 +44,12 @@ void main() async {
     initialRoute = AppRoutes.login;
   }
 
-  runApp(FuitHub(initialRoute: initialRoute));
+  runApp(PharmaGo(initialRoute: initialRoute));
 }
 
-class FuitHub extends StatelessWidget {
+class PharmaGo extends StatelessWidget {
   final String initialRoute;
-  const FuitHub({super.key, required this.initialRoute});
+  const PharmaGo({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {

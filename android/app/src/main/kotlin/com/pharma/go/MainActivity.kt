@@ -1,4 +1,4 @@
-package com.example.fruiet_hub
+package com.pharma.go
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
 import 'package:e_commerce/core/enteties/cart_item_entety.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/models/product_model.dart';
 import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
+import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
@@ -15,19 +15,24 @@ class CartCubit extends Cubit<CartState> {
   final CartRepo _cartRepo;
 
   CartCubit(CartEntity cartEntity, CartRepo cartRepo)
-    : _cartRepo = cartRepo,
-      super(CartInitial(cartEntity)) {
+      : _cartRepo = cartRepo,
+        super(CartInitial(cartEntity)) {
     _restoreCartOnInit();
   }
 
-  CartEntity get currentCart => switch (state) {
-    CartInitial(cartEntity: final cart) => cart,
-    CartUpdated(cartEntity: final cart) => cart,
-    CartItemAdded(cartEntity: final cart) => cart,
-    CartItemRemoved(cartEntity: final cart) => cart,
-  };
+  // --- 💡 وظيفة استخراج البيانات من الـ State لتبسيط الـ UI ---
+  CartEntity getCartEntity(CartState state) {
+    return switch (state) {
+      CartInitial(cartEntity: final cart) => cart,
+      CartUpdated(cartEntity: final cart) => cart,
+      CartItemAdded(cartEntity: final cart) => cart,
+      CartItemRemoved(cartEntity: final cart) => cart,
+    };
+  }
 
-  // تعديل: إضافة بارامترات الصيدلية
+  // الحصول على السلة الحالية بناءً على الـ State الحالي للكيوبت
+  CartEntity get currentCart => getCartEntity(state);
+
   void addProduct(
     AddProductIntety productEntity, {
     required int quantity,
@@ -37,7 +42,6 @@ class CartCubit extends Cubit<CartState> {
   }) {
     final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
 
-    // البحث عن المنتج بشرط تماثل الـ ID وتماثل الصيدلية
     final existingItemIndex = currentCartItems.indexWhere(
       (item) =>
           item.productIntety.code == productEntity.code &&
@@ -76,7 +80,10 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
+    final List<CartItemEntity> currentCartItems = List.from(
+      currentCart.cartItems,
+    );
+
     final existingItemIndex = currentCartItems.indexWhere(
       (item) =>
           item.productIntety.code == productEntity.code &&
@@ -84,10 +91,8 @@ class CartCubit extends Cubit<CartState> {
     );
 
     if (existingItemIndex != -1) {
-      final existingItem = currentCartItems[existingItemIndex];
-      currentCartItems[existingItemIndex] = existingItem.copyWith(
-        quantty: newQuantity,
-      );
+      currentCartItems[existingItemIndex] = currentCartItems[existingItemIndex]
+          .copyWith(quantty: newQuantity);
 
       final updatedCart = CartEntity(currentCartItems);
       _saveCartToRepository(updatedCart);
@@ -119,12 +124,17 @@ class CartCubit extends Cubit<CartState> {
   }
 
   Future<void> clearCart() async {
-    final user = FirebaseAuth.instance.currentUser;
-    const updatedCart = CartEntity([]);
-    if (user != null) {
-      await _cartRepo.clearCart(user.uid);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      emit(CartUpdated(const CartEntity([])));
+
+      if (user != null) {
+        await _cartRepo.clearCart(user.uid);
+      }
+      emit(CartInitial(const CartEntity([])));
+    } catch (e) {
+      emit(CartUpdated(const CartEntity([])));
     }
-    emit(CartUpdated(updatedCart));
   }
 
   Future<void> loadCartFromRepository() async {
@@ -150,7 +160,7 @@ class CartCubit extends Cubit<CartState> {
         return CartItemEntity(
           productIntety: product,
           quantty: map['quantity'] as int,
-          pharmacyId: map['pharmacyId'], // استرجاع بيانات الصيدلية
+          pharmacyId: map['pharmacyId'],
           pharmacyName: map['pharmacyName'],
           priceAtSelection: map['priceAtSelection'],
         );
@@ -177,7 +187,7 @@ class CartCubit extends Cubit<CartState> {
       return {
         'product': AddProductModel.fromentity(item.productIntety).toJson(),
         'quantity': item.quantty,
-        'pharmacyId': item.pharmacyId, // حفظ بيانات الصيدلية
+        'pharmacyId': item.pharmacyId,
         'pharmacyName': item.pharmacyName,
         'priceAtSelection': item.priceAtSelection,
       };

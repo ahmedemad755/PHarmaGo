@@ -56,4 +56,28 @@ class FireStoreService implements DatabaseService {
     final doc = await firestore.collection(path).doc(documentId).get();
     return doc.exists;
   }
+  
+@override
+Stream<List<Map<String, dynamic>>> getCollectionStream({
+  required String path,
+  Query Function(Query query)? query, // تأكد من استخدام Query هنا
+}) {
+  Query collection = firestore.collection(path);
+  
+  if (query != null) {
+    // هنا نقوم بتنفيذ الفلترة
+    return query(collection).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    });
+  }
+  
+  return firestore.collection(path).snapshots().map((snapshot) {
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  });
+}
+
+  @override
+  Future<void> updateData({required String path, required String documentId, required Map<String, dynamic> data}) async{
+await firestore.collection(path).doc(documentId).update(data);
+  }
 }
