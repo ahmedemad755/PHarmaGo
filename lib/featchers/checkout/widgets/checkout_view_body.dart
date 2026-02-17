@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/services/paypal_debugger.dart';
 import 'package:e_commerce/core/utils/app_key.dart';
@@ -83,7 +84,13 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               } else if (currentPageIndex == 1) {
                 _handleAddressValidation();
               } else {
-                _processPayment(context);
+                // التحقق من طريقة الدفع (كاش أم باي بال)
+                var orderEntity = context.read<OrderInputEntity>();
+                if (orderEntity.payWithCash == true) {
+                  _showOrderConfirmationDialog(context);
+                } else {
+                  _processPayment(context);
+                }
               }
             },
           ),
@@ -110,12 +117,13 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
   }
 
   String getNextButtonText(int page) {
+    var orderEntity = context.read<OrderInputEntity>();
     switch (page) {
       case 0:
       case 1:
         return 'التالي';
       case 2:
-        return 'الدفع عبر PayPal';
+        return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
       default:
         return 'التالي';
     }
@@ -135,6 +143,62 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     }
   }
 
+  /// ================== 🔥 Order Confirmation Dialog for Cash ==================
+  void _showOrderConfirmationDialog(BuildContext context) {
+    var orderEntity = context.read<OrderInputEntity>();
+    var addOrderCubit = context.read<AddOrderCubit>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('تأكيد الطلب',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('سيتم الدفع نقداً عند الاستلام.',
+                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            const Divider(),     
+            Text('العنوان: ${orderEntity.shippingAddressEntity.address}'),
+            Text('المدينة: ${orderEntity.shippingAddressEntity.city}'),
+            Text('الإجمالي: ${orderEntity.totalPrice} جنيه',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('تعديل', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // إغلاق الديالوج
+
+              // تنفيذ منطق الحفظ والتنظيف
+              addOrderCubit.addOrder(order: orderEntity);
+
+              // السحب من getIt مباشرة لحل مشكلة الـ Provider في شاشة الـ Checkout
+              getIt<CartCubit>().clearCart();
+
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider.value(
+                    value: getIt<CartCubit>(),
+                    child: ThankYouView(key: UniqueKey()),
+                  ),
+                ),
+              );
+            },
+            child: const Text('تأكيد الطلب'),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// ================== 🔥 PayPal Payment with Debugging ==================
   void _processPayment(BuildContext context) {
     var orderEntity = context.read<OrderInputEntity>();
@@ -152,37 +216,29 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
       clientId: clientPaypalKeyId,
       secretKey: secretpaypalKey,
       transactions: [transactionModel.toJson()],
-
       onSuccess: (response) {
-        // 1. إضافة الطلب لقاعدة البيانات
         addOrderCubit.addOrder(order: orderEntity);
 
-        // 2. تصفير السلة فوراً (محلياً وفي الفايربيس) قبل الانتقال
-        context.read<CartCubit>().clearCart();
+        getIt<CartCubit>().clearCart();
 
-        // showBar(
-        //   context,
-        //   "تم الدفع بنجاح",
-        //   color: const Color.fromARGB(255, 76, 86, 175),
-        // );
         Navigator.pop(context);
         Future.delayed(const Duration(milliseconds: 50), () {
           if (context.mounted) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                // إرسال UniqueKey هو السر في إعادة تشغيل الأنيميشن في كل مرة
-                builder: (context) => ThankYouView(key: UniqueKey()),
+                builder: (context) => BlocProvider.value(
+                  value: getIt<CartCubit>(),
+                  child: ThankYouView(key: UniqueKey()),
+                ),
               ),
             );
           }
         });
       },
-
       onError: (error) {
         showBar(context, "فشلت عملية الدفع!", color: Colors.red);
         Navigator.pop(context);
       },
-
       onCancel: () {
         showBar(context, "تم إلغاء عملية الدفع");
         Navigator.pop(context);
