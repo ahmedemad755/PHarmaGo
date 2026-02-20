@@ -320,7 +320,6 @@
 //   }
 // }
 
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
@@ -502,7 +501,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     final isMobile = size.width < 600;
     final horizontalPadding = isMobile ? 16.0 : 24.0;
 
-    // الحل هنا: توفير الـ BannersCubit يدوياً للصفحة لتجنب الـ ProviderNotFoundException
     return BlocProvider(
       create: (context) => getIt<BannersCubit>()..getBanners(),
       child: Scaffold(

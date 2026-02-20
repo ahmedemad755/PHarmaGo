@@ -28,7 +28,7 @@ import 'package:get_it/get_it.dart';
 
 final getIt = GetIt.instance;
 
-void setupGetit() {
+Future<void> setupGetit() async{
   getIt.registerSingleton<FirebaseAuthService>(FirebaseAuthService());
 
   final fireStoreService = FireStoreService();

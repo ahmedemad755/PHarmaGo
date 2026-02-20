@@ -1,50 +1,72 @@
+import 'dart:async';
 import 'package:e_commerce/constants.dart';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/services/custom_bloc_observer.dart';
-import 'package:e_commerce/core/services/firebase_auth_service.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/firebase_options.dart';
 import 'package:e_commerce/generated/l10n.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// تعريف المفتاح العالمي هنا يحل مشكلة Duplicate GlobalKeys نهائياً
+// تعريف المفتاح العالمي لحل مشكلة التنقل و Duplicate GlobalKeys
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // 1. تهيئة الخدمات الأساسية (Firebase, Prefs, GetIt)
+    await _initServices();
+
+    // 2. تحديد الشاشة الافتتاحية بناءً على منطق Onboarding و Auth
+    final String initialRoute = _getInitialRoute();
+
+    runApp(PharmaGo(initialRoute: initialRoute));
+  }, (error, stack) {
+    debugPrint("🔥 GLOBAL CRASH: $error \n $stack");
+  });
+}
+
+/// دالة مجمعة لتهيئة كل السيرفس مرة واحدة لضمان ترتيب التنفيذ
+Future<void> _initServices() async {
   Bloc.observer = CustomBlocObserver();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // await NotificationService.init();
+  
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint("❌ Firebase Init Failed: $e");
+  }
+
+  // تهيئة المستودعات المحلية وحقن التبعيات
   await Prefs.init();
-  setupGetit();
+  await setupGetit();
+}
 
-  final authService = getIt<FirebaseAuthService>();
-  final isLoggedIn = authService.isLoggedIn();
+/// منطق اختيار أول شاشة تظهر للمستخدم
+/// الترتيب: Onboarding -> Login (if not logged in) -> Home
+String _getInitialRoute() {
+  final bool isOnBoardingSeen = Prefs.getBool(kIsOnBoardingViewSeen) ?? false;
+  final user = FirebaseAuth.instance.currentUser;
 
-  // 🔹 استعادة السلة قبل runApp لأي مستخدم مسجل
-  if (isLoggedIn) {
-    final cartCubit = getIt<CartCubit>();
-    await cartCubit.loadCartFromRepository();
+  // الحالة الأولى: لم يشاهد الأونبوردنج بعد
+  if (!isOnBoardingSeen) {
+    return AppRoutes.onboarding;
   }
 
-  String initialRoute;
-  if (!Prefs.getBool(kIsOnBoardingViewSeen)) {
-    initialRoute = AppRoutes.onboarding;
-  } else if (isLoggedIn) {
-    initialRoute = AppRoutes.home;
-  } else {
-    initialRoute = AppRoutes.login;
+  // الحالة الثانية: شاهد الأونبوردنج ولكن لم يسجل الدخول (أو انتهت جلسته)
+  if (user == null) {
+    return AppRoutes.login;
   }
-
-  runApp(PharmaGo(initialRoute: initialRoute));
+  
+  // الحالة الثالثة: مستخدم مسجل دخول بالفعل
+  return AppRoutes.home;
 }
 
 class PharmaGo extends StatelessWidget {
@@ -67,6 +89,7 @@ class PharmaGo extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
+              iconTheme: IconThemeData(color: Colors.black),
             ),
           ),
           localizationsDelegates: const [

@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
@@ -11,8 +12,10 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // إزالة الـ Scaffold الزائد هنا يجعل الصفحات الفرعية "تطفو" فوق خلفية الـ MainVeiw
     return BlocListener<CartCubit, CartState>(
+      bloc: getIt<CartCubit>(),
       listener: (context, state) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!context.mounted) return;

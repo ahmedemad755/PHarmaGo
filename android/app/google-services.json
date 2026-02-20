@@ -94,6 +94,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "111940326225-gs62fs7aoua7g0lnnors3r3ep34r0g7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pharma.go",
+            "certificate_hash": "e160aeb74240efd20109a4253663f304891d1877"
+          }
+        },
+        {
           "client_id": "111940326225-tq8fdc1f526l952a1fvrr4visvvsrpdj.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -129,6 +137,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "111940326225-gptk6p1tp5cf0nkcsefm9uhf7pk8f797.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pharma.go.staging",
+            "certificate_hash": "e160aeb74240efd20109a4253663f304891d1877"
+          }
+        },
         {
           "client_id": "111940326225-tq8fdc1f526l952a1fvrr4visvvsrpdj.apps.googleusercontent.com",
           "client_type": 3

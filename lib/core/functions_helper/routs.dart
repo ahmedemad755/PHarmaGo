@@ -27,7 +27,7 @@ import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_bo
 import 'package:e_commerce/featchers/home/presentation/views/widgets/myorders_view.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/notifecation_app_page.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/order_details_view.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen.dart';
+import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen_new.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
 import 'package:e_commerce/featchers/onboarding/views/onboarding_view.dart';
 import 'package:e_commerce/featchers/splash/presentation/views/splash_view.dart';
@@ -57,6 +57,26 @@ class AppRoutes {
   static const String orderDetailsView = 'orderDetailsView';
 }
 
+// دالة مساعدة لإنشاء مسار تسجيل الدخول
+Route<dynamic> _buildLoginRoute() {
+  return MaterialPageRoute(
+    settings: const RouteSettings(name: AppRoutes.login),
+    builder: (_) => BlocProvider(
+      create: (context) => LoginCubit(getIt<AuthRepo>()),
+      child: const LoginView(),
+    ),
+  );
+}
+
+// Auth Guard Wrapper: دالة لفحص حالة تسجيل الدخول قبل الانتقال
+Route<dynamic> authGuard(Route<dynamic> route) {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return _buildLoginRoute();
+  }
+  return route;
+}
+
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.splash:
@@ -64,6 +84,49 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case AppRoutes.onboarding:
       return MaterialPageRoute(builder: (_) => const OnboardingView());
+
+    case AppRoutes.login:
+      return _buildLoginRoute();
+
+    case AppRoutes.home:
+      return authGuard(MaterialPageRoute(
+        settings: const RouteSettings(name: AppRoutes.home),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: getIt<CartCubit>()),
+            BlocProvider.value(value: getIt<ProductsCubit>()),
+            BlocProvider.value(
+              value: getIt<OrdersCubit>()
+                ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
+            ),
+          ],
+          child: MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
+        ),
+      ));
+
+    case AppRoutes.myordersView:
+      return authGuard(MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: getIt<OrdersCubit>()
+            ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
+          child: const OrdersView(),
+        ),
+      ));
+
+    case AppRoutes.pharmacyHome:
+      return authGuard(MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => getIt<BannersCubit>()..getBanners()),
+            BlocProvider.value(
+                value: getIt<ProductsCubit>()
+                  ..getProducts()
+                  ..fetchBestSelling()),
+            BlocProvider.value(value: getIt<CartCubit>()),
+          ],
+          child: const PharmacyHomeScreenNew(),
+        ),
+      ));
 
     case AppRoutes.bestFruites:
       return MaterialPageRoute(
@@ -73,84 +136,44 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case AppRoutes.login:
-      return MaterialPageRoute(
-        settings: const RouteSettings(name: AppRoutes.login),
-        builder: (_) => BlocProvider(
-          create: (context) => LoginCubit(getIt<AuthRepo>()),
-          child: const LoginView(),
-        ),
-      );
-
-    case AppRoutes.home:
-      return MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: getIt<CartCubit>()),
-            BlocProvider.value(
-              value: getIt<OrdersCubit>()
-                ..fetchUserOrders(
-                    uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
-            ),
-          ],
-          child: MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
-        ),
-      );
-
     case AppRoutes.checkout:
       final cartEntity = settings.arguments as CartEntity;
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<CartCubit>(),
           child: CheckOutView(cartEntity: cartEntity),
         ),
-      );
-
-case AppRoutes.pharmacyHome:
-  return MaterialPageRoute(
-    builder: (_) => MultiBlocProvider(
-      providers: [
-        // تأكد أن BannersCubit هو الاسم المسجل في injection.dart
-        BlocProvider(
-          create: (_) => getIt<BannersCubit>()..getBanners(),
-        ),
-        BlocProvider.value(
-          value: getIt<CartCubit>(),
-        ),
-      ],
-      child: const PharmacyHomeScreen(),
-    ),
-  );
+      ));
 
     case AppRoutes.uploadPrescription:
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => getIt<PrescriptionCubit>()),
             BlocProvider.value(value: getIt<CartCubit>()),
           ],
-          child: UploadPrescriptionView(),
+          child: const UploadPrescriptionView(),
         ),
-      );
+      ));
 
     case AppRoutes.ChatbootBody:
       return MaterialPageRoute(builder: (_) => const ChatbootBody());
 
     case AppRoutes.alarmsMain:
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<AlarmsCubit>(),
           child: const MainAlarmsView(),
         ),
-      );
+      ));
 
     case AppRoutes.addAlarm:
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<AlarmsCubit>(),
           child: const AddAlarmView(),
         ),
-      );
+      ));
 
     case AppRoutes.productDetails:
       if (settings.arguments is AddProductIntety) {
@@ -195,26 +218,16 @@ case AppRoutes.pharmacyHome:
       );
 
     case AppRoutes.notificationsView:
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<OrdersCubit>(),
           child: const NotificationsView(),
         ),
-      );
-
-    case AppRoutes.myordersView:
-      return MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<OrdersCubit>()
-            ..fetchUserOrders(
-                uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
-          child: const OrdersView(),
-        ),
-      );
+      ));
 
     case AppRoutes.orderDetailsView:
       final order = settings.arguments as OrderModel;
-      return MaterialPageRoute(
+      return authGuard(MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider.value(value: getIt<OrdersCubit>()),
@@ -222,7 +235,7 @@ case AppRoutes.pharmacyHome:
           ],
           child: OrderDetailsView(order: order),
         ),
-      );
+      ));
 
     default:
       return _errorRoute();

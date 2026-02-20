@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/utils/app_text_styles.dart';
@@ -14,6 +15,7 @@ class CustomHomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       trailing: BlocBuilder<OrdersCubit, OrdersState>(
+        bloc: getIt<OrdersCubit>(),
         builder: (context, state) {
           int count = 0;
           if (state is OrdersSuccess) {

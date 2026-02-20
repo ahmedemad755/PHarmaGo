@@ -1,84 +1,3 @@
-// import 'package:dots_indicator/dots_indicator.dart';
-// import 'package:e_commerce/constants.dart';
-// import 'package:e_commerce/core/functions_helper/routs.dart';
-// import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
-// import 'package:e_commerce/core/utils/app_colors.dart';
-// import 'package:e_commerce/core/widgets/custom_button.dart';
-// import 'package:e_commerce/featchers/onboarding/widgets/onboarding_pageView.dart';
-// import 'package:flutter/material.dart';
-
-// class OnboardingViewBody extends StatefulWidget {
-//   const OnboardingViewBody({super.key});
-
-//   @override
-//   State<OnboardingViewBody> createState() => _OnboardingViewBodyState();
-// }
-
-// class _OnboardingViewBodyState extends State<OnboardingViewBody> {
-//   late PageController pageController;
-//   int currentPage = 0;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     pageController = PageController();
-//     pageController.addListener(() {
-//       setState(() {
-//         currentPage = pageController.page!.round();
-//       });
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     pageController.dispose();
-//     super.dispose();
-//     // Dispose of the page controller to free resources
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Expanded(
-//           child: OnboardingPageview(
-//             pageController: pageController,
-//             currentPage: currentPage,
-//           ),
-//         ),
-//         DotsIndicator(
-//           dotsCount: 2,
-//           decorator: DotsDecorator(
-//             color: currentPage == 1
-//                 ? AppColors.primaryColor
-//                 : const Color.fromARGB(125, 31, 94, 59), // Active color
-//             activeColor: AppColors.primaryColor,
-//           ),
-//         ),
-//         SizedBox(height: 29),
-//         Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: kHorizintalPadding),
-//           child: Visibility(
-//             visible: currentPage == 1 ? true : false,
-//             maintainAnimation: true,
-//             maintainSize: true,
-//             maintainState: true,
-//             // Show button only on the first page
-//             child: CustomButtn(
-//               onPressed: () async {
-//                 await Prefs.setBool(kIsOnBoardingViewSeen, true);
-//                 Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-//               },
-//               text: 'ابدأ الان',
-//             ),
-//           ),
-//         ),
-//         const SizedBox(height: 43),
-//       ],
-//     );
-//   }
-// }
-
 import 'package:e_commerce/constants.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart'
@@ -115,7 +34,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
       end: 1,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
 
-    // Ensure the controller is properly initialized before first use
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _fadeController.forward();
@@ -137,13 +55,15 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
         curve: Curves.easeInOutCubic,
       );
     } else {
-      _navigateToHome();
+      _navigateToLogin(); 
     }
   }
 
-  void _navigateToHome() async {
+  void _navigateToLogin() async {
     await Prefs.setBool(kIsOnBoardingViewSeen, true);
-    Navigator.of(context).pushReplacementNamed(AppRoutes.pharmacyHome);
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+    }
   }
 
   @override
@@ -153,7 +73,7 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
     return Scaffold(
       body: PageView.builder(
         controller: _pageController,
-        itemCount: 3, // Number of onboarding pages
+        itemCount: 3,
         onPageChanged: (index) {
           if (mounted) {
             setState(() {
@@ -214,7 +134,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
     required Color cornerColor2,
     required bool hasRx,
   }) {
-    // Calculate responsive sizes
     final isMobile = screenSize.width < 600;
     final isTablet = screenSize.width >= 600 && screenSize.width < 1200;
 
@@ -224,42 +143,29 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
         ? screenSize.width * 0.4
         : screenSize.width * 0.35;
 
-    final titleFontSize = isMobile
-        ? 22.0
-        : isTablet
-        ? 26.0
-        : 28.0;
-    final subtitleFontSize = isMobile
-        ? 26.0
-        : isTablet
-        ? 30.0
-        : 32.0;
-    final descriptionFontSize = isMobile
-        ? 13.0
-        : isTablet
-        ? 14.0
-        : 16.0;
+    final titleFontSize = isMobile ? 22.0 : isTablet ? 26.0 : 28.0;
+    final subtitleFontSize = isMobile ? 26.0 : isTablet ? 30.0 : 32.0;
+    final descriptionFontSize = isMobile ? 13.0 : isTablet ? 14.0 : 16.0;
     final buttonHeight = isMobile ? 48.0 : 50.0;
     final horizontalPadding = isMobile ? 20.0 : 24.0;
 
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFFB1E5F6),
-              const Color(0xFF67B0E6),
-              const Color(0xFF4A90D9),
+              Color(0xFFB1E5F6),
+              Color(0xFF67B0E6),
+              Color(0xFF4A90D9),
             ],
-            stops: const [0.0, 0.5, 1.0],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
         child: Stack(
           children: [
-            // Background decorative elements
             Positioned(
               top: -50,
               left: -50,
@@ -284,8 +190,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                 child: const SizedBox.expand(),
               ),
             ),
-
-            // Main content
             SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -303,7 +207,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Main glass card with icon
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: isMobile ? 12 : 16,
@@ -343,8 +246,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                                 ),
                               ),
                             ),
-
-                            // Title, Subtitle, Description
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: isMobile ? 8 : 12,
@@ -388,8 +289,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                                 ],
                               ),
                             ),
-
-                            // Bottom section (dots, button, skip)
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: isMobile ? 8 : 12,
@@ -397,7 +296,6 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Dots indicator
                                   DotsIndicator(
                                     totalDots: 3,
                                     currentIndex: _currentIndex,
@@ -406,33 +304,24 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                                     dotSize: 9,
                                     spacing: 8,
                                   ),
-
                                   SizedBox(height: isMobile ? 12 : 16),
-
-                                  // Get Started / Next button
                                   GradientButton(
-                                    label: _currentIndex == 2
-                                        ? 'ابدأ'
-                                        : 'التالي',
+                                    label: _currentIndex == 2 ? 'ابدأ' : 'التالي',
                                     onPressed: _goToNextPage,
                                     width: double.infinity,
                                     height: buttonHeight,
-                                    gradientColors: [
-                                      cornerColor1,
-                                      cornerColor2,
-                                    ],
+                                    gradientColors: [cornerColor1, cornerColor2],
                                     borderRadius: 16,
                                     hasIcon: true,
                                     icon: _currentIndex == 2
                                         ? Icons.check_circle_outline
                                         : Icons.arrow_forward_ios,
                                   ),
-
                                   if (_currentIndex < 2)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8),
                                       child: TextButton(
-                                        onPressed: _navigateToHome,
+                                        onPressed: _navigateToLogin,
                                         child: const Text(
                                           'يتخطى',
                                           style: TextStyle(
@@ -466,13 +355,13 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
   Widget _buildIconForPage(int index) {
     switch (index) {
       case 0:
-        return Column(
+        return const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.photo_camera, color: Colors.white, size: 32),
-            const SizedBox(height: 8),
-            const Text(
+            Icon(Icons.photo_camera, color: Colors.white, size: 32),
+            SizedBox(height: 8),
+            Text(
               'Rx',
               style: TextStyle(
                 color: Colors.white,
@@ -483,9 +372,9 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
           ],
         );
       case 1:
-        return Icon(Icons.local_shipping, color: Colors.white, size: 40);
+        return const Icon(Icons.local_shipping, color: Colors.white, size: 40);
       case 2:
-        return Icon(Icons.support_agent, color: Colors.white, size: 40);
+        return const Icon(Icons.support_agent, color: Colors.white, size: 40);
       default:
         return const Icon(Icons.home, color: Colors.white);
     }

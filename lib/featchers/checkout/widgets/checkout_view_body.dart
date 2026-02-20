@@ -35,7 +35,9 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
   void initState() {
     pageController = PageController();
     pageController.addListener(() {
-      setState(() => currentPageIndex = pageController.page!.toInt());
+      if (mounted) {
+        setState(() => currentPageIndex = pageController.page!.round());
+      }
     });
     super.initState();
   }
@@ -55,17 +57,23 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
         children: [
           const SizedBox(height: 20),
 
-          /// الخطوات
+          /// الخطوات العلوية
           CheckoutSteps(
             currentIndex: currentPageIndex,
-            onTap: (index) => setState(() => currentPageIndex = index),
+            onTap: (index) {
+              pageController.animateToPage(
+                index,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
             pageController: pageController,
             formKey: formKey,
           ),
 
           const SizedBox(height: 20),
 
-          /// محتوى الصفحات
+          /// محتوى الصفحات (الشحن - العنوان - الدفع)
           Expanded(
             child: CheckOutStepsPageView(
               pageController: pageController,
@@ -75,7 +83,7 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
           ),
           const SizedBox(height: 20),
 
-          /// زر التالي / الدفع
+          /// زر التالي / إتمام الطلب
           CustomButtn(
             text: getNextButtonText(currentPageIndex),
             onPressed: () {
@@ -84,7 +92,7 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               } else if (currentPageIndex == 1) {
                 _handleAddressValidation();
               } else {
-                // التحقق من طريقة الدفع (كاش أم باي بال)
+                // المرحلة النهائية: التحقق من طريقة الدفع
                 var orderEntity = context.read<OrderInputEntity>();
                 if (orderEntity.payWithCash == true) {
                   _showOrderConfirmationDialog(context);
@@ -105,12 +113,10 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
 
   void _handleShippingSectionValidation(BuildContext context) {
     if (context.read<OrderInputEntity>().payWithCash != null) {
-      if (currentPageIndex < getsteps().length - 1) {
-        pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       showBar(context, 'يرجي تحديد طريقة الدفع');
     }
@@ -118,28 +124,22 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
 
   String getNextButtonText(int page) {
     var orderEntity = context.read<OrderInputEntity>();
-    switch (page) {
-      case 0:
-      case 1:
-        return 'التالي';
-      case 2:
-        return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
-      default:
-        return 'التالي';
+    if (page == 2) {
+      return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
     }
+    return 'التالي';
   }
 
   void _handleAddressValidation() {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      pageController.animateToPage(
-        currentPageIndex + 1,
+      pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
       valueListenable.value = AutovalidateMode.always;
-      showBar(context, 'يرجى تصحيح الأخطاء.');
+      showBar(context, 'يرجى إكمال بيانات العنوان');
     }
   }
 
@@ -150,6 +150,7 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('تأكيد الطلب',
@@ -164,8 +165,9 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
             const Divider(),     
             Text('العنوان: ${orderEntity.shippingAddressEntity.address}'),
             Text('المدينة: ${orderEntity.shippingAddressEntity.city}'),
+            const SizedBox(height: 8),
             Text('الإجمالي: ${orderEntity.totalPrice} جنيه',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16)),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         actions: [
@@ -176,40 +178,29 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context); // إغلاق الديالوج
-
-              // تنفيذ منطق الحفظ والتنظيف
+              
+              // 1. إضافة الطلب لقاعدة البيانات
               addOrderCubit.addOrder(order: orderEntity);
 
-              // السحب من getIt مباشرة لحل مشكلة الـ Provider في شاشة الـ Checkout
+              // 2. تصفير السلة
               getIt<CartCubit>().clearCart();
 
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider.value(
-                    value: getIt<CartCubit>(),
-                    child: ThankYouView(key: UniqueKey()),
-                  ),
-                ),
-              );
+              // 3. الانتقال لشاشة الشكر
+              _navigateToThankYouPage(context);
             },
-            child: const Text('تأكيد الطلب'),
+            child: const Text('تأكيد'),
           ),
         ],
       ),
     );
   }
 
-  /// ================== 🔥 PayPal Payment with Debugging ==================
+  /// ================== 🔥 PayPal Payment Logic ==================
   void _processPayment(BuildContext context) {
     var orderEntity = context.read<OrderInputEntity>();
     var addOrderCubit = context.read<AddOrderCubit>();
 
-    TransactionModel transactionModel = TransactionModel.fromEntity(
-      orderEntity,
-    );
-
-    log("🟦 Sending Transaction to PayPal:");
-    log(transactionModel.toJson().toString());
+    TransactionModel transactionModel = TransactionModel.fromEntity(orderEntity);
 
     PayPalDebugger.checkout(
       context: context,
@@ -218,31 +209,30 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
       transactions: [transactionModel.toJson()],
       onSuccess: (response) {
         addOrderCubit.addOrder(order: orderEntity);
-
         getIt<CartCubit>().clearCart();
-
-        Navigator.pop(context);
-        Future.delayed(const Duration(milliseconds: 50), () {
-          if (context.mounted) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => BlocProvider.value(
-                  value: getIt<CartCubit>(),
-                  child: ThankYouView(key: UniqueKey()),
-                ),
-              ),
-            );
-          }
-        });
+        _navigateToThankYouPage(context);
       },
       onError: (error) {
         showBar(context, "فشلت عملية الدفع!", color: Colors.red);
-        Navigator.pop(context);
       },
       onCancel: () {
         showBar(context, "تم إلغاء عملية الدفع");
-        Navigator.pop(context);
       },
     );
   }
+
+// داخل CheckoutViewBody
+void _navigateToThankYouPage(BuildContext context) {
+  // نتحقق أن الشاشة لا تزال موجودة ولم يتم إغلاقها
+  if (!mounted) return;
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (context) => BlocProvider.value(
+        value: getIt<CartCubit>(),
+        child: ThankYouView(key: UniqueKey()),
+      ),
+    ),
+  );
+}
 }

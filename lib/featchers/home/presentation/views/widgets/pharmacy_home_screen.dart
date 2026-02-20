@@ -6,13 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Lightweight wrapper for compatibility.
+// class PharmacyHomeScreen extends StatelessWidget {
+//   const PharmacyHomeScreen({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider(
+//       create: (context) => ProductsCubit(getIt.get<ProductsRepo>()),
+//       child: const PharmacyHomeScreenNew(),
+//     );
+//   }
+//}
 class PharmacyHomeScreen extends StatelessWidget {
   const PharmacyHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProductsCubit(getIt.get<ProductsRepo>()),
+    // نستخدم النسخة التي تم إنشاؤها في Router أو getIt مباشرة
+    return BlocProvider.value(
+      value: getIt<ProductsCubit>(),
       child: const PharmacyHomeScreenNew(),
     );
   }
