@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce/core/models/pharmacy_model.dart'; // تأكد من صحة المسار
 import 'package:e_commerce/core/enteties/product_enteti.dart';
+import 'package:e_commerce/core/utils/backend_points.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class PharmacyOffer {
   final String id;
   final String name;
+  final String address; // تم الإبقاء عليه للعرض
+  final String status;  // تم الإبقاء عليه للعرض
   final double price;
   final double distanceKm;
   final int deliveryTimeMin;
@@ -17,6 +21,8 @@ class PharmacyOffer {
   PharmacyOffer({
     required this.id,
     required this.name,
+    required this.address,
+    required this.status,
     required this.price,
     required this.distanceKm,
     required this.deliveryTimeMin,
@@ -60,22 +66,53 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     try {
       final querySnapshot = await FirebaseFirestore.instance
-          .collection('products')
+          .collection(BackendPoints.getProducts)
           .where('code', isEqualTo: widget.product.code)
           .get();
 
-      List<PharmacyOffer> realOffers = querySnapshot.docs.map((doc) {
+      List<PharmacyOffer> realOffers = [];
+
+      for (var doc in querySnapshot.docs) {
         final data = doc.data();
-        return PharmacyOffer(
-          id: doc.id,
-          name:
-              data['pharmacyName'] ?? data['pharmacyId'] ?? 'صيدلية غير معروفة',
-          price: (data['price'] as num).toDouble(),
-          distanceKm: 1.2,
-          deliveryTimeMin: 20,
-          rating: 4.5,
-        );
-      }).toList();
+        final String pharmacyId = data['pharmacyId'] ?? '';
+
+        // جلب بيانات الصيدلية من كوليكشن pharmacies
+        final pharmacyDoc = await FirebaseFirestore.instance
+            .collection(BackendPoints.pharmacies)
+            .doc(pharmacyId)
+            .get();
+
+        if (pharmacyDoc.exists) {
+          final pharmacyInfo = PharmacyModel.fromJson(pharmacyDoc.data()!);
+
+          realOffers.add(
+            PharmacyOffer(
+              id: pharmacyId,
+              name: pharmacyInfo.pharmacyName,
+              address: pharmacyInfo.address,
+              status: pharmacyInfo.status,
+              price: (data['price'] as num).toDouble(),
+              distanceKm: 1.2,
+              deliveryTimeMin: 20,
+              rating: 4.5,
+            ),
+          );
+        } else {
+          // حالة احتياطية إذا لم يوجد مستند للصيدلية
+          realOffers.add(
+            PharmacyOffer(
+              id: pharmacyId,
+              name: data['pharmacyName'] ?? 'صيدلية غير معروفة',
+              address: 'العنوان غير متوفر',
+              status: 'unknown',
+              price: (data['price'] as num).toDouble(),
+              distanceKm: 1.2,
+              deliveryTimeMin: 20,
+              rating: 4.5,
+            ),
+          );
+        }
+      }
 
       if (!mounted) return;
 
@@ -83,13 +120,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
         _offers = realOffers;
 
         if (_offers.isNotEmpty) {
-          // البحث عن الصيدلية التي تم اختيار المنتج منها في الأصل
-          // إذا لم توجد، نختار أول عرض متاح في القائمة
           _selectedOffer = _offers.firstWhere(
             (element) =>
                 element.id == widget.product.pharmacyId ||
-                element.id ==
-                    "${widget.product.code}_${widget.product.pharmacyId}",
+                element.id == "${widget.product.code}_${widget.product.pharmacyId}",
             orElse: () => _offers.first,
           );
         } else {
@@ -101,9 +135,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("خطأ في تحميل العروض: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("خطأ في تحميل العروض: $e")),
+        );
       }
     }
   }
@@ -116,14 +150,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
       return;
     }
 
-    // نمرر البيانات من العرض المختار (Offer) إلى الـ Cubit
     context.read<CartCubit>().addProduct(
-      widget.product,
-      quantity: _quantity,
-      pharmacyId: _selectedOffer!.id, // معرف الصيدلية
-      pharmacyName: _selectedOffer!.name, // اسم الصيدلية
-      priceAtSelection: _selectedOffer!.price, // السعر عند الاختيار
-    );
+          widget.product,
+          quantity: _quantity,
+          pharmacyId: _selectedOffer!.id,
+          pharmacyName: _selectedOffer!.name,
+          priceAtSelection: _selectedOffer!.price,
+        );
   }
 
   @override
@@ -213,8 +246,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         children: [
           PageView(
             controller: _pageController,
-            onPageChanged: (index) =>
-                setState(() => _currentImageIndex = index),
+            onPageChanged: (index) => setState(() => _currentImageIndex = index),
             children: [
               Center(
                 child: widget.product.imageurl != null
@@ -292,9 +324,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF007BBB)
-                    : Colors.transparent,
+                color: isSelected ? const Color(0xFF007BBB) : Colors.transparent,
                 width: 2,
               ),
               boxShadow: [
@@ -336,49 +366,40 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           if (isCheapest)
                             Container(
                               margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.green[100],
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
                                 'أفضل سعر',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.green,
-                                ),
+                                style: TextStyle(fontSize: 10, color: Colors.green),
                               ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 4),
+                      Text(
+                        offer.address,
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on,
-                            size: 12,
-                            color: Colors.grey[600],
-                          ),
+                          Icon(Icons.location_on, size: 12, color: Colors.grey[600]),
                           const SizedBox(width: 2),
                           Text(
                             '${offer.distanceKm} كم',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                           ),
                           const SizedBox(width: 10),
                           Icon(Icons.timer, size: 12, color: Colors.grey[600]),
                           const SizedBox(width: 2),
                           Text(
                             '${offer.deliveryTimeMin} دقيقة',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -393,9 +414,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: isCheapest
-                            ? Colors.green
-                            : const Color(0xFF007BBB),
+                        color: isCheapest ? Colors.green : const Color(0xFF007BBB),
                       ),
                     ),
                     Radio<String>(
@@ -460,16 +479,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.remove, size: 20),
-                    onPressed: _quantity > 1
-                        ? () => setState(() => _quantity--)
-                        : null,
+                    onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
                   ),
                   Text(
                     '$_quantity',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add, size: 20),
@@ -480,39 +494,34 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child:
-                  // داخل _buildBottomActionArea
-                  ElevatedButton(
-                    onPressed: _selectedOffer != null
-                        ? _addToCart
-                        : null, // استدعاء الميثود المحدثة
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007BBB),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+              child: ElevatedButton(
+                onPressed: _selectedOffer != null ? _addToCart : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF007BBB),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'إضافة للسلة',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'إضافة للسلة',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                    if (_selectedOffer != null)
+                      Text(
+                        'من صيدلية: ${_selectedOffer!.name}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.8),
                         ),
-                        // عرض اسم الصيدلية تحت كلمة إضافة للسلة للتأكيد
-                        if (_selectedOffer != null)
-                          Text(
-                            'من صيدلية: ${_selectedOffer!.name}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

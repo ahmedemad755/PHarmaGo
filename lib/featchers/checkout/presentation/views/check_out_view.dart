@@ -29,9 +29,17 @@ class _CheckOutViewState extends State<CheckOutView> {
   @override
   void initState() {
     super.initState();
+    
+    // 🔹 استخراج pharmacyId من أول منتج في السلة لربط الطلب بصيدلية معينة
+    // نستخدم 'unknown' كقيمة احتياطية لتجنب الـ null
+    String pharmacyId = widget.cartEntity.cartItems.isNotEmpty 
+        ? widget.cartEntity.cartItems.first.pharmacyId ?? 'unknown'
+        : 'unknown';
+
     orderInputEntity = OrderInputEntity(
       widget.cartEntity,
       uID: getUser().uId,
+      pharmacyId: pharmacyId, // ✅ التعديل الجديد لتمرير المعرف
       shippingAddressEntity: ShippingAddressEntity(),
     );
   }

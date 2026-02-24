@@ -16,6 +16,7 @@ class AddProductModel {
   final List<ReviewModel> reviews;
   final num discountPercentage;
   final String category;
+  final String categoryId; // أضفنا الحقل هنا
   final String pharmacyId; // أضفنا الحقل هنا
 
   AddProductModel({
@@ -31,6 +32,7 @@ class AddProductModel {
     this.sellingcount = 0,
     this.discountPercentage = 0,
     this.category = 'الأدوية',
+    this.categoryId = '', // أضفنا الحقل هنا
     required this.pharmacyId, // أضفنا الحقل هنا
   });
 
@@ -65,6 +67,7 @@ class AddProductModel {
       imageurl: json['imageurl'] as String?,
       reviews: reviewsList,
       category: json['category'] as String? ?? 'الأدوية',
+      categoryId: json['categoryId'] as String? ?? '',
       pharmacyId:
           json['pharmacyId'] as String? ?? 'غير معروف', // سحب المعرف هنا
     );
@@ -122,6 +125,7 @@ class AddProductModel {
       'reviews': reviews.map((e) => e.toJson()).toList(),
       'discountPercentage': discountPercentage,
       'category': category,
+      'categoryId': categoryId, // حفظ القسم هنا
       'pharmacyId': pharmacyId, // حفظ المعرف هنا
     };
   }

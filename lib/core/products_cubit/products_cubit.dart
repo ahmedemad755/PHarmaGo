@@ -149,7 +149,6 @@
 //   }
 // }
 
-
 import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
@@ -179,34 +178,29 @@ class ProductsCubit extends Cubit<ProductsState> {
   int get productsLength => _allProducts.length;
   
   List<AddProductIntety> _allProducts = [];
-  // 🔹 قائمة منفصلة لتخزين المنتجات الأكثر مبيعاً دون تأثرها بالفلترة
   List<AddProductIntety> _bestSellingProducts = []; 
 
   String _currentSearchQuery = '';
-  String _selectedCategory = 'الأدوية';
+  // 🔹 تم تغيير القيمة الافتراضية إلى 'الكل' لضمان ظهور المنتج الجديد عند الفتح
+  String _selectedCategory = 'الكل'; 
   String _selectedSort = 'relevance';
   num _minDiscountValue = 0;
 
   List<AddProductIntety> get allProducts => _allProducts;
-  // 🔹 Getter للوصول للأكثر مبيعاً من الـ UI
   List<AddProductIntety> get bestSellingProducts => _bestSellingProducts; 
   String get selectedCategory => _selectedCategory;
   String get selectedSort => _selectedSort;
   num get minDiscountValue => _minDiscountValue;
 
-  // 🔹 ميثود لمراقبة الأكثر مبيعاً (تم فصلها عن الفلاتر)
   void fetchBestSelling({int topN = 10}) {
-    // لا نقوم بعمل emit(ProductsLoading) هنا حتى لا نعطل القائمة الأساسية
     productsRepo.fetchBestSellingProductsStream(topN: topN).listen((result) {
       result.fold(
         (failure) => emit(ProductsFailure(failure.message)),
         (products) {
           _bestSellingProducts = _getUniqueProducts(products);
-          // نقوم بإرسال الحالة الحالية فقط لإجبار الـ UI على إعادة البناء بالبيانات الجديدة
           if (state is ProductsSuccess) {
             _applyFilters(); 
           } else if (state is ProductsInitial || state is ProductsLoading) {
-             // إذا لم تكن هناك منتجات محملة بعد، نطبق الفلاتر لعرض أي بيانات متاحة
              _allProducts = _bestSellingProducts;
              _applyFilters();
           }
@@ -215,7 +209,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     });
   }
 
-  // 🔹 ميثود جلب كل المنتجات (Future)
   Future<void> getProducts() async {
     emit(ProductsLoading());
     final result = await productsRepo.getProducts();
@@ -266,15 +259,13 @@ class ProductsCubit extends Cubit<ProductsState> {
 
   void resetFilters() {
     _currentSearchQuery = '';
-    _selectedCategory = 'الأدوية';
+    _selectedCategory = 'الكل';
     _selectedSort = 'relevance';
     _minDiscountValue = 0;
     _applyFilters();
   }
 
   void _applyFilters() {
-    // نعتمد على _allProducts كمصدر للبيانات القابلة للفلترة
-    // إذا كانت فارغة، نحاول استخدام _bestSellingProducts كمصدر أولي
     List<AddProductIntety> sourceProducts = _allProducts.isNotEmpty 
         ? _allProducts 
         : _bestSellingProducts;
@@ -286,19 +277,19 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     Iterable<AddProductIntety> currentFilteredList = sourceProducts;
 
-    // تطبيق فلتر القسم
-    currentFilteredList = currentFilteredList.where(
-      (product) => product.matchesCategory(_selectedCategory),
-    );
+    // 🔹 التعديل: إذا كان القسم هو 'الكل' لا يتم تطبيق فلتر القسم
+    if (_selectedCategory != 'الكل') {
+      currentFilteredList = currentFilteredList.where(
+        (product) => product.matchesCategory(_selectedCategory),
+      );
+    }
 
-    // تطبيق البحث
     if (_currentSearchQuery.isNotEmpty) {
       currentFilteredList = currentFilteredList.where(
         (product) => product.matchesSearch(_currentSearchQuery),
       );
     }
 
-    // تطبيق فلتر الخصم
     if (_minDiscountValue > 0) {
       currentFilteredList = currentFilteredList.where((product) {
         return product.discountPercentage >= _minDiscountValue;
@@ -307,7 +298,6 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     List<AddProductIntety> sortedList = currentFilteredList.toList();
 
-    // تطبيق الترتيب (Sort)
     switch (_selectedSort) {
       case 'price_asc':
         sortedList.sort((a, b) => a.price.compareTo(b.price));

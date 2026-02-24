@@ -10,8 +10,9 @@ class OrderModel {
   final List<OrderProductModel> orderProducts;
   final String paymentMethod;
   final String orderId;
-  final String status; // أضفنا هذا الحقل لقراءة الحالة
-  final String date;   // أضفنا هذا الحقل لقراءة التاريخ
+  final String status; 
+  final String date;   
+  final String pharmacyId; // 🔹 الحقل موجود هنا
 
   OrderModel({
     required this.totalPrice,
@@ -22,12 +23,13 @@ class OrderModel {
     required this.paymentMethod,
     required this.status,
     required this.date,
+    required this.pharmacyId, // 🔹 الحقل موجود هنا
   });
 
   factory OrderModel.fromEntity(OrderInputEntity orderEntity) {
     return OrderModel(
       orderId: const Uuid().v4(),
-      totalPrice: orderEntity.cartEntity.getTotalPrice(),
+      totalPrice: orderEntity.calculatetotalpriceAfterDiscountAndDelivery(), // 🔹 تم التعديل لاستخدام السعر النهائي
       uId: orderEntity.uID,
       shippingAddressModel: ShippingAddressModel.fromEntity(
         orderEntity.shippingAddressEntity,
@@ -35,25 +37,24 @@ class OrderModel {
       orderProducts: orderEntity.cartEntity.cartItems
           .map((e) => OrderProductModel.fromEntity(cartItemEntity: e))
           .toList(),
-      paymentMethod: orderEntity.payWithCash! ? 'Cash' : 'Paypal',
-      status: 'pending', // قيمة افتراضية عند الإنشاء
-      date: DateTime.now().toString(),
+      paymentMethod: orderEntity.payWithCash == true ? 'Cash' : 'Paypal',
+      status: 'pending', 
+      date: DateTime.now().toString(), 
+      pharmacyId: orderEntity.pharmacyId, // 🔹 جلب المعرف من الـ Entity
     );
   }
 
-  // 💡 الميثود الجديدة لتحويل البيانات القادمة من Firebase
-factory OrderModel.fromJson(Map<String, dynamic> json) {
-    // 💡 نلاحظ هنا أن الـ status موجود داخل الـ shippingAddressModel في الداتابيز عندك
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
     var shippingAddress = json['shippingAddressModel'] as Map<String, dynamic>? ?? {};
     
     return OrderModel(
       orderId: json['orderId']?.toString() ?? '',
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
       uId: json['uId']?.toString() ?? '',
-      // 💡 تعديل قراءة الحالة لتطابق بياناتك في Firebase
       status: shippingAddress['status']?.toString() ?? json['status']?.toString() ?? 'pending',
       date: json['date']?.toString() ?? '',
       paymentMethod: json['paymentMethod']?.toString() ?? '',
+      pharmacyId: json['pharmacyId']?.toString() ?? 'unknown', // 🔹 قراءة المعرف من JSON
       shippingAddressModel: ShippingAddressModel.fromJson(shippingAddress),
       orderProducts: (json['orderProducts'] as List<dynamic>?)
               ?.map((e) => OrderProductModel.fromJson(e as Map<String, dynamic>))
@@ -61,12 +62,13 @@ factory OrderModel.fromJson(Map<String, dynamic> json) {
     );
   }
 
-  toJson() => {
+  Map<String, dynamic> toJson() => {
         'orderId': orderId,
         'totalPrice': totalPrice,
         'uId': uId,
         'status': status,
         'date': date,
+        'pharmacyId': pharmacyId, // 🔹 حفظ المعرف في Firebase
         'shippingAddressModel': shippingAddressModel.toJson(),
         'orderProducts': orderProducts.map((e) => e.toJson()).toList(),
         'paymentMethod': paymentMethod,

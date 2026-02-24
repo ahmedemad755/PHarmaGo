@@ -14,12 +14,13 @@ class AddProductIntety extends Equatable {
   final num sellingcount;
   final List<ReviewEntite> reviews;
   final String category;
+  final String categoryId;
   final num discountPercentage;
   final String pharmacyId; // تم إضافة الحقل هنا
 
   bool get hasDiscount => discountPercentage > 0;
 
-  const AddProductIntety({
+  const AddProductIntety( {
     required this.name,
     required this.price,
     required this.code,
@@ -33,6 +34,7 @@ class AddProductIntety extends Equatable {
     required this.reviews,
     this.discountPercentage = 0,
     this.category = 'الأدوية',
+    this.categoryId = '',
     required this.pharmacyId, // تم إضافته هنا
   });
 
@@ -46,6 +48,7 @@ class AddProductIntety extends Equatable {
     unitAmount,
     discountPercentage,
     category,
+    categoryId,
     pharmacyId, // تم إضافته هنا
   ];
 
@@ -62,7 +65,8 @@ class AddProductIntety extends Equatable {
         other.unitAmount == unitAmount &&
         other.discountPercentage == discountPercentage &&
         other.category == category &&
-        other.pharmacyId == pharmacyId;
+other.categoryId == categoryId && 
+      other.pharmacyId == pharmacyId;
   }
 
   @override

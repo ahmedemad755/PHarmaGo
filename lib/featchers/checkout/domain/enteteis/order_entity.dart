@@ -4,11 +4,14 @@ import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 class OrderInputEntity {
   final String uID;
   final CartEntity cartEntity;
+  final String pharmacyId; // 🔹 إضافة الحقل هنا
   bool? payWithCash;
   ShippingAddressEntity shippingAddressEntity;
+
   OrderInputEntity(
     this.cartEntity, {
     required this.uID,
+    required this.pharmacyId, // 🔹 إضافة الحقل هنا
     this.payWithCash,
     ShippingAddressEntity? shippingAddressEntity,
   }) : shippingAddressEntity = shippingAddressEntity ?? ShippingAddressEntity();

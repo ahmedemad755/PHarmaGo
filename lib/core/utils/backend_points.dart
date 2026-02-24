@@ -9,4 +9,5 @@ class BackendPoints {
   static const String categoryMedicalEquipment = 'أجهزة صحية';
   static const banners = 'banners'; // الكولكشن الخاص بالعروض
   static const bannersImages = 'banners_images';
+  static const pharmacies = 'pharmacies';
 }
