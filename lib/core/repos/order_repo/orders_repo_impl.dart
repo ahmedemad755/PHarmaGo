@@ -64,7 +64,6 @@
 //     }
 //   }
 // }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
@@ -90,14 +89,16 @@ class OrdersRepoImpl implements OrdersRepo {
         documentId: orderModel.orderId,
       );
 
-      // 2. تحديث عداد المبيعات (sellingcount) لكل منتج في الطلب تلقائياً
-      // تم تعديل المسار للوصول لـ cartItems من داخل cartEntity
+      // 2. تحديث المنتجات: إنقاص الكمية (unitAmount) وزيادة عداد المبيعات (sellingcount)
       for (var item in order.cartEntity.cartItems) { 
         await FirebaseFirestore.instance
             .collection(BackendPoints.getProducts)
             .doc(item.productIntety.code) // نستخدم الكود كـ ID للمنتج
             .update({
-          'sellingcount': FieldValue.increment(item.quantty), // زيادة الكمية المباعة
+          // ✅ تعديل: إنقاص الكمية المباعة من المخزون
+          'unitAmount': FieldValue.increment(-item.quantty), 
+          // زيادة عداد الكمية المباعة
+          'sellingcount': FieldValue.increment(item.quantty), 
         });
       }
 
@@ -107,11 +108,13 @@ class OrdersRepoImpl implements OrdersRepo {
     }
   }
 
-  @override
+@override
   Stream<Either<Faliur, List<OrderModel>>> fetchOrders({required String uID}) {
+    // ✅ التعديل: استخدام snapshots للاستماع للتغييرات لحظياً
     return fireStoreService.getCollectionStream(
       path: BackendPoints.orders,
-      query: (q) => q.where('uId', isEqualTo: uID),
+      // تأكد أن DatabaseService لديك يدعم getCollectionStream ويوفر stream
+      query: (q) => q.where('uId', isEqualTo: uID).orderBy('createdAt', descending: true),
     ).map((data) {
       List<OrderModel> orders = data.map((e) => OrderModel.fromJson(e)).toList();
       return right(orders);

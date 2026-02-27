@@ -15,6 +15,8 @@ AddProductIntety getDummyProduct() {
     averageRating: 0,
     ratingcount: 0,
     pharmacyId: '123',
+    categoryId: 'cat-001',
+    cost: 15.0, // تم إضافة الحقل الجديد هنا
   );
 }
 

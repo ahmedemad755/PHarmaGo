@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/services/paypal_debugger.dart';
@@ -49,15 +48,19 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
+@override
+Widget build(BuildContext context) {
+  // ✅ نقوم بتغليف الصفحة بالكامل بـ BlocProvider.value
+  // ونعطيه القيمة مباشرة من getIt
+  return BlocProvider<CartCubit>.value(
+    value: getIt<CartCubit>(),
+    child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Column(
         children: [
           const SizedBox(height: 20),
-
-          /// الخطوات العلوية
+          // الآن أي وجت داخل هذه الشجرة (حتى لو كان CheckoutSteps)
+          // سيجد الـ CartCubit في الـ context بنجاح
           CheckoutSteps(
             currentIndex: currentPageIndex,
             onTap: (index) {
@@ -70,10 +73,7 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
             pageController: pageController,
             formKey: formKey,
           ),
-
           const SizedBox(height: 20),
-
-          /// محتوى الصفحات (الشحن - العنوان - الدفع)
           Expanded(
             child: CheckOutStepsPageView(
               pageController: pageController,
@@ -82,17 +82,14 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
             ),
           ),
           const SizedBox(height: 20),
-
-          /// زر التالي / إتمام الطلب
           CustomButtn(
-            text: getNextButtonText(currentPageIndex),
+            text: getNextButtonText(currentPageIndex, context),
             onPressed: () {
               if (currentPageIndex == 0) {
                 _handleShippingSectionValidation(context);
               } else if (currentPageIndex == 1) {
                 _handleAddressValidation();
               } else {
-                // المرحلة النهائية: التحقق من طريقة الدفع
                 var orderEntity = context.read<OrderInputEntity>();
                 if (orderEntity.payWithCash == true) {
                   _showOrderConfirmationDialog(context);
@@ -102,14 +99,12 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               }
             },
           ),
-
           const SizedBox(height: 32),
         ],
       ),
-    );
-  }
-
-  /// ------------------------------------------------------------------------
+    ),
+  );
+}
 
   void _handleShippingSectionValidation(BuildContext context) {
     if (context.read<OrderInputEntity>().payWithCash != null) {
@@ -122,7 +117,8 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     }
   }
 
-  String getNextButtonText(int page) {
+String getNextButtonText(int page, BuildContext context) {
+    // نقرأ من الـ context الممرر للدالة وهو context الخاص بـ build
     var orderEntity = context.read<OrderInputEntity>();
     if (page == 2) {
       return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
@@ -143,50 +139,41 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     }
   }
 
-  /// ================== 🔥 Order Confirmation Dialog for Cash ==================
-  void _showOrderConfirmationDialog(BuildContext context) {
-    var orderEntity = context.read<OrderInputEntity>();
-    var addOrderCubit = context.read<AddOrderCubit>();
+void _showOrderConfirmationDialog(BuildContext parentContext) {
+    // نقرأ القيم من الـ parentContext (context الصفحة) قبل الدخول للـ Dialog
+    var orderEntity = parentContext.read<OrderInputEntity>();
+    var addOrderCubit = parentContext.read<AddOrderCubit>();
+    var cartCubit = getIt<CartCubit>();
+
+    String detectedPharmacyId = 'unknown';
+    if (cartCubit.currentCart.cartItems.isNotEmpty) {
+      detectedPharmacyId = cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
+    }
 
     showDialog(
-      context: context,
+      context: parentContext,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog( // نستخدم dialogContext هنا للـ UI فقط
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('تأكيد الطلب',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('تأكيد الطلب', textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('سيتم الدفع نقداً عند الاستلام.',
-                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-            const Divider(),     
+            const Text('سيتم الدفع نقداً عند الاستلام.', style: TextStyle(color: Colors.green)),
+            const Divider(),
             Text('العنوان: ${orderEntity.shippingAddressEntity.address}'),
-            Text('المدينة: ${orderEntity.shippingAddressEntity.city}'),
-            const SizedBox(height: 8),
-            Text('الإجمالي: ${orderEntity.totalPrice} جنيه',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('الإجمالي: ${orderEntity.calculatetotalpriceAfterDiscountAndDelivery()} جنيه'),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('تعديل', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('تعديل')),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // إغلاق الديالوج
-              
-              // 1. إضافة الطلب لقاعدة البيانات
+              Navigator.pop(dialogContext);
+              orderEntity.pharmacyId = detectedPharmacyId;
               addOrderCubit.addOrder(order: orderEntity);
-
-              // 2. تصفير السلة
-              getIt<CartCubit>().clearCart();
-
-              // 3. الانتقال لشاشة الشكر
-              _navigateToThankYouPage(context);
+              cartCubit.clearCart();
+              _navigateToThankYouPage(parentContext); // نستخدم الـ parentContext
             },
             child: const Text('تأكيد'),
           ),
@@ -195,10 +182,14 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     );
   }
 
-  /// ================== 🔥 PayPal Payment Logic ==================
   void _processPayment(BuildContext context) {
     var orderEntity = context.read<OrderInputEntity>();
     var addOrderCubit = context.read<AddOrderCubit>();
+    var cartCubit = getIt<CartCubit>();
+
+    if (cartCubit.currentCart.cartItems.isNotEmpty) {
+      orderEntity.pharmacyId = cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
+    }
 
     TransactionModel transactionModel = TransactionModel.fromEntity(orderEntity);
 
@@ -209,30 +200,21 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
       transactions: [transactionModel.toJson()],
       onSuccess: (response) {
         addOrderCubit.addOrder(order: orderEntity);
-        getIt<CartCubit>().clearCart();
+        cartCubit.clearCart();
         _navigateToThankYouPage(context);
       },
-      onError: (error) {
-        showBar(context, "فشلت عملية الدفع!", color: Colors.red);
-      },
-      onCancel: () {
-        showBar(context, "تم إلغاء عملية الدفع");
-      },
+      onError: (error) => showBar(context, "فشلت عملية الدفع!", color: Colors.red),
+      onCancel: () => showBar(context, "تم إلغاء عملية الدفع"),
     );
   }
 
-// داخل CheckoutViewBody
 void _navigateToThankYouPage(BuildContext context) {
-  // نتحقق أن الشاشة لا تزال موجودة ولم يتم إغلاقها
-  if (!mounted) return;
-
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(
-      builder: (context) => BlocProvider.value(
-        value: getIt<CartCubit>(),
-        child: ThankYouView(key: UniqueKey()),
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        // لا داعي لـ BlocProvider هنا لأن ThankYouView يمكنها نداء getIt مباشرة
+        builder: (context) => ThankYouView(key: UniqueKey()),
       ),
-    ),
-  );
-}
+    );
+  }
 }

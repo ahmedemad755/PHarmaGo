@@ -5,6 +5,7 @@ import 'package:e_commerce/core/models/review_model.dart';
 class AddProductModel {
   final String name;
   final num price;
+  final num cost; // تم إضافة الحقل الجديد هنا
   final String code;
   final String description;
   String? imageurl;
@@ -22,6 +23,7 @@ class AddProductModel {
   AddProductModel({
     required this.name,
     required this.price,
+      required this.cost, // تم إضافة الحقل الجديد هنا
     required this.code,
     required this.description,
     this.imageurl,
@@ -62,6 +64,7 @@ class AddProductModel {
       unitAmount: (json['unitAmount'] as int?) ?? 0,
       name: json['name'] as String,
       price: json['price'] as num,
+      cost: (json['cost'] as num?) ?? 0, // تم إضافة الحقل الجديد هنا
       code: json['code'] as String,
       description: json['description'] as String,
       imageurl: json['imageurl'] as String?,
@@ -77,6 +80,7 @@ class AddProductModel {
     return AddProductModel(
       name: addProductIntety.name,
       price: addProductIntety.price,
+      cost: addProductIntety.cost, // تم إضافة الحقل الجديد هنا
       code: addProductIntety.code,
       description: addProductIntety.description,
       imageurl: addProductIntety.imageurl,
@@ -98,6 +102,7 @@ class AddProductModel {
       code: code,
       description: description,
       price: price,
+      cost: cost, // تم إضافة الحقل الجديد هنا
       reviews: reviews.map((e) => e.toEntity()).toList(),
       expirationDate: expirationDate,
       unitAmount: unitAmount,
@@ -113,6 +118,7 @@ class AddProductModel {
     return {
       'name': name,
       'price': price,
+      'cost': cost, // تم إضافة الحقل الجديد هنا
       'code': code,
       'description': description,
       'imageurl': imageurl,

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 class AddProductIntety extends Equatable {
   final String name;
   final num price;
+  final num cost; // تم إضافة الحقل الجديد هنا
   final String code;
   final String description;
   final String? imageurl;
@@ -23,6 +24,7 @@ class AddProductIntety extends Equatable {
   const AddProductIntety( {
     required this.name,
     required this.price,
+      required this.cost, // تم إضافة الحقل الجديد هنا
     required this.code,
     required this.description,
     this.imageurl,
@@ -60,6 +62,7 @@ class AddProductIntety extends Equatable {
         other.code == code &&
         other.name == name &&
         other.price == price &&
+        other.cost == cost && // تم إضافة الحقل الجديد هنا
         other.description == description &&
         other.expirationDate == expirationDate &&
         other.unitAmount == unitAmount &&
@@ -73,6 +76,7 @@ other.categoryId == categoryId &&
   int get hashCode => Object.hash(
     code,
     name,
+    cost,
     price,
     description,
     expirationDate,

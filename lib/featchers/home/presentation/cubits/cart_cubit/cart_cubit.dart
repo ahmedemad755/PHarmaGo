@@ -20,7 +20,6 @@ class CartCubit extends Cubit<CartState> {
     _restoreCartOnInit();
   }
 
-  // --- 💡 وظيفة استخراج البيانات من الـ State لتبسيط الـ UI ---
   CartEntity getCartEntity(CartState state) {
     return switch (state) {
       CartInitial(cartEntity: final cart) => cart,
@@ -30,8 +29,8 @@ class CartCubit extends Cubit<CartState> {
     };
   }
 
-  // الحصول على السلة الحالية بناءً على الـ State الحالي للكيوبت
   CartEntity get currentCart => getCartEntity(state);
+  List<CartItemEntity> get cartItems => currentCart.cartItems;
 
   void addProduct(
     AddProductIntety productEntity, {
@@ -80,9 +79,7 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    final List<CartItemEntity> currentCartItems = List.from(
-      currentCart.cartItems,
-    );
+    final List<CartItemEntity> currentCartItems = List.from(currentCart.cartItems);
 
     final existingItemIndex = currentCartItems.indexWhere(
       (item) =>
@@ -101,10 +98,7 @@ class CartCubit extends Cubit<CartState> {
   }
 
   void deleteCarItem(CartItemEntity cartItem) {
-    deleteCarItemByProduct(
-      cartItem.productIntety,
-      pharmacyId: cartItem.pharmacyId,
-    );
+    deleteCarItemByProduct(cartItem.productIntety, pharmacyId: cartItem.pharmacyId);
   }
 
   void deleteCarItemByProduct(
@@ -127,7 +121,6 @@ class CartCubit extends Cubit<CartState> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       emit(CartUpdated(const CartEntity([])));
-
       if (user != null) {
         await _cartRepo.clearCart(user.uid);
       }
@@ -162,7 +155,9 @@ class CartCubit extends Cubit<CartState> {
           quantty: map['quantity'] as int,
           pharmacyId: map['pharmacyId'],
           pharmacyName: map['pharmacyName'],
-          priceAtSelection: map['priceAtSelection'],
+          priceAtSelection: (map['priceAtSelection'] as num?)?.toDouble(),
+          // التكلفة ستكون موجودة داخل الـ productIntety تلقائياً 
+          // بمجرد أن يحمل AddProductModel البيانات كاملة
         );
       }).toList();
 
@@ -179,6 +174,7 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
+  // 🔥 التعديل الأساسي هنا لحفظ التكلفة مع السلة
   Future<void> _saveCartToRepository(CartEntity cart) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -190,6 +186,7 @@ class CartCubit extends Cubit<CartState> {
         'pharmacyId': item.pharmacyId,
         'pharmacyName': item.pharmacyName,
         'priceAtSelection': item.priceAtSelection,
+        // تأكد أن toJson الخاص بـ AddProductModel يحفظ الـ cost أيضاً
       };
     }).toList();
 

@@ -5,6 +5,7 @@ class OrderProductModel {
   final String code;
   final String imageUrl;
   final double price;
+  final num cost;
   final int quantity;
   final String? pharmacyName;
 
@@ -13,6 +14,7 @@ class OrderProductModel {
     required this.code,
     required this.imageUrl,
     required this.price,
+      required this.cost,
     required this.quantity,
     this.pharmacyName,
   });
@@ -23,6 +25,7 @@ class OrderProductModel {
       code: json['code']?.toString() ?? '',
       imageUrl: json['imageUrl']?.toString() ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      cost: (json['cost'] as num?) ?? 0,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       pharmacyName: json['pharmacyName']?.toString() ?? 'صيدلية عامة',
     );
@@ -35,7 +38,9 @@ class OrderProductModel {
       name: cartItemEntity.productIntety.name,
       code: cartItemEntity.productIntety.code,
       imageUrl: cartItemEntity.productIntety.imageurl!,
-      price: cartItemEntity.productIntety.price.toDouble(),
+price: (cartItemEntity.priceAtSelection ?? cartItemEntity.productIntety.price).toDouble(),
+      // 🔥 جلب التكلفة من كيان المنتج نفسه
+      cost: cartItemEntity.productIntety.cost.toDouble(),
       quantity: cartItemEntity.quantty,
       pharmacyName: cartItemEntity.pharmacyName,
     );
@@ -47,6 +52,7 @@ class OrderProductModel {
       'code': code,
       'imageUrl': imageUrl,
       'price': price,
+      'cost': cost,
       'quantity': quantity,
       'pharmacyName': pharmacyName,
     };

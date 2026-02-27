@@ -17,20 +17,10 @@ class FruitItem extends StatefulWidget {
 class _FruitItemState extends State<FruitItem> {
   bool isFavorite = false;
 
-  // دالة وهمية للإضافة إلى السلة. (يمكنك استبدالها لاحقًا بـ Bloc أو Provider)
   void _addToCart() {
-    // 💡 يمكن هنا استخدام:
     context.read<CartCubit>().addProduct(widget.productEntity, quantity: 1);
-
-    // showOverlayToast(
-    //       context,
-    //       'تمت إضافة ${widget.productEntity.name} إلى السلة! 🛒',
-    //       // يمكنك إرسال لون آخر هنا، الافتراضي هو الأخضر
-    //       color: Colors.green.shade700,
-    //     );
   }
 
-  // Function to handle navigation
   void _navigateToDetails() {
     Navigator.pushNamed(
       context,
@@ -69,28 +59,29 @@ class _FruitItemState extends State<FruitItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // === الصف الأول (الخصم والمفضلة) ===
+                // === الصف الأول (العلامة والمفضلة) ===
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (hasDiscount)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
+                          horizontal: 8, // زيادة العرض قليلاً ليناسب الشكل
+                          vertical: 6,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          "$discount%",
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
+  decoration: BoxDecoration(
+  // تم تغيير لون الخلفية لأخضر خفيف جداً
+  color: const Color.fromARGB(255, 108, 244, 54).withOpacity(0.1),
+  borderRadius: BorderRadius.circular(8),
+  // تم تغيير لون الحدود لأخضر
+  border: Border.all(color: Colors.green.shade400),
+),
+child: Icon(
+  Icons.local_offer, // أيقونة تدل على العرض
+  // تم تغيير لون الأيقونة لأخضر داكن
+  color: Colors.green.shade700,
+  size: 16,
+),
                       ),
                     if (!hasDiscount) const SizedBox(width: 42),
                     IconButton(
@@ -100,9 +91,6 @@ class _FruitItemState extends State<FruitItem> {
                         size: 20,
                       ),
                       onPressed: () {
-                        // لإيقاف حدث الـ onTap الخاص بالـ GestureDetector الرئيسي
-                        // يجب استخدام MaterialStateProperty أو onTap منفصل، لكن
-                        // في IconButton، يتم تمرير onTap الخاص به دون تشغيل onTap للـ GestureDetector
                         setState(() {
                           isFavorite = !isFavorite;
                         });
@@ -156,7 +144,7 @@ class _FruitItemState extends State<FruitItem> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            widget.productEntity.price.toString(),
+                            "${widget.productEntity.price} ريال",
                             style: const TextStyle(
                               color: Colors.black54,
                               fontSize: 12,
@@ -168,31 +156,6 @@ class _FruitItemState extends State<FruitItem> {
                         ],
                       ),
                     ),
-
-                    // ➕ زر الإضافة إلى السلة
-                    // GestureDetector(
-                    //   onTap: _addToCart, // ⬅️ استدعاء دالة الإضافة
-                    //   child: Container(
-                    //     height: 30,
-                    //     width: 30,
-                    //     decoration: BoxDecoration(
-                    //       color: Colors.blue.shade700, // لون مميز للزر
-                    //       shape: BoxShape.circle,
-                    //       boxShadow: [
-                    //         BoxShadow(
-                    //           color: Colors.blue.withOpacity(0.3),
-                    //           blurRadius: 4,
-                    //           offset: const Offset(0, 2),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //     child: const Icon(
-                    //       Icons.add,
-                    //       color: Colors.white,
-                    //       size: 18,
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ],
