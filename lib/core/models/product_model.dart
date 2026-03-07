@@ -19,6 +19,7 @@ class AddProductModel {
   final String category;
   final String categoryId; // أضفنا الحقل هنا
   final String pharmacyId; // أضفنا الحقل هنا
+  final bool isPrescriptionRequired;
 
   AddProductModel({
     required this.name,
@@ -33,6 +34,7 @@ class AddProductModel {
     required this.reviews,
     this.sellingcount = 0,
     this.discountPercentage = 0,
+    this.isPrescriptionRequired = false,
     this.category = 'الأدوية',
     this.categoryId = '', // أضفنا الحقل هنا
     required this.pharmacyId, // أضفنا الحقل هنا
@@ -73,6 +75,7 @@ class AddProductModel {
       categoryId: json['categoryId'] as String? ?? '',
       pharmacyId:
           json['pharmacyId'] as String? ?? 'غير معروف', // سحب المعرف هنا
+      isPrescriptionRequired: json['isPrescriptionRequired'] ?? false,
     );
   }
 
@@ -93,6 +96,7 @@ class AddProductModel {
       discountPercentage: addProductIntety.discountPercentage,
       category: addProductIntety.category,
       pharmacyId: addProductIntety.pharmacyId, // تحويل المعرف هنا
+      isPrescriptionRequired: addProductIntety.isPrescriptionRequired,
     );
   }
 
@@ -111,6 +115,7 @@ class AddProductModel {
       discountPercentage: discountPercentage,
       category: category,
       pharmacyId: pharmacyId, // تحويل المعرف هنا
+      isPrescriptionRequired: isPrescriptionRequired,
     );
   }
 
@@ -133,6 +138,7 @@ class AddProductModel {
       'category': category,
       'categoryId': categoryId, // حفظ القسم هنا
       'pharmacyId': pharmacyId, // حفظ المعرف هنا
+      'isPrescriptionRequired': isPrescriptionRequired,
     };
   }
 }

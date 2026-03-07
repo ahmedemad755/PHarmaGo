@@ -6,15 +6,15 @@ import 'package:e_commerce/featchers/onboarding/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class FruitItem extends StatefulWidget {
-  const FruitItem({super.key, required this.productEntity});
+class productItem extends StatefulWidget {
+  const productItem({super.key, required this.productEntity});
   final AddProductIntety productEntity;
 
   @override
-  State<FruitItem> createState() => _FruitItemState();
+  State<productItem> createState() => _productItemState();
 }
 
-class _FruitItemState extends State<FruitItem> {
+class _productItemState extends State<productItem> {
   bool isFavorite = false;
 
   void _addToCart() {
@@ -144,7 +144,7 @@ child: Icon(
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            "${widget.productEntity.price} ريال",
+                            "${widget.productEntity.price} جنيه مصري",
                             style: const TextStyle(
                               color: Colors.black54,
                               fontSize: 12,

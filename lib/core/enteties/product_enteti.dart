@@ -18,6 +18,7 @@ class AddProductIntety extends Equatable {
   final String categoryId;
   final num discountPercentage;
   final String pharmacyId; // تم إضافة الحقل هنا
+  final bool isPrescriptionRequired; // تم إضافة الحقل الجديد هنا
 
   bool get hasDiscount => discountPercentage > 0;
 
@@ -38,6 +39,7 @@ class AddProductIntety extends Equatable {
     this.category = 'الأدوية',
     this.categoryId = '',
     required this.pharmacyId, // تم إضافته هنا
+    this.isPrescriptionRequired = false, // تم إضافة الحقل الجديد هنا
   });
 
   @override
@@ -52,6 +54,7 @@ class AddProductIntety extends Equatable {
     category,
     categoryId,
     pharmacyId, // تم إضافته هنا
+    isPrescriptionRequired,
   ];
 
   // تم الحفاظ على الـ operator == والـ hashCode كما هي مع إضافة الحقل الجديد

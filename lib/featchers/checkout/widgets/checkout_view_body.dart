@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/services/paypal_debugger.dart';
@@ -13,6 +12,7 @@ import 'package:e_commerce/featchers/checkout/widgets/thankyou_page.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CheckoutViewBody extends StatefulWidget {
   const CheckoutViewBody({super.key});
@@ -24,9 +24,8 @@ class CheckoutViewBody extends StatefulWidget {
 class _CheckoutViewBodyState extends State<CheckoutViewBody> {
   late PageController pageController;
   final formKey = GlobalKey<FormState>();
-  final ValueNotifier<AutovalidateMode> valueListenable = ValueNotifier(
-    AutovalidateMode.disabled,
-  );
+  final ValueNotifier<AutovalidateMode> valueListenable =
+      ValueNotifier(AutovalidateMode.disabled);
 
   int currentPageIndex = 0;
 
@@ -48,66 +47,82 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  // ✅ نقوم بتغليف الصفحة بالكامل بـ BlocProvider.value
-  // ونعطيه القيمة مباشرة من getIt
-  return BlocProvider<CartCubit>.value(
-    value: getIt<CartCubit>(),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          // الآن أي وجت داخل هذه الشجرة (حتى لو كان CheckoutSteps)
-          // سيجد الـ CartCubit في الـ context بنجاح
-          CheckoutSteps(
-            currentIndex: currentPageIndex,
-            onTap: (index) {
-              pageController.animateToPage(
-                index,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            pageController: pageController,
-            formKey: formKey,
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider<CartCubit>.value(
+      value: getIt<CartCubit>(),
+      child: BlocListener<AddOrderCubit, AddOrderState>(
+        // 🔥 التعديل الجوهري: مراقبة حالة الطلب
+        listener: (context, state) {
+          if (state is AddOrderSuccess) {
+            context.read<CartCubit>().clearCart(); // مسح السلة عند النجاح فقط
+            _navigateToThankYouPage(context);
+          } else if (state is AddOrderFailure) {
+            showBar(context, state.message, color: Colors.red);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              CheckoutSteps(
+                currentIndex: currentPageIndex,
+                onTap: (index) {
+                  pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                pageController: pageController,
+                formKey: formKey,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: CheckOutStepsPageView(
+                  pageController: pageController,
+                  formKey: formKey,
+                  valueListenable: valueListenable,
+                ),
+              ),
+              const SizedBox(height: 20),
+              BlocBuilder<CartCubit, CartState>(
+                builder: (context, state) {
+                  return CustomButtn(
+                    text: getNextButtonText(currentPageIndex, context),
+                    onPressed: () => _handleNextStep(context),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: CheckOutStepsPageView(
-              pageController: pageController,
-              formKey: formKey,
-              valueListenable: valueListenable,
-            ),
-          ),
-          const SizedBox(height: 20),
-          CustomButtn(
-            text: getNextButtonText(currentPageIndex, context),
-            onPressed: () {
-              if (currentPageIndex == 0) {
-                _handleShippingSectionValidation(context);
-              } else if (currentPageIndex == 1) {
-                _handleAddressValidation();
-              } else {
-                var orderEntity = context.read<OrderInputEntity>();
-                if (orderEntity.payWithCash == true) {
-                  _showOrderConfirmationDialog(context);
-                } else {
-                  _processPayment(context);
-                }
-              }
-            },
-          ),
-          const SizedBox(height: 32),
-        ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  void _handleNextStep(BuildContext context) {
+    if (currentPageIndex == 0) {
+      _handleShippingSectionValidation(context);
+    } else if (currentPageIndex == 1) {
+      _handleAddressValidation();
+    } else {
+      _handleFinalStepValidation(context);
+    }
+  }
 
   void _handleShippingSectionValidation(BuildContext context) {
-    if (context.read<OrderInputEntity>().payWithCash != null) {
+    final cartCubit = context.read<CartCubit>();
+    final orderEntity = context.read<OrderInputEntity>();
+
+    if (orderEntity.payWithCash != null) {
+      if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
+        _showPrescriptionRequiredDialog(context);
+        return;
+      }
+
       pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -117,13 +132,59 @@ Widget build(BuildContext context) {
     }
   }
 
-String getNextButtonText(int page, BuildContext context) {
-    // نقرأ من الـ context الممرر للدالة وهو context الخاص بـ build
-    var orderEntity = context.read<OrderInputEntity>();
-    if (page == 2) {
-      return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
+  void _showPrescriptionRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.medical_information, color: Colors.red),
+            SizedBox(width: 8),
+            Text('مطلوب روشتة طبية'),
+          ],
+        ),
+        content: const Text(
+          'هذا الدواء يتطلب روشتة طبية وإرشاداً طبياً موثوقاً. يرجى رفع صورة الروشتة للمتابعة.',
+          style: TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('إلغاء', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await _pickPrescriptionImage(context);
+            },
+            child: const Text('رفع الروشتة الآن'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickPrescriptionImage(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      if (!context.mounted) return;
+      context.read<CartCubit>().setPrescriptionImage(image);
+      showBar(context, 'تم رفع الروشتة بنجاح', color: Colors.green);
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      if (!context.mounted) return;
+      showBar(context, 'يجب رفع الصورة للمتابعة', color: Colors.orange);
     }
-    return 'التالي';
   }
 
   void _handleAddressValidation() {
@@ -139,11 +200,29 @@ String getNextButtonText(int page, BuildContext context) {
     }
   }
 
-void _showOrderConfirmationDialog(BuildContext parentContext) {
-    // نقرأ القيم من الـ parentContext (context الصفحة) قبل الدخول للـ Dialog
-    var orderEntity = parentContext.read<OrderInputEntity>();
-    var addOrderCubit = parentContext.read<AddOrderCubit>();
-    var cartCubit = getIt<CartCubit>();
+  void _handleFinalStepValidation(BuildContext context) {
+    final cartCubit = context.read<CartCubit>();
+    final orderEntity = context.read<OrderInputEntity>();
+
+    if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
+      showBar(context, 'عذراً، الروشتة مفقودة. تم إرجاعك لرفعها.', color: Colors.orange);
+      pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+      return;
+    }
+
+    orderEntity.prescriptionFile = cartCubit.prescriptionImage;
+
+    if (orderEntity.payWithCash == true) {
+      _showOrderConfirmationDialog(context);
+    } else {
+      _processPayment(context);
+    }
+  }
+
+  void _showOrderConfirmationDialog(BuildContext parentContext) {
+    final orderEntity = parentContext.read<OrderInputEntity>();
+    final addOrderCubit = parentContext.read<AddOrderCubit>();
+    final cartCubit = parentContext.read<CartCubit>();
 
     String detectedPharmacyId = 'unknown';
     if (cartCubit.currentCart.cartItems.isNotEmpty) {
@@ -153,7 +232,7 @@ void _showOrderConfirmationDialog(BuildContext parentContext) {
     showDialog(
       context: parentContext,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog( // نستخدم dialogContext هنا للـ UI فقط
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('تأكيد الطلب', textAlign: TextAlign.center),
         content: Column(
@@ -169,11 +248,19 @@ void _showOrderConfirmationDialog(BuildContext parentContext) {
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('تعديل')),
           ElevatedButton(
             onPressed: () {
+              if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
+                Navigator.pop(dialogContext);
+                showBar(parentContext, 'خطأ: لم يتم العثور على صورة الروشتة!', color: Colors.red);
+                pageController.jumpToPage(0);
+                return;
+              }
+
               Navigator.pop(dialogContext);
               orderEntity.pharmacyId = detectedPharmacyId;
+              orderEntity.prescriptionFile = cartCubit.prescriptionImage; 
+              
+              // 🔥 التعديل: إرسال الطلب فقط وانتظار النتيجة في الـ Listener
               addOrderCubit.addOrder(order: orderEntity);
-              cartCubit.clearCart();
-              _navigateToThankYouPage(parentContext); // نستخدم الـ parentContext
             },
             child: const Text('تأكيد'),
           ),
@@ -183,13 +270,15 @@ void _showOrderConfirmationDialog(BuildContext parentContext) {
   }
 
   void _processPayment(BuildContext context) {
-    var orderEntity = context.read<OrderInputEntity>();
-    var addOrderCubit = context.read<AddOrderCubit>();
-    var cartCubit = getIt<CartCubit>();
+    final orderEntity = context.read<OrderInputEntity>();
+    final addOrderCubit = context.read<AddOrderCubit>();
+    final cartCubit = context.read<CartCubit>();
 
     if (cartCubit.currentCart.cartItems.isNotEmpty) {
       orderEntity.pharmacyId = cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
     }
+    
+    orderEntity.prescriptionFile = cartCubit.prescriptionImage;
 
     TransactionModel transactionModel = TransactionModel.fromEntity(orderEntity);
 
@@ -199,22 +288,28 @@ void _showOrderConfirmationDialog(BuildContext parentContext) {
       secretKey: secretpaypalKey,
       transactions: [transactionModel.toJson()],
       onSuccess: (response) {
+        // 🔥 التعديل: إرسال الطلب فقط وانتظار النتيجة في الـ Listener
         addOrderCubit.addOrder(order: orderEntity);
-        cartCubit.clearCart();
-        _navigateToThankYouPage(context);
       },
       onError: (error) => showBar(context, "فشلت عملية الدفع!", color: Colors.red),
       onCancel: () => showBar(context, "تم إلغاء عملية الدفع"),
     );
   }
 
-void _navigateToThankYouPage(BuildContext context) {
+  void _navigateToThankYouPage(BuildContext context) {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        // لا داعي لـ BlocProvider هنا لأن ThankYouView يمكنها نداء getIt مباشرة
         builder: (context) => ThankYouView(key: UniqueKey()),
       ),
     );
+  }
+
+  String getNextButtonText(int page, BuildContext context) {
+    var orderEntity = context.read<OrderInputEntity>();
+    if (page == 2) {
+      return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
+    }
+    return 'التالي';
   }
 }

@@ -1,6 +1,7 @@
 import 'package:e_commerce/featchers/checkout/data/order_product_model.dart';
 import 'package:e_commerce/featchers/checkout/data/shipping_address_model.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 class OrderModel {
@@ -10,9 +11,11 @@ class OrderModel {
   final List<OrderProductModel> orderProducts;
   final String paymentMethod;
   final String orderId;
-  final String status; 
-  final String date;   
-  final String pharmacyId; // 🔹 الحقل موجود هنا
+  final String status;
+  final String date;
+  final String pharmacyId;
+  final dynamic createdAt; // وقت السيرفر للترتيب
+  final String? prescriptionImage; // رابط الروشتة المرفوعة
 
   OrderModel({
     required this.totalPrice,
@@ -23,42 +26,52 @@ class OrderModel {
     required this.paymentMethod,
     required this.status,
     required this.date,
-    required this.pharmacyId, // 🔹 الحقل موجود هنا
+    required this.pharmacyId,
+    this.createdAt,
+    this.prescriptionImage,
   });
 
   factory OrderModel.fromEntity(OrderInputEntity orderEntity) {
     return OrderModel(
+      // توليد ID فريد للطلب إذا لم يكن موجوداً
       orderId: const Uuid().v4(),
-      totalPrice: orderEntity.calculatetotalpriceAfterDiscountAndDelivery(), // 🔹 تم التعديل لاستخدام السعر النهائي
+      totalPrice: orderEntity.calculatetotalpriceAfterDiscountAndDelivery(),
       uId: orderEntity.uID,
       shippingAddressModel: ShippingAddressModel.fromEntity(
         orderEntity.shippingAddressEntity,
       ),
+      // تحويل كل منتج في السلة إلى OrderProductModel
       orderProducts: orderEntity.cartEntity.cartItems
           .map((e) => OrderProductModel.fromEntity(cartItemEntity: e))
           .toList(),
       paymentMethod: orderEntity.payWithCash == true ? 'Cash' : 'Paypal',
-      status: 'pending', 
-      date: DateTime.now().toString(), 
-      pharmacyId: orderEntity.pharmacyId, // 🔹 جلب المعرف من الـ Entity
+      status: 'pending',
+      date: DateTime.now().toString(),
+      createdAt: FieldValue.serverTimestamp(), // الوقت الفعلي من سيرفر جوجل
+      pharmacyId: orderEntity.pharmacyId,
+      // أخذ الرابط الذي تم إنشاؤه بعد رفع الصورة في الـ Cubit
+      prescriptionImage: orderEntity.prescriptionImageUrl,
     );
   }
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
-    var shippingAddress = json['shippingAddressModel'] as Map<String, dynamic>? ?? {};
-    
     return OrderModel(
       orderId: json['orderId']?.toString() ?? '',
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
       uId: json['uId']?.toString() ?? '',
-      status: shippingAddress['status']?.toString() ?? json['status']?.toString() ?? 'pending',
+      status: json['status']?.toString() ?? 'pending',
       date: json['date']?.toString() ?? '',
+      createdAt: json['createdAt'],
       paymentMethod: json['paymentMethod']?.toString() ?? '',
-      pharmacyId: json['pharmacyId']?.toString() ?? 'unknown', // 🔹 قراءة المعرف من JSON
-      shippingAddressModel: ShippingAddressModel.fromJson(shippingAddress),
+      pharmacyId: json['pharmacyId']?.toString() ?? 'unknown',
+      prescriptionImage: json['prescriptionImage']?.toString(),
+      shippingAddressModel: ShippingAddressModel.fromJson(
+        json['shippingAddressModel'] as Map<String, dynamic>? ?? {},
+      ),
       orderProducts: (json['orderProducts'] as List<dynamic>?)
               ?.map((e) => OrderProductModel.fromJson(e as Map<String, dynamic>))
-              .toList() ?? [],
+              .toList() ??
+          [],
     );
   }
 
@@ -68,7 +81,9 @@ class OrderModel {
         'uId': uId,
         'status': status,
         'date': date,
-        'pharmacyId': pharmacyId, // 🔹 حفظ المعرف في Firebase
+        'createdAt': createdAt ?? FieldValue.serverTimestamp(),
+        'pharmacyId': pharmacyId,
+        'prescriptionImage': prescriptionImage, // سيحفظ كـ URL أو null
         'shippingAddressModel': shippingAddressModel.toJson(),
         'orderProducts': orderProducts.map((e) => e.toJson()).toList(),
         'paymentMethod': paymentMethod,

@@ -8,14 +8,16 @@ class OrderProductModel {
   final num cost;
   final int quantity;
   final String? pharmacyName;
+  final bool isPrescriptionRequired; // ✅ تم إضافة الحقل هنا
 
   OrderProductModel({
     required this.name,
     required this.code,
     required this.imageUrl,
     required this.price,
-      required this.cost,
+    required this.cost,
     required this.quantity,
+    required this.isPrescriptionRequired, // ✅ مطلوب في الـ Constructor
     this.pharmacyName,
   });
 
@@ -28,6 +30,8 @@ class OrderProductModel {
       cost: (json['cost'] as num?) ?? 0,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       pharmacyName: json['pharmacyName']?.toString() ?? 'صيدلية عامة',
+      // ✅ قراءة القيمة من JSON عند جلب الطلبات القديمة
+      isPrescriptionRequired: json['isPrescriptionRequired'] as bool? ?? false,
     );
   }
 
@@ -37,16 +41,17 @@ class OrderProductModel {
     return OrderProductModel(
       name: cartItemEntity.productIntety.name,
       code: cartItemEntity.productIntety.code,
-      imageUrl: cartItemEntity.productIntety.imageurl!,
-price: (cartItemEntity.priceAtSelection ?? cartItemEntity.productIntety.price).toDouble(),
-      // 🔥 جلب التكلفة من كيان المنتج نفسه
+      imageUrl: cartItemEntity.productIntety.imageurl ?? '',
+      price: (cartItemEntity.priceAtSelection ?? cartItemEntity.productIntety.price).toDouble(),
       cost: cartItemEntity.productIntety.cost.toDouble(),
       quantity: cartItemEntity.quantty,
       pharmacyName: cartItemEntity.pharmacyName,
+      // 🔥 نقل الحالة من كيان المنتج لضمان تفعيل التحقق في صفحة الدفع
+      isPrescriptionRequired: cartItemEntity.productIntety.isPrescriptionRequired,
     );
   }
 
-  toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'name': name,
       'code': code,
@@ -55,6 +60,7 @@ price: (cartItemEntity.priceAtSelection ?? cartItemEntity.productIntety.price).t
       'cost': cost,
       'quantity': quantity,
       'pharmacyName': pharmacyName,
+      'isPrescriptionRequired': isPrescriptionRequired, // ✅ حفظ الحالة في Firestore
     };
   }
 }

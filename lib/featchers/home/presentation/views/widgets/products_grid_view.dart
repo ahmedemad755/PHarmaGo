@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/enteties/product_enteti.dart'; // Assuming this exists
-import 'package:e_commerce/core/widgets/fruit_item.dart';
+import 'package:e_commerce/core/widgets/product_item.dart';
 import 'package:flutter/material.dart';
 
 class ProductsGridView extends StatelessWidget {
@@ -28,7 +28,7 @@ final int? limit;
             childAspectRatio: 0.7,
           ),
           itemCount: displayCount,
-          itemBuilder: (context, index) => FruitItem(
+          itemBuilder: (context, index) => productItem(
             // إضافة ValueKey لضمان عدم تكرار العناصر في الذاكرة
             key: ValueKey(products[index].name + index.toString()), 
             productEntity: products[index],

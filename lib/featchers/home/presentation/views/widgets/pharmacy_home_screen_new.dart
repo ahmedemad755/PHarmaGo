@@ -199,7 +199,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                     children: [
                       const CustomHomeAppBar(),
                       const SizedBox(height: 16),
-                      _buildSearchBarWithFilter(),
+                      buildSearchBarWithFilter(),
                       const SizedBox(height: 18),
                       _buildUploadPrescription(isMobile),
                       const SizedBox(height: 20),
@@ -508,7 +508,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget _buildSearchBarWithFilter() {
+  Widget buildSearchBarWithFilter() {
     return Container(
       height: 50,
       decoration: BoxDecoration(

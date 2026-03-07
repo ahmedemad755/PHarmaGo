@@ -12,38 +12,55 @@ class ShippingSection extends StatefulWidget {
 
 class _ShippingSectionState extends State<ShippingSection>
     with AutomaticKeepAliveClientMixin {
+  
   int selectedIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    // 🔹 استرجاع الحالة السابقة إذا كان المستخدم قد اختار بالفعل
+    final currentPayWithCash = context.read<OrderInputEntity>().payWithCash;
+    if (currentPayWithCash == true) {
+      selectedIndex = 0;
+    } else if (currentPayWithCash == false) {
+      selectedIndex = 1;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final order = context.read<OrderInputEntity>();
     final double totalPrice = order.cartEntity.getTotalPrice().toDouble();
+    
+    // 🚚 تكلفة الكاش (السعر + 50 توصيل) - يفضل جعل الـ 50 متغيراً ثابتاً في الإعدادات لاحقاً
     final double cashOnDeliveryPrice = totalPrice + 50;
-    super.build(context);
+
     return Column(
       children: [
         ShippingItem(
           title: 'الدفع عند الاستلام',
-          subTitle: 'التسليم من المكان',
-          price: cashOnDeliveryPrice.toString(),
+          subTitle: 'التسليم في العنوان المحدد',
+          price: '$cashOnDeliveryPrice جنيه', // 🔹 إضافة العملة لتحسين الشكل
           isSelected: selectedIndex == 0,
           onTap: () {
             setState(() {
               selectedIndex = 0;
             });
-            context.read<OrderInputEntity>().payWithCash = true;
+            order.payWithCash = true;
           },
         ),
         const SizedBox(height: 16),
         ShippingItem(
           title: 'الدفع اونلاين',
-          subTitle: 'يرجي تحديد طريقه الدفع',
-          price: totalPrice.toString(),
+          subTitle: 'PayPal / بطاقة ائتمان',
+          price: '$totalPrice جنيه',
           isSelected: selectedIndex == 1,
           onTap: () {
             setState(() {
               selectedIndex = 1;
             });
-            context.read<OrderInputEntity>().payWithCash = false;
+            order.payWithCash = false;
           },
         ),
       ],

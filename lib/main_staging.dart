@@ -4,6 +4,7 @@ import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/services/custom_bloc_observer.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
+import 'package:e_commerce/core/services/supabase_storge.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
 import 'package:e_commerce/firebase_options.dart';
@@ -15,17 +16,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// تعريف المفتاح العالمي لحل مشكلة التنقل و Duplicate GlobalKeys
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     
-    // 1. تهيئة الخدمات الأساسية (Firebase, Prefs, GetIt)
+    // 1. تهيئة الخدمات الأساسية (Firebase, Supabase, Prefs, GetIt)
     await _initServices();
 
-    // 2. تحديد الشاشة الافتتاحية بناءً على منطق Onboarding و Auth
+    // 2. تحديد الشاشة الافتتاحية
     final String initialRoute = _getInitialRoute();
 
     runApp(PharmaGo(initialRoute: initialRoute));
@@ -34,14 +34,22 @@ void main() async {
   });
 }
 
-/// دالة مجمعة لتهيئة كل السيرفس مرة واحدة لضمان ترتيب التنفيذ
 Future<void> _initServices() async {
   Bloc.observer = CustomBlocObserver();
   
+  // تهيئة Firebase
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   } catch (e) {
     debugPrint("❌ Firebase Init Failed: $e");
+  }
+
+  // 🔥 تهيئة Supabase وإنشاء البوكيتات (مثل بوكيت prescriptions) تلقائياً
+  try {
+    await SupabaseStorgeService.initSupabase();
+    debugPrint("✅ Supabase Initialized & Buckets Checked");
+  } catch (e) {
+    debugPrint("❌ Supabase Init Failed: $e");
   }
 
   // تهيئة المستودعات المحلية وحقن التبعيات
@@ -49,23 +57,18 @@ Future<void> _initServices() async {
   await setupGetit();
 }
 
-/// منطق اختيار أول شاشة تظهر للمستخدم
-/// الترتيب: Onboarding -> Login (if not logged in) -> Home
 String _getInitialRoute() {
   final bool isOnBoardingSeen = Prefs.getBool(kIsOnBoardingViewSeen) ?? false;
   final user = FirebaseAuth.instance.currentUser;
 
-  // الحالة الأولى: لم يشاهد الأونبوردنج بعد
   if (!isOnBoardingSeen) {
     return AppRoutes.onboarding;
   }
 
-  // الحالة الثانية: شاهد الأونبوردنج ولكن لم يسجل الدخول (أو انتهت جلسته)
   if (user == null) {
     return AppRoutes.login;
   }
   
-  // الحالة الثالثة: مستخدم مسجل دخول بالفعل
   return AppRoutes.home;
 }
 

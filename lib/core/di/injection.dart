@@ -13,6 +13,8 @@ import 'package:e_commerce/core/services/cloud_fire_store_service.dart';
 import 'package:e_commerce/core/services/database_service.dart';
 import 'package:e_commerce/core/services/firebase_auth_service.dart';
 import 'package:e_commerce/core/services/gemini_service.dart';
+import 'package:e_commerce/core/services/storge_service.dart'; // تأكد من المسار الصحيح
+import 'package:e_commerce/core/services/supabase_storge.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo.dart';
 import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
@@ -28,14 +30,19 @@ import 'package:get_it/get_it.dart';
 
 final getIt = GetIt.instance;
 
-Future<void> setupGetit() async{
+Future<void> setupGetit() async {
+  // 1. الأساسيات والخدمات (Services)
   getIt.registerSingleton<FirebaseAuthService>(FirebaseAuthService());
-
+  
   final fireStoreService = FireStoreService();
   getIt.registerSingleton<FireStoreService>(fireStoreService);
   getIt.registerSingleton<DatabaseService>(fireStoreService);
   getIt.registerSingleton<GeminiService>(GeminiService());
+  
+  // تسجيل خدمة التخزين (Supabase)
+  getIt.registerSingleton<StorgeService>(SupabaseStorgeService());
 
+  // 2. المستودعات (Repositories)
   getIt.registerSingleton<AuthRepo>(
     AuthRepoImpl(
       firebaseAuthService: getIt<FirebaseAuthService>(),
@@ -48,17 +55,31 @@ Future<void> setupGetit() async{
     ProductsRepoImpl(getIt<DatabaseService>()),
   );
 
+  // تحديث OrdersRepo ليدعم خدمة التخزين لرفع الروشتات
+  getIt.registerSingleton<OrdersRepo>(
+    OrdersRepoImpl(
+      getIt<DatabaseService>(), 
+      getIt<StorgeService>(),
+    ),
+  );
+
+  getIt.registerSingleton<CartRepo>(CartRepoImpl());
+
+  getIt.registerSingleton<PrescriptionRepo>(
+    PrescriptionRepoImpl(getIt<GeminiService>()),
+  );
+
+  getIt.registerLazySingleton<BannersRepo>(
+    () => BannersRepoImpl(databaseService: getIt<DatabaseService>()),
+  );
+
+  // 3. الكيوبيتات (Cubits)
   getIt.registerSingleton<AuthRepoImpl>(getIt<AuthRepo>() as AuthRepoImpl);
   getIt.registerFactory<SugnupCubit>(() => SugnupCubit(getIt()));
   getIt.registerSingleton<LoginCubit>(LoginCubit(getIt()));
   getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt<AuthRepo>()));
-  getIt.registerSingleton<OrdersRepo>(OrdersRepoImpl(getIt<DatabaseService>()));
-
-  getIt.registerSingleton<CartRepo>(CartRepoImpl());
   
-  // تغيير من Lazy إلى Singleton عادي لضمان الجاهزية
   getIt.registerSingleton<CartEntity>(CartEntity([]));
-
   getIt.registerSingleton<CartCubit>(
     CartCubit(getIt<CartEntity>(), getIt<CartRepo>()),
   );
@@ -67,31 +88,13 @@ Future<void> setupGetit() async{
     () => ProductsCubit(getIt<ProductsRepo>()),
   );
 
-  getIt.registerSingleton<PrescriptionRepo>(
-    PrescriptionRepoImpl(getIt<GeminiService>()),
-  );
-
   getIt.registerFactory<PrescriptionCubit>(
     () => PrescriptionCubit(getIt<PrescriptionRepo>()),
   );
 
-  // تغيير من Lazy إلى Singleton عادي
   getIt.registerSingleton<AlarmsCubit>(AlarmsCubit());
-
   getIt.registerSingleton<OrdersCubit>(OrdersCubit(getIt<OrdersRepo>()));
 
-
-  // ---------------------------
-  // Banners Feature (Home Slider)
-  // ---------------------------
-  
-  // تأكد أن اسم الكلاس في الـ Repo هو BannersRepo
-  getIt.registerLazySingleton<BannersRepo>(
-    () => BannersRepoImpl(databaseService: getIt<DatabaseService>()),
-  );
-
-  // تأكد أن اسم الكلاس في ملف الـ Cubit هو BannersCubit
-  // إذا كان اسم الكلاس داخل الملف BannerCubit فاحذف حرف الـ s من هنا ومن الـ Router
   getIt.registerFactory<BannersCubit>(
     () => BannersCubit(getIt<BannersRepo>()),
   );

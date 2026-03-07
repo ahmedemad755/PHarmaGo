@@ -7,6 +7,7 @@ import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart'; // تأكد من إضافة الـ package
 import 'package:meta/meta.dart';
 
 part 'cart_state.dart';
@@ -14,10 +15,23 @@ part 'cart_state.dart';
 class CartCubit extends Cubit<CartState> {
   final CartRepo _cartRepo;
 
+  // 📸 متغير لحمل صورة الروشتة المختارة
+  XFile? prescriptionImage;
+
   CartCubit(CartEntity cartEntity, CartRepo cartRepo)
       : _cartRepo = cartRepo,
         super(CartInitial(cartEntity)) {
     _restoreCartOnInit();
+  }
+
+  // ✅ Getter للتحقق هل السلة تحتوي على منتج يتطلب روشتة
+  bool get isPrescriptionRequired =>
+      currentCart.cartItems.any((item) => item.productIntety.isPrescriptionRequired == true);
+
+  // ✅ دالة لتحديث صورة الروشتة
+  void setPrescriptionImage(XFile? image) {
+    prescriptionImage = image;
+    emit(CartUpdated(currentCart));
   }
 
   CartEntity getCartEntity(CartState state) {
@@ -39,6 +53,8 @@ class CartCubit extends Cubit<CartState> {
     String? pharmacyName,
     num? priceAtSelection,
   }) {
+    print("🛒 ADDING TO CART: Product Name: ${productEntity.name}");
+  print("🛒 ADDING TO CART: Is Prescription Required: ${productEntity.isPrescriptionRequired}");
     final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
 
     final existingItemIndex = currentCartItems.indexWhere(
@@ -120,6 +136,7 @@ class CartCubit extends Cubit<CartState> {
   Future<void> clearCart() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
+      prescriptionImage = null; // مسح الصورة عند تفريغ السلة
       emit(CartUpdated(const CartEntity([])));
       if (user != null) {
         await _cartRepo.clearCart(user.uid);
@@ -156,8 +173,6 @@ class CartCubit extends Cubit<CartState> {
           pharmacyId: map['pharmacyId'],
           pharmacyName: map['pharmacyName'],
           priceAtSelection: (map['priceAtSelection'] as num?)?.toDouble(),
-          // التكلفة ستكون موجودة داخل الـ productIntety تلقائياً 
-          // بمجرد أن يحمل AddProductModel البيانات كاملة
         );
       }).toList();
 
@@ -174,7 +189,6 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
-  // 🔥 التعديل الأساسي هنا لحفظ التكلفة مع السلة
   Future<void> _saveCartToRepository(CartEntity cart) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -186,7 +200,6 @@ class CartCubit extends Cubit<CartState> {
         'pharmacyId': item.pharmacyId,
         'pharmacyName': item.pharmacyName,
         'priceAtSelection': item.priceAtSelection,
-        // تأكد أن toJson الخاص بـ AddProductModel يحفظ الـ cost أيضاً
       };
     }).toList();
 
@@ -194,6 +207,7 @@ class CartCubit extends Cubit<CartState> {
   }
 
   void clearInMemoryCart() {
+    prescriptionImage = null;
     emit(CartUpdated(const CartEntity([])));
   }
 }
