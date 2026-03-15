@@ -329,7 +329,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         Row(
           children: [
             Text(
-              "${discountedPrice.toStringAsFixed(2)} جنيه مصري",
+              "${discountedPrice.toStringAsFixed(2)} جنيه ",
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -339,7 +339,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             if (hasDiscount) ...[
               const SizedBox(width: 8),
               Text(
-                "${price.toStringAsFixed(2)} جنيه مصري",
+                "${price.toStringAsFixed(2)} جنيه ",
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -424,7 +424,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${displayPrice.toStringAsFixed(2)} جنيه مصري',
+                      '${displayPrice.toStringAsFixed(2)} جنيه ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

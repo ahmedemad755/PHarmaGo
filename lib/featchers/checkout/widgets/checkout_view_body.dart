@@ -132,16 +132,24 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     }
   }
 
-  void _showPrescriptionRequiredDialog(BuildContext context) {
+void _showPrescriptionRequiredDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row( // تم إزالة const هنا لاستخدام Expanded بالداخل
           children: [
-            Icon(Icons.medical_information, color: Colors.red),
-            SizedBox(width: 8),
-            Text('مطلوب روشتة طبية'),
+            const Icon(Icons.medical_information, color: Colors.red),
+            const SizedBox(width: 8),
+            // ✅ تغليف النص بـ Expanded لمنع الـ Overflow في العناوين الطويلة
+            Expanded(
+              child: Text(
+                'مطلوب روشتة طبية',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis, // يضع نقاط إذا كان النص طويلاً جداً
+                maxLines: 1,
+              ),
+            ),
           ],
         ),
         content: const Text(
@@ -162,7 +170,12 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
               Navigator.pop(dialogContext);
               await _pickPrescriptionImage(context);
             },
-            child: const Text('رفع الروشتة الآن'),
+            child: const FittedBox( // ✅ حماية إضافية لنص الزر
+              child: Text(
+                'رفع الروشتة الآن',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ),
         ],
       ),

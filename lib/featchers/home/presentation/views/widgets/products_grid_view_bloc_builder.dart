@@ -12,6 +12,7 @@ final int? limit;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProductsCubit, ProductsState>(
+      buildWhen: (previous, current) => current is ProductsSuccess || current is ProductsFailure,
       builder: (context, state) {
         if (state is ProductsSuccess) {
           // تم حذف SliverToBoxAdapter لأن الأب هو Padding عادي

@@ -39,7 +39,7 @@ class LoginCubit extends Cubit<LoginState> {
           // }
 
           // 3️⃣ إذا كل شيء تمام
-          await Prefs.setBool("isLoggedIn", true);
+          Prefs.setBool("isLoggedIn", true);
           await Prefs.setString("userPassword", password);
           emit(LoginSuccess(userEntity: userEntity));
         } catch (e) {

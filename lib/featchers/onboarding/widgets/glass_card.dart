@@ -20,49 +20,28 @@ class GlassCard extends StatelessWidget {
     this.gradientColors,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        gradient: gradientColors != null
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  gradientColors![0].withOpacity(opacity),
-                  gradientColors![1].withOpacity(opacity * 0.5),
-                ],
-              )
-            : LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(opacity),
-                  Colors.white.withOpacity(opacity * 0.5),
-                ],
-              ),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.1),
-            blurRadius: 12,
-            spreadRadius: 1,
-          ),
-        ],
+@override
+Widget build(BuildContext context) {
+  return Container(
+    width: width,
+    height: height,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(borderRadius),
+      // بديل الـ Blur: لون أبيض شفاف جداً مع لون خلفية الصفحة
+      color: Colors.white.withOpacity(0.7), 
+      border: Border.all(
+        color: Colors.white.withOpacity(0.4), // حدود بيضاء تعطي إيحاء الزجاج
+        width: 1.5,
       ),
-      child: BackdropFilter(
-        filter: const ColorFilter.mode(
-          Colors.transparent,
-          BlendMode.lighten,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          spreadRadius: 2,
         ),
-        child: child,
-      ),
-    );
-  }
+      ],
+    ),
+    child: child,
+  );
+}
 }

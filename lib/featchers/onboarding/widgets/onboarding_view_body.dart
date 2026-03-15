@@ -60,7 +60,7 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
   }
 
   void _navigateToLogin() async {
-    await Prefs.setBool(kIsOnBoardingViewSeen, true);
+    Prefs.setBool(kIsOnBoardingViewSeen, true);
     if (mounted) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.login);
     }

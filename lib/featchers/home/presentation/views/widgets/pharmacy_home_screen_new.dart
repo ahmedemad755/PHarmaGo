@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
-import 'package:e_commerce/featchers/home/domain/enteties/BannerEntity.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_state.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/custom_home_app_bar.dart';
@@ -22,18 +21,23 @@ class PharmacyHomeScreenNew extends StatefulWidget {
 class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _bannerController = PageController();
-  String _selectedCategory = 'الأدوية';
-  List<String> _categories = ['الأدوية'];
   
+  // القيمة الافتراضية
+  String _selectedCategory = 'الكل';
+  List<String> _categories = ['الكل'];
   int _currentBannerIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    // استدعاء البيانات
-    context.read<ProductsCubit>().getProducts();
-    context.read<ProductsCubit>().fetchBestSelling();
+    
+    // جلب البيانات فوراً
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final productsCubit = context.read<ProductsCubit>();
+      productsCubit.getProducts();
+      productsCubit.fetchBestSelling();
+    });
   }
 
   @override
@@ -48,6 +52,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     context.read<ProductsCubit>().searchProducts(_searchController.text);
   }
 
+  // دالة لفتح خيارات الفلترة مع تمرير الـ Cubit الصحيح
   Future<void> _openFilterOptions() async {
     final productsCubit = context.read<ProductsCubit>();
 
@@ -57,111 +62,67 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
+      builder: (modalContext) {
+        // نستخدم BlocProvider.value لنقل الـ Cubit الموجود بالفعل للمودال
         return BlocProvider.value(
           value: productsCubit,
           child: StatefulBuilder(
             builder: (context, setModalState) {
-              return PopScope(
-                canPop: true,
-                onPopInvokedWithResult: (didPop, result) {
-                  if (didPop) {}
-                },
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: 16,
-                    left: 16,
-                    right: 16,
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+              return Padding(
+                padding: EdgeInsets.only(
+                  top: 16, left: 16, right: 16,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(height: 16),
+                    const Text('تصفية البحث', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 20),
+                    const Align(alignment: Alignment.centerRight, child: Text("الأقسام", style: TextStyle(fontWeight: FontWeight.bold))),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        spacing: 8,
+                        children: _categories.map((cat) {
+                          final isSelected = _selectedCategory == cat;
+                          return ChoiceChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFF007BBB),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setModalState(() => _selectedCategory = cat);
+                                // تحديث الواجهة الرئيسية
+                                setState(() => _selectedCategory = cat);
+                                productsCubit.applyCategoryFilter(cat);
+                              }
+                            },
+                            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
+                          );
+                        }).toList(),
                       ),
-                      const SizedBox(height: 16),
-                      const Text('تصفية البحث', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 20),
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text("الأقسام", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const Align(alignment: Alignment.centerRight, child: Text("ترتيب حسب", style: TextStyle(fontWeight: FontWeight.bold))),
+                    // ترتيب حسب السعر
+                    _buildSortOption(productsCubit, setModalState, 'relevance', 'الأكثر صلة'),
+                    _buildSortOption(productsCubit, setModalState, 'price_asc', 'السعر: من الأقل للأعلى'),
+                    _buildSortOption(productsCubit, setModalState, 'price_desc', 'السعر: من الأعلى للأقل'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF007BBB),
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Wrap(
-                          spacing: 8,
-                          children: _categories.map((cat) {
-                            final isSelected = _selectedCategory == cat;
-                            return ChoiceChip(
-                              label: Text(cat),
-                              selected: isSelected,
-                              selectedColor: const Color(0xFF007BBB),
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setModalState(() => _selectedCategory = cat);
-                                  productsCubit.applyCategoryFilter(cat);
-                                }
-                              },
-                              labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Divider(),
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text("ترتيب حسب", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      RadioListTile<String>(
-                        value: 'relevance',
-                        groupValue: productsCubit.selectedSort,
-                        title: const Text('الأكثر صلة'),
-                        activeColor: const Color(0xFF007BBB),
-                        onChanged: (v) {
-                          setModalState(() {});
-                          productsCubit.applySortFilter(v!);
-                        },
-                      ),
-                      RadioListTile<String>(
-                        value: 'price_asc',
-                        groupValue: productsCubit.selectedSort,
-                        title: const Text('السعر: من الأقل للأعلى'),
-                        activeColor: const Color(0xFF007BBB),
-                        onChanged: (v) {
-                          setModalState(() {});
-                          productsCubit.applySortFilter(v!);
-                        },
-                      ),
-                      RadioListTile<String>(
-                        value: 'price_desc',
-                        groupValue: productsCubit.selectedSort,
-                        title: const Text('السعر: من الأعلى للأقل'),
-                        activeColor: const Color(0xFF007BBB),
-                        onChanged: (v) {
-                          setModalState(() {});
-                          productsCubit.applySortFilter(v!);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF007BBB),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('تم', style: TextStyle(color: Colors.white, fontSize: 16)),
-                      ),
-                    ],
-                  ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('تم', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    ),
+                  ],
                 ),
               );
             },
@@ -169,24 +130,37 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
         );
       },
     );
-    setState(() {});
+  }
+
+  Widget _buildSortOption(ProductsCubit cubit, StateSetter setModalState, String value, String title) {
+    return RadioListTile<String>(
+      value: value,
+      groupValue: cubit.selectedSort,
+      title: Text(title),
+      activeColor: const Color(0xFF007BBB),
+      onChanged: (v) {
+        setModalState(() {});
+        cubit.applySortFilter(v!);
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 600;
-    final horizontalPadding = isMobile ? 16.0 : 24.0;
+    final horizontalPadding = MediaQuery.of(context).size.width < 600 ? 16.0 : 24.0;
 
-    return BlocProvider(
-      create: (context) => getIt<BannersCubit>()..getBanners(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<BannersCubit>()..getBanners()),
+        // ملاحظة: إذا كان ProductsCubit موفراً في AppRouter، لا تضعه هنا مجدداً.
+      ],
       child: Scaffold(
         backgroundColor: const Color(0xFFFBFBFB),
         body: RefreshIndicator(
           onRefresh: () async {
-        await context.read<ProductsCubit>().getProducts();
-        context.read<ProductsCubit>().fetchBestSelling();
-      },
+            context.read<ProductsCubit>().getProducts();
+            context.read<BannersCubit>().getBanners();
+          },
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -201,25 +175,19 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                       const SizedBox(height: 16),
                       buildSearchBarWithFilter(),
                       const SizedBox(height: 18),
-                      _buildUploadPrescription(isMobile),
+                      _buildUploadPrescription(),
                       const SizedBox(height: 20),
                     ],
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    _buildBannersSlider(),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
+              SliverToBoxAdapter(child: _buildBannersSlider()),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
               SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('الأقسام', horizontalPadding, onSeeAll: null),
+                    _buildSectionTitle('الأقسام', horizontalPadding),
                     const SizedBox(height: 12),
                     _buildCategoriesList(),
                     const SizedBox(height: 24),
@@ -257,120 +225,18 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget _buildSectionTitle(String title, double padding, {VoidCallback? onSeeAll}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: padding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (onSeeAll != null)
-            GestureDetector(
-              onTap: onSeeAll,
-              child: const Text('عرض الكل', style: TextStyle(color: Color(0xFF007BBB), fontWeight: FontWeight.w600)),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBannersSlider() {
-    return BlocBuilder<BannersCubit, BannersState>(
-      builder: (context, state) {
-        if (state is GetBannersLoading) {
-          return _buildBannerPlaceholder(isLoading: true);
-        } else if (state is GetBannersSuccess) {
-          final banners = state.banners;
-          if (banners.isEmpty) return const SizedBox();
-          return Column(
-            children: [
-              SizedBox(
-                height: 160,
-                child: PageView.builder(
-                  controller: _bannerController,
-                  onPageChanged: (index) => setState(() => _currentBannerIndex = index),
-                  itemCount: banners.length,
-                  itemBuilder: (context, index) {
-                    final banner = banners[index];
-                    return GestureDetector(
-                      onTap: () => _onBannerTap(banner),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.grey[200],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            banner.imageUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(child: CircularProgressIndicator());
-                            },
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  banners.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 8,
-                    width: _currentBannerIndex == index ? 18 : 8,
-                    decoration: BoxDecoration(
-                      color: _currentBannerIndex == index ? Colors.blue : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        } else {
-          return const SizedBox();
-        }
-      },
-    );
-  }
-
-  void _onBannerTap(BannerEntity banner) {
-    if (banner.linkType == 'product' && banner.targetId != null) {
-      // Navigator.pushNamed(context, AppRoutes.productDetails, arguments: banner.targetId);
-    } else if (banner.linkType == 'category' && banner.targetId != null) {}
-  }
-
-  Widget _buildBannerPlaceholder({required bool isLoading}) {
-    return Skeletonizer(
-      enabled: isLoading,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        height: 160,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    );
-  }
+  // --- Widgets البناء ---
 
   Widget _buildCategoriesList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          _categories = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
-          if (!_categories.contains('الأدوية')) _categories.insert(0, 'الأدوية');
+          final fetched = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
+          // نحدث القائمة فقط إذا تغيرت لضمان عدم حدوث Loop
+          if (_categories.length != fetched.length + 1) {
+            _categories = ['الكل', ...fetched];
+          }
         }
         return SizedBox(
           height: 100,
@@ -392,112 +258,12 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: isSelected ? const Color(0xFF007BBB) : const Color(0xFFF2F6F8),
-                      child: Text(cat.substring(0, 1), style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF007BBB))),
+                      child: cat == 'الكل' 
+                        ? Icon(Icons.apps, color: isSelected ? Colors.white : const Color(0xFF007BBB))
+                        : Text(cat.substring(0, 1), style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF007BBB))),
                     ),
                     const SizedBox(height: 8),
                     Text(cat, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHorizontalProductsList() {
-    return BlocBuilder<ProductsCubit, ProductsState>(
-      builder: (context, state) {
-        final cubit = context.read<ProductsCubit>();
-        final horizontalList = cubit.bestSellingProducts.take(5).toList();
-
-        if (horizontalList.isEmpty && state is ProductsLoading) {
-          return const SizedBox(
-            height: 200,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (horizontalList.isEmpty) {
-          return const SizedBox(
-            height: 50,
-            child: Center(child: Text("لا توجد منتجات أكثر مبيعاً حالياً")),
-          );
-        }
-
-        return SizedBox(
-          height: 200,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            itemCount: horizontalList.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final product = horizontalList[index];
-              return Container(
-                width: 140,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF8F9FA),
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                          child: product.imageurl != null 
-                              ? Image.network(
-                                  product.imageurl!, 
-                                  fit: BoxFit.cover, 
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.medication, size: 40),
-                                )
-                              : const Icon(Icons.medication, size: 40),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              product.name, 
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12), 
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              '${product.price} ج', 
-                              style: const TextStyle(
-                                color: Color(0xFF007BBB), 
-                                fontWeight: FontWeight.bold, 
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               );
@@ -525,7 +291,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
             child: TextField(
               controller: _searchController,
               textAlign: TextAlign.right,
-              decoration: const InputDecoration(hintText: 'ابحث عن دواء أو منتج...', border: InputBorder.none),
+              decoration: const InputDecoration(hintText: 'ابحث عن منتج...', border: InputBorder.none),
             ),
           ),
           const VerticalDivider(indent: 10, endIndent: 10),
@@ -535,12 +301,100 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget _buildUploadPrescription(bool isMobile) {
+  // ميثود بناء البانر، العناوين، والمنتجات الأفقية (تُبقى كما هي مع التأكد من استخدام context.read<ProductsCubit>())
+  Widget _buildSectionTitle(String title, double padding, {VoidCallback? onSeeAll}) {
+     return Padding(
+      padding: EdgeInsets.symmetric(horizontal: padding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          if (onSeeAll != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: const Text('عرض الكل', style: TextStyle(color: Color(0xFF007BBB), fontWeight: FontWeight.w600)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBannersSlider() {
+    return BlocBuilder<BannersCubit, BannersState>(
+      builder: (context, state) {
+        if (state is GetBannersLoading) return _buildBannerPlaceholder(isLoading: true);
+        if (state is GetBannersSuccess) {
+          final banners = state.banners;
+          if (banners.isEmpty) return const SizedBox();
+          return Column(
+            children: [
+              SizedBox(
+                height: 160,
+                child: PageView.builder(
+                  controller: _bannerController,
+                  onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+                  itemCount: banners.length,
+                  itemBuilder: (context, index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.grey[200]),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(banners[index].imageUrl, fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(banners.length, (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 8, width: _currentBannerIndex == index ? 18 : 8,
+                  decoration: BoxDecoration(color: _currentBannerIndex == index ? const Color(0xFF007BBB) : Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+                )),
+              ),
+            ],
+          );
+        }
+        return const SizedBox();
+      },
+    );
+  }
+
+  Widget _buildHorizontalProductsList() {
+    return BlocBuilder<ProductsCubit, ProductsState>(
+      builder: (context, state) {
+        final products = context.read<ProductsCubit>().bestSellingProducts.take(5).toList();
+        if (products.isEmpty) return const SizedBox(height: 50, child: Center(child: Text("لا توجد منتجات")));
+        return SizedBox(
+          height: 200,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: products.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) => Container(
+              width: 140,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+              child: Column(
+                children: [
+                  Expanded(child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: Image.network(products[index].imageurl ?? '', fit: BoxFit.cover, errorBuilder: (_,__,___)=> const Icon(Icons.medication)))),
+                  Padding(padding: const EdgeInsets.all(8), child: Text(products[index].name, maxLines: 1, style: const TextStyle(fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBannerPlaceholder({required bool isLoading}) => Skeletonizer(enabled: isLoading, child: Container(margin: const EdgeInsets.symmetric(horizontal: 16), height: 160, width: double.infinity, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(16))));
+
+  Widget _buildUploadPrescription() {
     return GlassCard(
-      width: double.infinity,
-      height: isMobile ? 70 : 85,
-      borderRadius: 16,
-      opacity: 0.9,
+      width: double.infinity, height: 75, borderRadius: 16, opacity: 0.9,
       gradientColors: const [Color(0xFFE3F2FD), Color(0xFFF1F8E9)],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -548,21 +402,8 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
           children: [
             const Icon(Icons.description_outlined, color: Color(0xFF007BBB), size: 30),
             const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('هل لديك روشتة؟', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text('ارفعها الآن وسنوفر لك الأدوية', style: TextStyle(color: Colors.black54, fontSize: 12)),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.uploadPrescription),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF007BBB)),
-              child: const Text("رفع", style: TextStyle(color: Colors.white)),
-            ),
+            const Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text('هل لديك روشتة؟', style: TextStyle(fontWeight: FontWeight.bold)), Text('ارفعها الآن وسنوفر لك الأدوية', style: TextStyle(color: Colors.black54, fontSize: 12))])),
+            ElevatedButton(onPressed: () => Navigator.pushNamed(context, AppRoutes.uploadPrescription), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF007BBB)), child: const Text("رفع", style: TextStyle(color: Colors.white))),
           ],
         ),
       ),

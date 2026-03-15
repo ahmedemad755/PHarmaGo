@@ -10,10 +10,11 @@ plugins {
 
 android {
     namespace = "com.pharma.go"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -25,10 +26,11 @@ android {
     defaultConfig {
         // تم ترك applicationId هنا كمرجع أساسي، ولكن الـ Flavors ستقوم بتغييره تلقائياً
         applicationId = "com.pharma.go"
-        minSdk = flutter.minSdkVersion  
+        minSdk = 26  
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     flavorDimensions += "default"
@@ -66,7 +68,45 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    dependencies {
+    // 1. مكتبة الـ Desugaring (لازم تكون موجودة طالما فعلت isCoreLibraryDesugaringEnabled)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // 2. مكتبات الـ Window لمنع الـ Crash على أندرويد 12 فأحدث
+    implementation("androidx.window:window:1.0.0")
+    implementation("androidx.window:window-java:1.0.0")
+    
+    // 3. دعم الـ MultiDex (اختياري لكن مفضل طالما فعلته في الـ defaultConfig)
+    implementation("androidx.multidex:multidex:2.0.1")
 }
+}
+
+dependencies {
+    // 1. مكتبة الـ Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // 2. ✅ حل مشكلة الـ Duplicate Classes باستخدام Firebase BoM
+    // هذا السطر يضمن أن كل مكتبات Firebase متوافقة مع بعضها ولن تسبب تكرار
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
+
+    // 3. مكتبات الـ Window لمنع الـ Crash
+    implementation("androidx.window:window:1.0.0")
+    implementation("androidx.window:window-java:1.0.0")
+    
+    // 4. دعم الـ MultiDex
+    implementation("androidx.multidex:multidex:2.0.1")
+}
+configurations.all {
+    resolutionStrategy {
+        // منع جلب مكتبة iid القديمة لأنها مدمجة بالفعل في النسخ الحديثة من Messaging
+        exclude(group = "com.google.firebase", module = "firebase-iid")
+        
+        // اختيارياً: إجبار المشروع على نسخة معينة من Messaging إذا استمر التعارض
+        force("com.google.firebase:firebase-messaging:24.1.2")
+    }}
 
 flutter {
     source = "../.."

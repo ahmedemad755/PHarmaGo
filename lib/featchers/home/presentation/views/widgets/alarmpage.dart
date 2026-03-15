@@ -4,6 +4,7 @@ import 'package:e_commerce/core/utils/gradiant_text.dart';
 import 'package:e_commerce/featchers/auth/widgets/custombotton.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/alarm_entites.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -13,22 +14,20 @@ class MainAlarmsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AlarmsCubit(),
-      child: Scaffold(
-        backgroundColor: AppColors.lightGray,
-        appBar: AppBar(
-          title: const GradientText(
-            "منبه الدواء",
-            gradient: AppColors.accentGradient2,
-          ),
-          centerTitle: true,
-          backgroundColor: AppColors.white,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
+    // تم إزالة BlocProvider من هنا لأننا نمرره عبر الـ Router بـ BlocProvider.value
+    return Scaffold(
+      backgroundColor: AppColors.lightGray,
+      appBar: AppBar(
+        title: const GradientText(
+          "منبه الدواء",
+          gradient: AppColors.accentGradient2,
         ),
-        body: Builder(builder: (context) => _buildBody(context)),
+        centerTitle: true,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
+      body: _buildBody(context),
     );
   }
 
@@ -55,8 +54,9 @@ class MainAlarmsView extends StatelessWidget {
                     secondaryBackground: _buildDeleteBackground(Alignment.centerLeft),
                     confirmDismiss: (direction) async => await _showDeleteConfirmation(context),
                     onDismissed: (direction) {
-                      context.read<AlarmsCubit>().removeAlarm(alarm.id);
-                      showBar(context, "تم حذف المنبه");
+                      // ✅ التصحيح هنا: نرسل كائن alarm بالكامل وليس الـ ID فقط
+                      context.read<AlarmsCubit>().removeAlarm(alarm);
+                      showBar(context, "تم حذف المنبه وإلغاء تذكيراته");
                     },
                     child: AlarmCard(alarm: alarm),
                   );
@@ -311,7 +311,7 @@ class _AddAlarmViewState extends State<AddAlarmView> {
 
   Widget _buildDosageDropdown() {
     return DropdownButtonFormField<String>(
-      initialValue: _selectedDosage,
+      value: _selectedDosage,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.white,

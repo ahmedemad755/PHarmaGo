@@ -7,8 +7,8 @@ class BestSellingFruitesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => context.read<ProductsCubit>()..fetchBestSelling(topN: 5),
+  return BlocProvider.value(
+  value: context.read<ProductsCubit>()..fetchBestSelling(topN: 5),
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Best Selling Fruits"),

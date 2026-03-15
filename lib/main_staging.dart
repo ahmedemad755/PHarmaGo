@@ -5,6 +5,7 @@ import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/services/custom_bloc_observer.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/core/services/supabase_storge.dart';
+import 'package:e_commerce/core/services/local_notification_service.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
 import 'package:e_commerce/firebase_options.dart';
@@ -15,6 +16,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest_all.dart' as tz; // مكتبة التوقيت
+import 'package:timezone/timezone.dart' as tz;      // مكتبة التوقيت
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -22,7 +26,10 @@ void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     
-    // 1. تهيئة الخدمات الأساسية (Firebase, Supabase, Prefs, GetIt)
+    // تهيئة مناطق التوقيت لعمل المنبهات بشكل دقيق
+    tz.initializeTimeZones();
+
+    // 1. تهيئة الخدمات الأساسية (Firebase, Supabase, Prefs, GetIt, Notifications)
     await _initServices();
 
     // 2. تحديد الشاشة الافتتاحية
@@ -44,7 +51,23 @@ Future<void> _initServices() async {
     debugPrint("❌ Firebase Init Failed: $e");
   }
 
-  // 🔥 تهيئة Supabase وإنشاء البوكيتات (مثل بوكيت prescriptions) تلقائياً
+  // تهيئة خدمة الإشعارات المحلية وطلب التصاريح
+  try {
+    // طلب تصريح الإشعارات (ضروري لأندرويد 13+)
+    await Permission.notification.request();
+    
+    // طلب تصريح المنبهات الدقيقة (ضروري لعمل الـ Alarms)
+    if (await Permission.scheduleExactAlarm.isDenied) {
+      await Permission.scheduleExactAlarm.request();
+    }
+
+    await LocalNotificationService.init(navigatorKey);
+    debugPrint("✅ Local Notifications Initialized");
+  } catch (e) {
+    debugPrint("❌ Local Notifications Init Failed: $e");
+  }
+
+  // تهيئة Supabase
   try {
     await SupabaseStorgeService.initSupabase();
     debugPrint("✅ Supabase Initialized & Buckets Checked");

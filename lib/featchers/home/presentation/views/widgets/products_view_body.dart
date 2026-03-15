@@ -33,6 +33,7 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
   }
 
   // --- ميثود بناء قائمة الأقسام الديناميكية ---
+
   Widget _buildCategoriesList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),

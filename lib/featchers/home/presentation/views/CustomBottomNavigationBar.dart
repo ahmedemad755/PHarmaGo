@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,34 +14,39 @@ class BottomNavPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _navItem(context, icon: Icons.home, index: 0),
-                _navItem(context, icon: Icons.grid_view, index: 1),
-                _navItem(context, icon: Icons.alarm, index: 2),
-                _navItem(context, image: "assets/chatbot_icon.png", index: 3),
-                _navItem(
-                  context,
-                  image: "assets/shopping-basket.png",
-                  index: 4,
-                ),
-                _navItem(context, icon: Icons.person, index: 5),
-              ],
-            ),
+    // RepaintBoundary يعزل الـ Nav Bar برمجياً لتحسين أداء السكرول في الخلفية
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            // لون داكن ثابت بدلاً من الـ Blur لتوفير موارد المعالج الرسومي
+            color: const Color.fromARGB(29, 0, 40, 124).withOpacity(0.92),
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: const Color.fromARGB(29, 3, 3, 48).withOpacity(0.3),
+            //     blurRadius: 15,
+            //     offset: const Offset(0, 5),
+            //   ),
+            // ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(context, icon: Icons.home, index: 0),
+              _navItem(context, icon: Icons.grid_view, index: 1),
+              _navItem(context, icon: Icons.alarm, index: 2),
+              _navItem(context, image: "assets/chatbot_icon.png", index: 3),
+              _navItem(
+                context,
+                image: "assets/shopping-basket.png",
+                index: 4,
+              ),
+              _navItem(context, icon: Icons.person, index: 5),
+            ],
           ),
         ),
       ),
@@ -58,20 +61,22 @@ class BottomNavPage extends StatelessWidget {
   }) {
     final bool isSelected = currentIndex == index;
 
+    // جزء أيقونة السلة مع معالجة الـ States بأمان
     if (index == 4) {
       return BlocBuilder<CartCubit, CartState>(
-        buildWhen: (previous, current) => true,
+        buildWhen: (previous, current) {
+          // استخراج الكيان من الحالة السابقة والحالية للمقارنة
+          final prevItems = _getCartEntity(previous).cartItems.length;
+          final currItems = _getCartEntity(current).cartItems.length;
+          return prevItems != currItems || isSelected; 
+        },
         builder: (context, state) {
-          final currentCart = switch (state) {
-            CartInitial(cartEntity: final cart) => cart,
-            CartUpdated(cartEntity: final cart) => cart,
-            CartItemAdded(cartEntity: final cart) => cart,
-            CartItemRemoved(cartEntity: final cart) => cart,
-          };
+          final currentCart = _getCartEntity(state);
           final itemsCount = currentCart.cartItems.length;
 
           return GestureDetector(
-            onTap: () => onTap(index), // استدعاء الدالة الممررة من MainView
+            onTap: () => onTap(index),
+            behavior: HitTestBehavior.opaque,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -83,8 +88,8 @@ class BottomNavPage extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       constraints: const BoxConstraints(
-                        minWidth: 20,
-                        minHeight: 20,
+                        minWidth: 18,
+                        minHeight: 18,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.red,
@@ -96,7 +101,7 @@ class BottomNavPage extends StatelessWidget {
                           itemsCount.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                             height: 1,
                           ),
@@ -112,32 +117,44 @@ class BottomNavPage extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () => onTap(index), // استدعاء الدالة الممررة من MainView
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
       child: _buildIconOrImage(icon, image, isSelected),
     );
   }
 
+  // دالة مساعدة لاستخراج الـ CartEntity من أي State بأمان
+  dynamic _getCartEntity(CartState state) {
+    return switch (state) {
+      CartInitial(cartEntity: final cart) => cart,
+      CartUpdated(cartEntity: final cart) => cart,
+      CartItemAdded(cartEntity: final cart) => cart,
+      CartItemRemoved(cartEntity: final cart) => cart,
+    };
+  }
+
   Widget _buildIconOrImage(IconData? icon, String? image, bool isSelected) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.all(8),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.all(10),
       decoration: isSelected
           ? BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(15),
             )
-          : null,
+          : const BoxDecoration(),
       child: icon != null
           ? Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.white60,
-              size: isSelected ? 28 : 24,
+              color: isSelected ? Colors.white : Colors.white54,
+              size: isSelected ? 26 : 24,
             )
           : Image.asset(
               image!,
-              width: isSelected ? 26 : 22,
-              height: isSelected ? 26 : 22,
-              color: isSelected ? null : Colors.white.withOpacity(0.6),
+              width: isSelected ? 24 : 22,
+              height: isSelected ? 24 : 22,
+              color: isSelected ? null : Colors.white.withOpacity(0.5),
               colorBlendMode: isSelected ? null : BlendMode.modulate,
             ),
     );

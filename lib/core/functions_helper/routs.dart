@@ -95,6 +95,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           providers: [
             BlocProvider.value(value: getIt<CartCubit>()),
             BlocProvider.value(value: getIt<ProductsCubit>()),
+            BlocProvider.value(value: getIt<AlarmsCubit>()),
             BlocProvider.value(
               value: getIt<OrdersCubit>()
                 ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
@@ -159,13 +160,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case AppRoutes.ChatbootBody:
       return MaterialPageRoute(builder: (_) => const ChatbootBody());
 
-    case AppRoutes.alarmsMain:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<AlarmsCubit>(),
-          child: const MainAlarmsView(),
-        ),
-      ));
+case AppRoutes.alarmsMain:
+  return authGuard(MaterialPageRoute(
+    builder: (_) => BlocProvider.value(
+      value: getIt<AlarmsCubit>(), // ✅ هنا قمت بتوفيره لـ MainAlarmsView
+      child: const MainAlarmsView(),
+    ),
+  ));
 
     case AppRoutes.addAlarm:
       return authGuard(MaterialPageRoute(

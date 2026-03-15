@@ -58,7 +58,6 @@
 //     }
 //   }
 // }
-
 import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
@@ -86,7 +85,7 @@ class ProductsRepoImpl extends ProductsRepo {
             .toList();
         return right(products);
       } catch (e) {
-        return left(ServerFaliur('فشل في جلب المنتجات الأكثر مبيعاً'));
+        return left(ServerFaliur('فشل في جلب البيانات الحية'));
       }
     });
   }
@@ -102,7 +101,7 @@ class ProductsRepoImpl extends ProductsRepo {
           .toList();
       return right(products);
     } catch (e) {
-      return left(ServerFaliur('Failed to get products'));
+      return left(ServerFaliur('فشل في تحميل المنتجات'));
     }
   }
 }

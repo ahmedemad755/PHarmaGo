@@ -150,9 +150,7 @@
 // }
 
 import 'package:bloc/bloc.dart';
-import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
-import 'package:e_commerce/core/errors/faliur.dart';
 import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
 import 'package:meta/meta.dart';
 
