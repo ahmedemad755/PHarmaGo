@@ -88,20 +88,27 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case AppRoutes.login:
       return _buildLoginRoute();
 
-    case AppRoutes.home:
+case AppRoutes.home:
       return authGuard(MaterialPageRoute(
         settings: const RouteSettings(name: AppRoutes.home),
         builder: (context) => MultiBlocProvider(
           providers: [
             BlocProvider.value(value: getIt<CartCubit>()),
             BlocProvider.value(value: getIt<ProductsCubit>()),
-            BlocProvider.value(value: getIt<AlarmsCubit>()),
+            // ✅ أضفنا lazy: false لضمان أن الكيوبيت جاهز قبل بناء أي صفحة داخلية
+            // BlocProvider<AlarmsCubit>(
+            //   create: (context) => getIt<AlarmsCubit>(),
+            //   lazy: false, 
+            // ),
             BlocProvider.value(
               value: getIt<OrdersCubit>()
                 ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
             ),
           ],
-          child: MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
+          // ✅ استخدم Builder هنا لإنشاء Context جديد "تحت" الـ Providers
+          child: Builder(
+            builder: (innerContext) => MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
+          ),
         ),
       ));
 

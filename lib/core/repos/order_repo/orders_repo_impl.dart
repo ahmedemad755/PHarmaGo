@@ -90,7 +90,7 @@ class OrdersRepoImpl implements OrdersRepo {
         path: BackendPoints.orders,
         documentId: orderId,
         data: {
-          'status': 'canceled', // تم توحيدها لتكون بلام واحدة كما في الـ Enum
+          'status': 'cancelled', // تم توحيدها لتكون بلام واحدة كما في الـ Enum
           'cancelledBy': 'customer', // 👈 إضافة هذا الحقل ليعرف لوحة التحكم أن العميل هو من ألغى
         },
       );

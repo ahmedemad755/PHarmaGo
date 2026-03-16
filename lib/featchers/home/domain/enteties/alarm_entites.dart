@@ -5,12 +5,14 @@ class AlarmEntity {
   final String medicationName;
   final List<DateTime> reminderTimes;
   final String dosage;
+  final List<String> completedTimes;
 
   AlarmEntity({
     required this.id,
     required this.medicationName,
     required this.reminderTimes,
     required this.dosage,
+    this.completedTimes = const [],
   });
 
   // تحويل الكائن إلى Map
@@ -20,6 +22,7 @@ class AlarmEntity {
       'medicationName': medicationName,
       'reminderTimes': reminderTimes.map((t) => t.toIso8601String()).toList(),
       'dosage': dosage,
+      'completedTimes': completedTimes,
     };
   }
 
@@ -32,6 +35,7 @@ class AlarmEntity {
           .map((t) => DateTime.parse(t))
           .toList(),
       dosage: map['dosage'],
+      completedTimes: List<String>.from(map['completedTimes'] ?? []),
     );
   }
 

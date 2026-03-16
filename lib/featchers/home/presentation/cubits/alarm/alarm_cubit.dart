@@ -4,6 +4,7 @@ import 'package:e_commerce/featchers/home/domain/enteties/alarm_entites.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_state.dart';
 import 'package:e_commerce/core/services/local_notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class AlarmsCubit extends Cubit<AlarmsState> {
   final List<AlarmEntity> _allAlarms = [];
@@ -76,4 +77,32 @@ class AlarmsCubit extends Cubit<AlarmsState> {
       emit(AlarmsError("فشل في حذف المنبه"));
     }
   }
+
+  void markAsDone(String alarmId, DateTime time) async {
+  try {
+    // 1. البحث عن المنبه وتحديثه
+    int index = _allAlarms.indexWhere((a) => a.id == alarmId);
+    if (index != -1) {
+      String timeKey = DateFormat('yyyy-MM-dd HH:mm').format(time);
+      
+      // إضافة الوقت إذا لم يكن موجوداً مسبقاً
+      if (!_allAlarms[index].completedTimes.contains(timeKey)) {
+        List<String> newCompleted = List.from(_allAlarms[index].completedTimes)..add(timeKey);
+        
+        _allAlarms[index] = AlarmEntity(
+          id: _allAlarms[index].id,
+          medicationName: _allAlarms[index].medicationName,
+          reminderTimes: _allAlarms[index].reminderTimes,
+          dosage: _allAlarms[index].dosage,
+          completedTimes: newCompleted,
+        );
+
+        await _saveToPrefs();
+        emit(AlarmsSuccess(List.from(_allAlarms)));
+      }
+    }
+  } catch (e) {
+    emit(AlarmsError("فشل في تحديث حالة الجرعة"));
+  }
+}
 }

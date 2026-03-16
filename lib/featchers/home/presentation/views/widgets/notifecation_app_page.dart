@@ -150,34 +150,34 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
-  _NotificationConfig _getNotificationConfig(String status) {
+  NotificationConfig _getNotificationConfig(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return _NotificationConfig(
+        return NotificationConfig(
           Icons.timer_outlined,
           Colors.orange,
           'طلبك قيد المراجعة الآن، سنقوم بتحديثك قريباً.',
         );
       case 'processing':
-        return _NotificationConfig(
+        return NotificationConfig(
           Icons.inventory_2_outlined,
           Colors.blue,
           'جاري تجهيز طلبك وتغليفه بكل حب في مخازننا.',
         );
       case 'shipped':
-        return _NotificationConfig(
+        return NotificationConfig(
           Icons.local_shipping_outlined,
           Colors.purple,
           'طلبك الآن في الطريق إليك مع مندوب الشحن.',
         );
       case 'delivered':
-        return _NotificationConfig(
+        return NotificationConfig(
           Icons.check_circle_outline,
           Colors.green,
           'تم تسليم طلبك بنجاح. نأمل أن تنال المنتجات إعجابك!',
         );
       default:
-        return _NotificationConfig(
+        return NotificationConfig(
           Icons.notifications_none,
           Colors.grey,
           'هناك تحديث جديد بخصوص حالة طلبك.',
@@ -195,9 +195,9 @@ class NotificationItem extends StatelessWidget {
   }
 }
 
-class _NotificationConfig {
+class NotificationConfig {
   final IconData icon;
   final Color color;
   final String message;
-  _NotificationConfig(this.icon, this.color, this.message);
+  NotificationConfig(this.icon, this.color, this.message);
 }

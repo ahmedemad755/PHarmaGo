@@ -92,10 +92,13 @@ Future<void> setupGetit() async {
     () => PrescriptionCubit(getIt<PrescriptionRepo>()),
   );
 
-  getIt.registerSingleton<AlarmsCubit>(AlarmsCubit());
+  
   getIt.registerSingleton<OrdersCubit>(OrdersCubit(getIt<OrdersRepo>()));
 
   getIt.registerFactory<BannersCubit>(
     () => BannersCubit(getIt<BannersRepo>()),
   );
+
+  // داخل ملف injection.dart أو الـ Setup الخاص بالـ DI
+getIt.registerLazySingleton<AlarmsCubit>(() => AlarmsCubit());
 }
