@@ -22,5 +22,6 @@ UserModel getUser() {
     name: '',
     email: '',
     uId: '',
+    
   );
 }

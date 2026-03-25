@@ -26,7 +26,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
 
   // 🧠 نعرف الكنترولرز عشان القيم تفضل موجودة
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  // final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController floorController = TextEditingController();
@@ -36,7 +36,7 @@ class _AddressInputSectionState extends State<AddressInputSection>
   void dispose() {
     // تنظيف الكنترولرز
     nameController.dispose();
-    emailController.dispose();
+    // emailController.dispose();
     addressController.dispose();
     cityController.dispose();
     floorController.dispose();
@@ -56,28 +56,39 @@ class _AddressInputSectionState extends State<AddressInputSection>
           child: Column(
             children: [
               const SizedBox(height: 24),
-              CustomTextFormField(
-                controller: nameController,
+CustomTextFormField(
+  controller: nameController,
+  onSaved: (value) {
+    context.read<OrderInputEntity>().shippingAddressEntity.name = value!;
+  },
+  hintText: 'الاسم كامل (ثلاثي على الأقل)',
+  textInputType: TextInputType.text,
+  // تأكد أنك تنادي الدالة التي أنشأناها بالأعلى
+  validator: (value) => Validators.validateName(value), 
+),
+              // const SizedBox(height: 16),
+              // CustomTextFormField(
+              //   controller: emailController,
+              //   onSaved: (value) {
+              //     context.read<OrderInputEntity>().shippingAddressEntity.email =
+              //         value!;
+              //   },
+              //   hintText: 'البريد الإلكتروني',
+              //   textInputType: TextInputType.emailAddress,
+              //   validator: Validators.validateEmail,
+              // ),
+              // const SizedBox(height: 16),
+                            CustomTextFormField(
+                controller: cityController,
                 onSaved: (value) {
-                  context.read<OrderInputEntity>().shippingAddressEntity.name =
+                  context.read<OrderInputEntity>().shippingAddressEntity.city =
                       value!;
                 },
-                hintText: 'الاسم كامل',
+                hintText: 'المدينه , القاهرة , الجيزة ...',
                 textInputType: TextInputType.text,
-                validator: Validators.validateName,
-              ),
-              const SizedBox(height: 16),
-              CustomTextFormField(
-                controller: emailController,
-                onSaved: (value) {
-                  context.read<OrderInputEntity>().shippingAddressEntity.email =
-                      value!;
-                },
-                hintText: 'البريد الإلكتروني',
-                textInputType: TextInputType.emailAddress,
-                validator: Validators.validateEmail,
-              ),
-              const SizedBox(height: 16),
+                validator: Validators.validateCity,
+              ),   
+               const SizedBox(height: 16),
               CustomTextFormField(
                 controller: addressController,
                 onSaved: (value) {
@@ -87,20 +98,9 @@ class _AddressInputSectionState extends State<AddressInputSection>
                           .address =
                       value!;
                 },
-                hintText: 'العنوان',
+                hintText: 'العنوان (شارع , عمارة , ...)',
                 textInputType: TextInputType.text,
                 validator: Validators.validateAddress,
-              ),
-              const SizedBox(height: 16),
-              CustomTextFormField(
-                controller: cityController,
-                onSaved: (value) {
-                  context.read<OrderInputEntity>().shippingAddressEntity.city =
-                      value!;
-                },
-                hintText: 'المدينه',
-                textInputType: TextInputType.text,
-                validator: Validators.validateCity,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(

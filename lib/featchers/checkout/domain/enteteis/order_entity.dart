@@ -10,15 +10,18 @@ class OrderInputEntity {
   XFile? prescriptionFile;
   ShippingAddressEntity shippingAddressEntity;
   String? prescriptionImageUrl;
+  String? userName; // 🔹 لإضافة اسم المستخدم في الطلب
 
   OrderInputEntity(
-    this.cartEntity, {
+    this.cartEntity,
+     {
     required this.uID,
     required this.pharmacyId,
     this.payWithCash,
     this.prescriptionFile,
     ShippingAddressEntity? shippingAddressEntity,
     this.prescriptionImageUrl,
+    this.userName,
   }) : shippingAddressEntity = shippingAddressEntity ?? ShippingAddressEntity();
 
   /// 🔹 المجموع الفرعي (السعر الإجمالي قبل التوصيل)

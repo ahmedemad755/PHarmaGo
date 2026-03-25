@@ -55,6 +55,7 @@ class OrdersRepoImpl implements OrdersRepo {
       orderData['prescriptionImage'] = uploadedImageUrl; 
       orderData['createdAt'] = FieldValue.serverTimestamp();
       orderData['uId'] = order.uID;
+      // orderData['userName'] = FirebaseAuth.instance.currentUser?.displayName ?? "عميل مجهول";
 
       await fireStoreService.addData(
         path: BackendPoints.orders,

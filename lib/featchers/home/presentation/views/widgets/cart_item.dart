@@ -89,7 +89,7 @@ class CartItem extends StatelessWidget {
                           children: [
                             CartItemActionButtons(cartItemEntity: currentItem),
                             Text(
-                              '${currentItem.calculateTotalPrice()} ريال',
+                              '${currentItem.calculateTotalPrice()} جنيه ',
                               style: TextStyles.bold16.copyWith(
                                 color: AppColors.primaryColor,
                               ),

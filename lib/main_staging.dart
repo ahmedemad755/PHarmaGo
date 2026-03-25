@@ -3,6 +3,7 @@ import 'package:e_commerce/constants.dart';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/services/custom_bloc_observer.dart';
+import 'package:e_commerce/core/services/push_notification_service.dart';
 import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/core/services/supabase_storge.dart';
 import 'package:e_commerce/core/services/local_notification_service.dart';
@@ -18,7 +19,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz; // مكتبة التوقيت
-import 'package:timezone/timezone.dart' as tz;      // مكتبة التوقيت
+// مكتبة التوقيت
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -47,6 +48,7 @@ Future<void> _initServices() async {
   // تهيئة Firebase
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await PushNotificationService.init(navigatorKey);
   } catch (e) {
     debugPrint("❌ Firebase Init Failed: $e");
   }

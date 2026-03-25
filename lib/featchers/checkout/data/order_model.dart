@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 class OrderModel {
   final double totalPrice;
   final String uId;
+  // final String? userName;
   final ShippingAddressModel shippingAddressModel;
   final List<OrderProductModel> orderProducts;
   final String paymentMethod;
@@ -20,6 +21,7 @@ class OrderModel {
   OrderModel({
     required this.totalPrice,
     required this.uId,
+    // this.userName,
     required this.orderId,
     required this.shippingAddressModel,
     required this.orderProducts,
@@ -51,6 +53,7 @@ class OrderModel {
       pharmacyId: orderEntity.pharmacyId,
       // أخذ الرابط الذي تم إنشاؤه بعد رفع الصورة في الـ Cubit
       prescriptionImage: orderEntity.prescriptionImageUrl,
+      // userName: orderEntity.userName,
     );
   }
 
@@ -65,6 +68,7 @@ class OrderModel {
       paymentMethod: json['paymentMethod']?.toString() ?? '',
       pharmacyId: json['pharmacyId']?.toString() ?? 'unknown',
       prescriptionImage: json['prescriptionImage']?.toString(),
+      // userName: json['userName']?.toString(),
       shippingAddressModel: ShippingAddressModel.fromJson(
         json['shippingAddressModel'] as Map<String, dynamic>? ?? {},
       ),
@@ -87,5 +91,6 @@ class OrderModel {
         'shippingAddressModel': shippingAddressModel.toJson(),
         'orderProducts': orderProducts.map((e) => e.toJson()).toList(),
         'paymentMethod': paymentMethod,
+        // 'userName': userName,
       };
 }

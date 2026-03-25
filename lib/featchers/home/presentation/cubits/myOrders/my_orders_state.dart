@@ -10,9 +10,9 @@ class OrdersLoading extends OrdersState {}
 
 class OrdersSuccess extends OrdersState {
   final List<OrderModel> orders;
-  OrdersSuccess(this.orders);
+  final bool hasNotification; // ✅ الحقل الجديد
+  OrdersSuccess(this.orders, {this.hasNotification = false});
 }
-
 class OrdersFailure extends OrdersState {
   final String errMessage;
   OrdersFailure(this.errMessage);

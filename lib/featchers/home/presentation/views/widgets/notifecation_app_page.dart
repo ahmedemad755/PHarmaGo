@@ -14,6 +14,9 @@ class NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+     getIt<OrdersCubit>().clearNotificationBadge();
+    });
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),

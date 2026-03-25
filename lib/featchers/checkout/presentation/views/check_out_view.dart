@@ -39,8 +39,10 @@ class _CheckOutViewState extends State<CheckOutView> {
     orderInputEntity = OrderInputEntity(
       widget.cartEntity,
       uID: getUser().uId,
+      
       pharmacyId: pharmacyId, // ✅ التعديل الجديد لتمرير المعرف
       shippingAddressEntity: ShippingAddressEntity(),
+       userName: getUser().name ?? 'Unknown User',
     );
   }
 

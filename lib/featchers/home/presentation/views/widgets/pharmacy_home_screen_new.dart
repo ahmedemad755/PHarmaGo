@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/di/injection.dart';
+import 'package:e_commerce/core/functions_helper/openGeneralFilter_in_home_products.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
+import 'package:e_commerce/core/widgets/custom_search_filter_bar_home_products.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_state.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/custom_home_app_bar.dart';
@@ -22,7 +24,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _bannerController = PageController();
   
-  // القيمة الافتراضية
   String _selectedCategory = 'الكل';
   List<String> _categories = ['الكل'];
   int _currentBannerIndex = 0;
@@ -30,8 +31,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchChanged);
-    
     // جلب البيانات فوراً
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final productsCubit = context.read<ProductsCubit>();
@@ -42,107 +41,9 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _bannerController.dispose();
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    context.read<ProductsCubit>().searchProducts(_searchController.text);
-  }
-
-  // دالة لفتح خيارات الفلترة مع تمرير الـ Cubit الصحيح
-  Future<void> _openFilterOptions() async {
-    final productsCubit = context.read<ProductsCubit>();
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (modalContext) {
-        // نستخدم BlocProvider.value لنقل الـ Cubit الموجود بالفعل للمودال
-        return BlocProvider.value(
-          value: productsCubit,
-          child: StatefulBuilder(
-            builder: (context, setModalState) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  top: 16, left: 16, right: 16,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-                    const SizedBox(height: 16),
-                    const Text('تصفية البحث', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 20),
-                    const Align(alignment: Alignment.centerRight, child: Text("الأقسام", style: TextStyle(fontWeight: FontWeight.bold))),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Wrap(
-                        spacing: 8,
-                        children: _categories.map((cat) {
-                          final isSelected = _selectedCategory == cat;
-                          return ChoiceChip(
-                            label: Text(cat),
-                            selected: isSelected,
-                            selectedColor: const Color(0xFF007BBB),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setModalState(() => _selectedCategory = cat);
-                                // تحديث الواجهة الرئيسية
-                                setState(() => _selectedCategory = cat);
-                                productsCubit.applyCategoryFilter(cat);
-                              }
-                            },
-                            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Divider(),
-                    const Align(alignment: Alignment.centerRight, child: Text("ترتيب حسب", style: TextStyle(fontWeight: FontWeight.bold))),
-                    // ترتيب حسب السعر
-                    _buildSortOption(productsCubit, setModalState, 'relevance', 'الأكثر صلة'),
-                    _buildSortOption(productsCubit, setModalState, 'price_asc', 'السعر: من الأقل للأعلى'),
-                    _buildSortOption(productsCubit, setModalState, 'price_desc', 'السعر: من الأعلى للأقل'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007BBB),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('تم', style: TextStyle(color: Colors.white, fontSize: 16)),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSortOption(ProductsCubit cubit, StateSetter setModalState, String value, String title) {
-    return RadioListTile<String>(
-      value: value,
-      groupValue: cubit.selectedSort,
-      title: Text(title),
-      activeColor: const Color(0xFF007BBB),
-      onChanged: (v) {
-        setModalState(() {});
-        cubit.applySortFilter(v!);
-      },
-    );
   }
 
   @override
@@ -152,7 +53,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => getIt<BannersCubit>()..getBanners()),
-        // ملاحظة: إذا كان ProductsCubit موفراً في AppRouter، لا تضعه هنا مجدداً.
       ],
       child: Scaffold(
         backgroundColor: const Color(0xFFFBFBFB),
@@ -173,7 +73,27 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                     children: [
                       const CustomHomeAppBar(),
                       const SizedBox(height: 16),
-                      buildSearchBarWithFilter(),
+                      
+                      // استخدام ويدجيت البحث والفلترة الخارجية
+                      CustomSearchFilterBar(
+                        controller: _searchController,
+                        onSearchChanged: (value) {
+                          context.read<ProductsCubit>().searchProducts(value);
+                        },
+                        onFilterTap: () {
+                          // استخدام دالة المودال الخارجية
+                          openGeneralFilterModal(
+                            context: context,
+                            productsCubit: context.read<ProductsCubit>(),
+                            categories: _categories,
+                            selectedCategory: _selectedCategory,
+                            onCategorySelected: (cat) {
+                              setState(() => _selectedCategory = cat);
+                            },
+                          );
+                        },
+                      ),
+                      
                       const SizedBox(height: 18),
                       _buildUploadPrescription(),
                       const SizedBox(height: 20),
@@ -233,7 +153,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final fetched = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
-          // نحدث القائمة فقط إذا تغيرت لضمان عدم حدوث Loop
           if (_categories.length != fetched.length + 1) {
             _categories = ['الكل', ...fetched];
           }
@@ -274,34 +193,6 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget buildSearchBarWithFilter() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Colors.grey),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              textAlign: TextAlign.right,
-              decoration: const InputDecoration(hintText: 'ابحث عن منتج...', border: InputBorder.none),
-            ),
-          ),
-          const VerticalDivider(indent: 10, endIndent: 10),
-          IconButton(icon: const Icon(Icons.filter_list, color: Color(0xFF007BBB)), onPressed: _openFilterOptions),
-        ],
-      ),
-    );
-  }
-
-  // ميثود بناء البانر، العناوين، والمنتجات الأفقية (تُبقى كما هي مع التأكد من استخدام context.read<ProductsCubit>())
   Widget _buildSectionTitle(String title, double padding, {VoidCallback? onSeeAll}) {
      return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),

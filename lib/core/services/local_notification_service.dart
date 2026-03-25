@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:e_commerce/featchers/home/presentation/cubits/myOrders/my_orders_cubit.dart';
+import 'package:e_commerce/featchers/home/presentation/cubits/myOrders/my_orders_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -29,11 +32,85 @@ class LocalNotificationService {
     );
   }
 
+  // إشعار فوري (يستخدم في حالات تحديث حالة الطلب داخل التطبيق)
+static Future<void> showInstantNotification({
+    required String title,
+    required String body,
+    // احذف String orderId لو مش هتستخدمها كمعامل منفصل 
+    // واكتفي بالـ payload اللي جاي من الـ Cubit
+    String? payload, 
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'instant_notifications_channel',
+      'تحديثات فورية',
+      importance: Importance.max,
+      priority: Priority.high,
+      color: Color(0xFF1D9E75),
+    );
+
+await _plugin.show(
+      // ✅ الحل: وضع الأسماء قبل كل قيمة
+      id: DateTime.now().millisecond, 
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: payload, 
+    );
+  }
+
   // يتم استدعاؤها عند الضغط على الإشعار والتطبيق مفتوح أو في الخلفية
-  static void _onNotificationTap(NotificationResponse response) {
-    if (response.payload != null) {
-      // ننتقل لصفحة المنبهات (يمكنك تغيير الوجهة لصفحة تفاصيل الدواء)
-      _navigatorKey?.currentState?.pushNamed(AppRoutes.alarmsMain);
+static void _onNotificationTap(NotificationResponse response) {
+    debugPrint("🔔 Notification Payload Received: ${response.payload}");
+
+    if (response.payload == null) return;
+
+    try {
+      final Map<String, dynamic> data = jsonDecode(response.payload!);
+
+      // 1. فحص إشعارات الطلبات
+      if (data['type'] == 'order_update') {
+        final String orderId = data['orderId'];
+        debugPrint("🚀 Attempting to navigate to Order: $orderId");
+
+        // محاولة جلب الـ OrderModel من الـ Cubit لتجنب Casting Error
+        final context = _navigatorKey?.currentContext;
+        if (context != null) {
+          try {
+            final ordersCubit = context.read<OrdersCubit>();
+            if (ordersCubit.state is OrdersSuccess) {
+              final orders = (ordersCubit.state as OrdersSuccess).orders;
+              final order = orders.firstWhere((o) => o.orderId == orderId);
+              
+              // إذا وجدنا الـ Object نبعته كامل
+              _navigatorKey?.currentState?.pushNamed(
+                AppRoutes.orderDetailsView,
+                arguments: order, 
+              );
+              return;
+            }
+          } catch (e) {
+            debugPrint("⚠️ Cubit not found or Order not in list, sending ID instead.");
+          }
+        }
+
+        // لو مفشلنا في جلب الـ Object نبعت الـ ID (تأكد أن صفحة التفاصيل تقبل String أو Object)
+        _navigatorKey?.currentState?.pushNamed(
+          AppRoutes.orderDetailsView,
+          arguments: orderId,
+        );
+      } 
+      // 2. فحص إشعارات منبهات الدواء
+      else if (data.containsKey('name') || data.containsKey('dosage') || data.containsKey('id')) { 
+        debugPrint("💊 Navigating to Alarms Page");
+        _navigatorKey?.currentState?.pushNamed(AppRoutes.alarmsMain);
+      }
+      else {
+        debugPrint("🏠 Unknown payload type, going home");
+        _navigatorKey?.currentState?.pushNamed(AppRoutes.home);
+      }
+    } catch (e) {
+      debugPrint("❌ Error parsing notification payload: $e");
+      _navigatorKey?.currentState?.pushNamed(AppRoutes.home);
     }
   }
 
