@@ -8,11 +8,12 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductsGridViewBlocBuilder extends StatelessWidget {
   const ProductsGridViewBlocBuilder({super.key, this.limit});
-final int? limit;
+  final int? limit;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProductsCubit, ProductsState>(
-      buildWhen: (previous, current) => current is ProductsSuccess || current is ProductsFailure,
+      buildWhen: (previous, current) =>
+          current is ProductsSuccess || current is ProductsFailure,
       builder: (context, state) {
         if (state is ProductsSuccess) {
           // تم حذف SliverToBoxAdapter لأن الأب هو Padding عادي

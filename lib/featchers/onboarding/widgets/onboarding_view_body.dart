@@ -55,7 +55,7 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
         curve: Curves.easeInOutCubic,
       );
     } else {
-      _navigateToLogin(); 
+      _navigateToLogin();
     }
   }
 
@@ -143,9 +143,21 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
         ? screenSize.width * 0.4
         : screenSize.width * 0.35;
 
-    final titleFontSize = isMobile ? 22.0 : isTablet ? 26.0 : 28.0;
-    final subtitleFontSize = isMobile ? 26.0 : isTablet ? 30.0 : 32.0;
-    final descriptionFontSize = isMobile ? 13.0 : isTablet ? 14.0 : 16.0;
+    final titleFontSize = isMobile
+        ? 22.0
+        : isTablet
+        ? 26.0
+        : 28.0;
+    final subtitleFontSize = isMobile
+        ? 26.0
+        : isTablet
+        ? 30.0
+        : 32.0;
+    final descriptionFontSize = isMobile
+        ? 13.0
+        : isTablet
+        ? 14.0
+        : 16.0;
     final buttonHeight = isMobile ? 48.0 : 50.0;
     final horizontalPadding = isMobile ? 20.0 : 24.0;
 
@@ -156,11 +168,7 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFB1E5F6),
-              Color(0xFF67B0E6),
-              Color(0xFF4A90D9),
-            ],
+            colors: [Color(0xFFB1E5F6), Color(0xFF67B0E6), Color(0xFF4A90D9)],
             stops: [0.0, 0.5, 1.0],
           ),
         ),
@@ -306,11 +314,16 @@ class _OnboardingViewBodyState extends State<OnboardingViewBody>
                                   ),
                                   SizedBox(height: isMobile ? 12 : 16),
                                   GradientButton(
-                                    label: _currentIndex == 2 ? 'ابدأ' : 'التالي',
+                                    label: _currentIndex == 2
+                                        ? 'ابدأ'
+                                        : 'التالي',
                                     onPressed: _goToNextPage,
                                     width: double.infinity,
                                     height: buttonHeight,
-                                    gradientColors: [cornerColor1, cornerColor2],
+                                    gradientColors: [
+                                      cornerColor1,
+                                      cornerColor2,
+                                    ],
                                     borderRadius: 16,
                                     hasIcon: true,
                                     icon: _currentIndex == 2

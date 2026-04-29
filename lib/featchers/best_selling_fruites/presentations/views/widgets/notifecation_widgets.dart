@@ -34,7 +34,7 @@ class NotifecationWidgets extends StatelessWidget {
               size: 24,
             ),
           ),
-          
+
           // عرض الدائرة الحمراء والرقم فقط إذا كان العدد أكبر من 0
           if (notificationCount > 0)
             Positioned(
@@ -42,10 +42,7 @@ class NotifecationWidgets extends StatelessWidget {
               top: -2,
               child: Container(
                 padding: const EdgeInsets.all(4), // مساحة حول الرقم
-                constraints: const BoxConstraints(
-                  minWidth: 18,
-                  minHeight: 18,
-                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                 decoration: BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:equatable/equatable.dart';
 
@@ -6,12 +8,16 @@ class CartItemEntity extends Equatable {
   final int quantty;
   // أضفنا هذه الحقول لدعم فلو الصيدليات
   final String? pharmacyId;
+  final File? prescriptionFile;
+  final bool isPrescription;
   final String? pharmacyName;
   final num? priceAtSelection;
 
   const CartItemEntity({
     required this.productIntety,
     required this.quantty,
+    this.prescriptionFile,
+    this.isPrescription = false,
     this.pharmacyId,
     this.pharmacyName,
     this.priceAtSelection,
@@ -23,6 +29,8 @@ class CartItemEntity extends Equatable {
     String? pharmacyId,
     String? pharmacyName,
     num? priceAtSelection,
+    File? prescriptionFile,
+    bool? isPrescription,
   }) {
     return CartItemEntity(
       productIntety: productIntety ?? this.productIntety,
@@ -30,11 +38,14 @@ class CartItemEntity extends Equatable {
       pharmacyId: pharmacyId ?? this.pharmacyId,
       pharmacyName: pharmacyName ?? this.pharmacyName,
       priceAtSelection: priceAtSelection ?? this.priceAtSelection,
+      prescriptionFile: prescriptionFile ?? this.prescriptionFile,
+      isPrescription: isPrescription ?? this.isPrescription,
     );
   }
 
   // نستخدم السعر المختار من الصيدلية، وإذا لم يوجد نستخدم سعر المنتج الافتراضي
   num calculateTotalPrice() {
+    if (isPrescription) return 0;
     return (priceAtSelection ?? productIntety.price) * quantty;
   }
 

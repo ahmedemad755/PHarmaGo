@@ -7,7 +7,6 @@ import 'package:e_commerce/featchers/home/presentation/views/widgets/cart_item_a
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/utils/app_text_styles.dart';
-// استيراد ملف الـ Routes الخاص بك
 
 class CartItem extends StatelessWidget {
   const CartItem({super.key, required this.carItemEntity});
@@ -20,7 +19,7 @@ class CartItem extends StatelessWidget {
       builder: (context, state) {
         // استخدام الميثود الجديدة getCartEntity التي أضفناها للـ Cubit
         final currentCart = context.read<CartCubit>().getCartEntity(state);
-        
+
         final currentItem = currentCart.cartItems.firstWhere(
           (item) =>
               item.productIntety.code == carItemEntity.productIntety.code &&
@@ -30,12 +29,14 @@ class CartItem extends StatelessWidget {
 
         return GestureDetector(
           onTap: () {
-            // 🚀 الانتقال لصفحة التفاصيل باستخدام الـ Route المذكور في ملفك
-            Navigator.pushNamed(
-              context,
-              AppRoutes.productDetails,
-              arguments: currentItem.productIntety,
-            );
+            // لا ننتقل لصفحة التفاصيل إذا كانت روشتة لأنها ليست منتجاً مسجلاً
+            if (!currentItem.isPrescription) {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.productDetails,
+                arguments: currentItem.productIntety,
+              );
+            }
           },
           child: Container(
             padding: const EdgeInsets.all(12),
@@ -47,16 +48,16 @@ class CartItem extends StatelessWidget {
                   color: Colors.black.withOpacity(0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
-                )
+                ),
               ],
             ),
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  // صورة المنتج
-                  _buildProductImage(currentItem.productIntety.imageurl!),
+                  // صورة المنتج أو صورة الروشتة
+                  _buildProductImage(currentItem),
                   const SizedBox(width: 16),
-                  
+
                   // بيانات المنتج
                   Expanded(
                     child: Column(
@@ -68,7 +69,9 @@ class CartItem extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                currentItem.productIntety.name,
+                                currentItem.isPrescription
+                                    ? "روشتة طبية"
+                                    : currentItem.productIntety.name,
                                 style: TextStyles.bold13,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -77,21 +80,37 @@ class CartItem extends StatelessWidget {
                             _buildDeleteButton(context, currentItem),
                           ],
                         ),
-                        
+
                         // اسم الصيدلية
                         _buildPharmacyInfo(currentItem.pharmacyName),
-                        
+
                         const SizedBox(height: 8),
-                        
+
                         // الأزرار والسعر
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            CartItemActionButtons(cartItemEntity: currentItem),
+                            // إخفاء أزرار التحكم في الكمية إذا كانت روشتة
+                            currentItem.isPrescription
+                                ? const Text(
+                                    "سيتم التسعير لاحقاً",
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 11,
+                                      fontFamily: 'Cairo',
+                                    ),
+                                  )
+                                : CartItemActionButtons(
+                                    cartItemEntity: currentItem,
+                                  ),
+
                             Text(
-                              '${currentItem.calculateTotalPrice()} جنيه ',
+                              currentItem.isPrescription
+                                  ? 'قيد المراجعة'
+                                  : '${currentItem.calculateTotalPrice()} جنيه ',
                               style: TextStyles.bold16.copyWith(
                                 color: AppColors.primaryColor,
+                                fontSize: currentItem.isPrescription ? 14 : 16,
                               ),
                             ),
                           ],
@@ -110,7 +129,7 @@ class CartItem extends StatelessWidget {
 
   // --- Widgets مساعدة لتحسين القراءة ---
 
-  Widget _buildProductImage(String imageUrl) {
+  Widget _buildProductImage(CartItemEntity item) {
     return Container(
       width: 85,
       height: 85,
@@ -120,7 +139,15 @@ class CartItem extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: CustomNetworkImage(imageUrl: imageUrl),
+        child: item.isPrescription && item.prescriptionFile != null
+            ? Image.file(item.prescriptionFile!, fit: BoxFit.cover)
+            : (item.productIntety.imageurl != null
+                  ? CustomNetworkImage(imageUrl: item.productIntety.imageurl!)
+                  : const Icon(
+                      Icons.medication_outlined,
+                      size: 40,
+                      color: Colors.grey,
+                    )),
       ),
     );
   }
@@ -148,7 +175,9 @@ class CartItem extends StatelessWidget {
           context: context,
           backgroundColor: Colors.transparent, // لجعل الحواف الدائرية تظهر
           builder: (context) => DeleteConfirmationSheet(
-            itemName: item.productIntety.name,
+            itemName: item.isPrescription
+                ? "الروشتة الطبية"
+                : item.productIntety.name,
           ),
         );
 
@@ -162,7 +191,11 @@ class CartItem extends StatelessWidget {
           color: Colors.red.withOpacity(0.08),
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          color: Colors.red,
+          size: 20,
+        ),
       ),
     );
   }
@@ -194,11 +227,7 @@ class DeleteConfirmationSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Icon(
-            Icons.delete_sweep_rounded,
-            color: Colors.red,
-            size: 60,
-          ),
+          const Icon(Icons.delete_sweep_rounded, color: Colors.red, size: 60),
           const SizedBox(height: 16),
           const Text(
             'حذف من السلة؟',
@@ -252,7 +281,10 @@ class DeleteConfirmationSheet extends StatelessWidget {
                   onPressed: () => Navigator.pop(context, true),
                   child: const Text(
                     'نعم، احذف',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Cairo',
+                    ),
                   ),
                 ),
               ),

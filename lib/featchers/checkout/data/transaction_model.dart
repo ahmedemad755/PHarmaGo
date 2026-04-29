@@ -24,7 +24,7 @@ class TransactionModel with _$TransactionModel {
         amount: AmountModel.fromEntity(entity),
         description: "payment descreption",
         itemList: ItemListModel(
-          items: entity.cartEntity.cartItems
+          items: entity.cartEntity!.cartItems
               .map((item) => ItemModel.fromEntity(item))
               .toList(),
         ),

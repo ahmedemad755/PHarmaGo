@@ -15,7 +15,7 @@ class PrescriptionConfig {
 
   // ==================== Text Content ====================
   static const String appBarTitle = "Upload Prescription";
-  
+
   // Prescription Guide
   static const String prescriptionGuideTitle = 'Prescription Guide';
   static const List<String> prescriptionGuidelines = [
@@ -25,9 +25,9 @@ class PrescriptionConfig {
     'Patient Details',
     'Dosage Details',
   ];
-  
+
   static const String howItWorksTitle = 'How It Works';
-  
+
   // Upload Area
   static const String uploadText = 'Upload file here';
   static const String cameraLabel = 'Camera';
@@ -72,10 +72,7 @@ class PrescriptionConfig {
 
   // ==================== Customizable How It Works Items ====================
   static const List<HowItWorkItemConfig> howItWorkItems = [
-    HowItWorkItemConfig(
-      icon: Icons.upload_file,
-      label: 'Upload\nPrescription',
-    ),
+    HowItWorkItemConfig(icon: Icons.upload_file, label: 'Upload\nPrescription'),
     HowItWorkItemConfig(
       icon: Icons.notifications_active,
       label: 'Received\nNotification',
@@ -122,9 +119,12 @@ class PrescriptionConfig {
   }) {
     return {
       'primaryColor': primaryColor ?? PrescriptionConfig.primaryColor,
-      'lightBackgroundColor': lightBackgroundColor ?? PrescriptionConfig.lightBackgroundColor,
-      'cameraButtonColor': cameraButtonColor ?? PrescriptionConfig.cameraButtonColor,
-      'galleryButtonColor': galleryButtonColor ?? PrescriptionConfig.galleryButtonColor,
+      'lightBackgroundColor':
+          lightBackgroundColor ?? PrescriptionConfig.lightBackgroundColor,
+      'cameraButtonColor':
+          cameraButtonColor ?? PrescriptionConfig.cameraButtonColor,
+      'galleryButtonColor':
+          galleryButtonColor ?? PrescriptionConfig.galleryButtonColor,
       'uploadText': uploadText ?? PrescriptionConfig.uploadText,
       'cameraLabel': cameraLabel ?? PrescriptionConfig.cameraLabel,
       'galleryLabel': galleryLabel ?? PrescriptionConfig.galleryLabel,
@@ -137,8 +137,5 @@ class HowItWorkItemConfig {
   final IconData icon;
   final String label;
 
-  const HowItWorkItemConfig({
-    required this.icon,
-    required this.label,
-  });
+  const HowItWorkItemConfig({required this.icon, required this.label});
 }

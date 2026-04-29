@@ -40,11 +40,7 @@ class BottomNavPage extends StatelessWidget {
               _navItem(context, icon: Icons.grid_view, index: 1),
               _navItem(context, icon: Icons.alarm, index: 2),
               _navItem(context, image: "assets/chatbot_icon.png", index: 3),
-              _navItem(
-                context,
-                image: "assets/shopping-basket.png",
-                index: 4,
-              ),
+              _navItem(context, image: "assets/shopping-basket.png", index: 4),
               _navItem(context, icon: Icons.person, index: 5),
             ],
           ),
@@ -68,7 +64,7 @@ class BottomNavPage extends StatelessWidget {
           // استخراج الكيان من الحالة السابقة والحالية للمقارنة
           final prevItems = _getCartEntity(previous).cartItems.length;
           final currItems = _getCartEntity(current).cartItems.length;
-          return prevItems != currItems || isSelected; 
+          return prevItems != currItems || isSelected;
         },
         builder: (context, state) {
           final currentCart = _getCartEntity(state);

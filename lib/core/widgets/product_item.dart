@@ -4,7 +4,8 @@ import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/onboarding/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 
-class productItem extends StatelessWidget { // تحول لـ StatelessWidget
+class productItem extends StatelessWidget {
+  // تحول لـ StatelessWidget
   const productItem({super.key, required this.productEntity});
   final AddProductIntety productEntity;
 
@@ -12,9 +13,14 @@ class productItem extends StatelessWidget { // تحول لـ StatelessWidget
   Widget build(BuildContext context) {
     final bool hasDiscount = productEntity.discountPercentage > 0;
 
-    return RepaintBoundary( // 👈 عزل العنصر عن باقي الشاشة في الرسم
+    return RepaintBoundary(
+      // 👈 عزل العنصر عن باقي الشاشة في الرسم
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, AppRoutes.productDetails, arguments: productEntity),
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRoutes.productDetails,
+          arguments: productEntity,
+        ),
         child: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -42,22 +48,27 @@ class productItem extends StatelessWidget { // تحول لـ StatelessWidget
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      hasDiscount 
-                        ? const _DiscountTag() 
-                        : const SizedBox(width: 42),
-                      const FavoriteButton(), // 👈 زر منفصل لا يؤثر على الباقي
+                      hasDiscount
+                          ? const _DiscountTag()
+                          : const SizedBox(width: 42),
+                      // const FavoriteButton(), // 👈 زر منفصل لا يؤثر على الباقي
                     ],
                   ),
                   const SizedBox(height: 6),
                   Flexible(
                     child: Center(
                       child: productEntity.imageurl != null
-                          ? CustomNetworkImage(imageUrl: productEntity.imageurl!)
+                          ? CustomNetworkImage(
+                              imageUrl: productEntity.imageurl!,
+                            )
                           : const _PlaceholderImage(),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  _ProductInfo(name: productEntity.name, price: productEntity.price),
+                  _ProductInfo(
+                    name: productEntity.name,
+                    price: productEntity.price,
+                  ),
                 ],
               ),
             ),
@@ -69,28 +80,28 @@ class productItem extends StatelessWidget { // تحول لـ StatelessWidget
 }
 
 // 👈 عزل زر المفضلة لمنع ريبلد المنتج بالكامل
-class FavoriteButton extends StatefulWidget {
-  const FavoriteButton({super.key});
-  @override
-  State<FavoriteButton> createState() => _FavoriteButtonState();
-}
+// class FavoriteButton extends StatefulWidget {
+//   const FavoriteButton({super.key});
+//   @override
+//   State<FavoriteButton> createState() => _FavoriteButtonState();
+// }
 
-class _FavoriteButtonState extends State<FavoriteButton> {
-  bool isFavorite = false;
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: isFavorite ? Colors.red : Colors.black54,
-        size: 20,
-      ),
-      onPressed: () => setState(() => isFavorite = !isFavorite),
-      constraints: const BoxConstraints(),
-      padding: EdgeInsets.zero,
-    );
-  }
-}
+// class _FavoriteButtonState extends State<FavoriteButton> {
+//   bool isFavorite = false;
+//   @override
+//   Widget build(BuildContext context) {
+//     return IconButton(
+//       icon: Icon(
+//         isFavorite ? Icons.favorite : Icons.favorite_border,
+//         color: isFavorite ? Colors.red : Colors.black54,
+//         size: 20,
+//       ),
+//       onPressed: () => setState(() => isFavorite = !isFavorite),
+//       constraints: const BoxConstraints(),
+//       padding: EdgeInsets.zero,
+//     );
+//   }
+// }
 
 class _DiscountTag extends StatelessWidget {
   const _DiscountTag();
@@ -117,9 +128,21 @@ class _ProductInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(
+          name,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 2),
-        Text("$price جنيه", style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(
+          "$price جنيه",
+          style: const TextStyle(
+            color: Colors.black54,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -129,6 +152,10 @@ class _PlaceholderImage extends StatelessWidget {
   const _PlaceholderImage();
   @override
   Widget build(BuildContext context) {
-    return Container(color: Colors.grey[300], alignment: Alignment.center, child: const Icon(Icons.image_not_supported));
+    return Container(
+      color: Colors.grey[300],
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_not_supported),
+    );
   }
 }

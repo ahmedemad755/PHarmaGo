@@ -9,7 +9,7 @@ class CartItemCubit extends Cubit<CartItemState> {
   void updateCartItem(CartItemEntity carItem) {
     // 1. تحديد القائمة الحالية
     List<CartItemEntity> currentItems = [];
-    
+
     if (state is CartItemUpdated) {
       currentItems = (state as CartItemUpdated).cartItemEntity;
     }
@@ -31,7 +31,9 @@ class CartItemCubit extends Cubit<CartItemState> {
   void removeItem(CartItemEntity carItem) {
     if (state is CartItemUpdated) {
       final currentItems = (state as CartItemUpdated).cartItemEntity;
-      final newList = currentItems.where((item) => item.productIntety != carItem.productIntety).toList();
+      final newList = currentItems
+          .where((item) => item.productIntety != carItem.productIntety)
+          .toList();
       emit(CartItemUpdated(newList));
     }
   }

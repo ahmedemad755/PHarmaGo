@@ -15,7 +15,7 @@ class DetailsModel with _$DetailsModel {
   factory DetailsModel.fromJson(Map<String, dynamic> json) =>
       _$DetailsModelFromJson(json);
   factory DetailsModel.fromEntity(OrderInputEntity entity) => DetailsModel(
-    subtotal: entity.cartEntity.getTotalPrice().toString(),
+    subtotal: entity.cartEntity!.getTotalPrice().toString(),
     shipping: entity.deliveryPrice.toString(),
     shippingDiscount: entity.shippingdescount(),
   );

@@ -164,7 +164,9 @@ class PrescriptionRepoImpl implements PrescriptionRepo {
   PrescriptionRepoImpl(this._geminiService);
 
   @override
-  Future<Either<String, List<MedicineEntity>>> analyzePrescription(File image) async {
+  Future<Either<String, List<MedicineEntity>>> analyzePrescription(
+    File image,
+  ) async {
     try {
       final result = await _geminiService.analyzeImage(image);
       if (result.isEmpty) {

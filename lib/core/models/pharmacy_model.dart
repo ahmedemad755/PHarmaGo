@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/enteties/pharmacy_entity.dart';
+
 class PharmacyModel extends PharmacyEntity {
   PharmacyModel({
     required super.uId,

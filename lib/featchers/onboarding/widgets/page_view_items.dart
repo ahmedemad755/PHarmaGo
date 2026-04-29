@@ -33,17 +33,15 @@ class PageViewItems extends StatelessWidget {
                 Positioned.fill(
                   child: SvgPicture.asset(backgroundimag, fit: BoxFit.fill),
                 ),
-Positioned(
+                Positioned(
+                  bottom: 0,
 
-bottom: 0,
+                  left: 0,
 
-left: 0,
+                  right: 0,
 
-right: 0,
-
-child: SvgPicture.asset(image, ),
-
-),
+                  child: SvgPicture.asset(image),
+                ),
 
                 Visibility(
                   visible: isVisible,

@@ -17,6 +17,10 @@ AddProductIntety getDummyProduct() {
     pharmacyId: '123',
     categoryId: 'cat-001',
     cost: 15.0, // تم إضافة الحقل الجديد هنا
+    isPrescriptionRequired: false, // تم إضافة الحقل الجديد هنا
+    pharmacyName: 'صيدلية ', // اسم الصيدلية
+    pharmacyLat: 30.0444, // خط العرض
+    pharmacyLng: 31.2357, // خط الطول
   );
 }
 

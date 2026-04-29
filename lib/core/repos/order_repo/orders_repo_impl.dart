@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
 import 'package:e_commerce/core/services/database_service.dart';
-import 'package:e_commerce/core/services/storge_service.dart'; 
+import 'package:e_commerce/core/services/storge_service.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
 import 'package:e_commerce/featchers/checkout/data/order_model.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 
 class OrdersRepoImpl implements OrdersRepo {
   final DatabaseService fireStoreService;
-  final StorgeService storgeService; 
+  final StorgeService storgeService;
 
   OrdersRepoImpl(this.fireStoreService, this.storgeService);
 
@@ -20,8 +20,11 @@ class OrdersRepoImpl implements OrdersRepo {
   Future<Either<Faliur, String>> uploadPrescription(File imageFile) async {
     try {
       final XFile xFile = XFile(imageFile.path);
-      
-      final String? downloadUrl = await storgeService.uploadImage(xFile, 'prescriptions');
+
+      final String? downloadUrl = await storgeService.uploadImage(
+        xFile,
+        'prescriptions',
+      );
 
       if (downloadUrl != null) {
         return right(downloadUrl);
@@ -34,13 +37,17 @@ class OrdersRepoImpl implements OrdersRepo {
   }
 
   @override
-  Future<Either<Faliur, void>> addOrder({required OrderInputEntity order}) async {
+  Future<Either<Faliur, void>> addOrder({
+    required OrderInputEntity order,
+  }) async {
     try {
       String? uploadedImageUrl;
 
       if (order.prescriptionFile != null) {
-        final uploadResult = await uploadPrescription(File(order.prescriptionFile!.path));
-        
+        final uploadResult = await uploadPrescription(
+          File(order.prescriptionFile!.path),
+        );
+
         uploadedImageUrl = uploadResult.fold(
           (failure) => throw Exception(failure.message),
           (url) => url,
@@ -52,7 +59,7 @@ class OrdersRepoImpl implements OrdersRepo {
       var orderModel = OrderModel.fromEntity(order);
       Map<String, dynamic> orderData = orderModel.toJson();
 
-      orderData['prescriptionImage'] = uploadedImageUrl; 
+      orderData['prescriptionImage'] = uploadedImageUrl;
       orderData['createdAt'] = FieldValue.serverTimestamp();
       orderData['uId'] = order.uID;
       // orderData['userName'] = FirebaseAuth.instance.currentUser?.displayName ?? "عميل مجهول";
@@ -71,17 +78,23 @@ class OrdersRepoImpl implements OrdersRepo {
 
   @override
   Stream<Either<Faliur, List<OrderModel>>> fetchOrders({required String uID}) {
-    return fireStoreService.getCollectionStream(
-      path: BackendPoints.orders,
-      query: (q) => q.where('uId', isEqualTo: uID).orderBy('createdAt', descending: true),
-    ).map((data) {
-      try {
-        List<OrderModel> orders = data.map((e) => OrderModel.fromJson(e)).toList();
-        return right(orders);
-      } catch (e) {
-        return left(ServerFaliur('خطأ في تحويل البيانات: $e'));
-      }
-    });
+    return fireStoreService
+        .getCollectionStream(
+          path: BackendPoints.orders,
+          query: (q) => q
+              .where('uId', isEqualTo: uID)
+              .orderBy('createdAt', descending: true),
+        )
+        .map((data) {
+          try {
+            List<OrderModel> orders = data
+                .map((e) => OrderModel.fromJson(e))
+                .toList();
+            return right(orders);
+          } catch (e) {
+            return left(ServerFaliur('خطأ في تحويل البيانات: $e'));
+          }
+        });
   }
 
   @override
@@ -92,7 +105,8 @@ class OrdersRepoImpl implements OrdersRepo {
         documentId: orderId,
         data: {
           'status': 'cancelled', // تم توحيدها لتكون بلام واحدة كما في الـ Enum
-          'cancelledBy': 'customer', // 👈 إضافة هذا الحقل ليعرف لوحة التحكم أن العميل هو من ألغى
+          'cancelledBy':
+              'customer', // 👈 إضافة هذا الحقل ليعرف لوحة التحكم أن العميل هو من ألغى
         },
       );
       return right(null);

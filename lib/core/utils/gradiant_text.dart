@@ -6,7 +6,12 @@ class GradientText extends StatelessWidget {
   final LinearGradient gradient;
   final double fontSize;
 
-  const GradientText(this.text, {super.key, required this.gradient, this.fontSize = 22});
+  const GradientText(
+    this.text, {
+    super.key,
+    required this.gradient,
+    this.fontSize = 22,
+  });
 
   @override
   Widget build(BuildContext context) {

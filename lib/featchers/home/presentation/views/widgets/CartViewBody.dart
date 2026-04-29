@@ -4,7 +4,6 @@ import 'package:e_commerce/featchers/auth/widgets/app_bar_about_pages.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/CartHeader.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/cart_items_list.dart';
-import 'package:e_commerce/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,20 +32,21 @@ class CartViewBody extends StatelessWidget {
             preferredSize: const Size.fromHeight(kToolbarHeight + 20),
             child: AppBarAboutPages(title: "سلة التسوق"),
           ),
-          
+
           // عرض زر الدفع في الأسفل فقط إذا كانت السلة غير فارغة
-          bottomNavigationBar: isEmpty 
-              ? null 
+          bottomNavigationBar: isEmpty
+              ? null
               : SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     child: CustomCartButton(),
                   ),
                 ),
 
-          body: isEmpty 
-              ? _buildEmptyState() 
-              : _buildCartContent(cartItems),
+          body: isEmpty ? _buildEmptyState() : _buildCartContent(cartItems),
         );
       },
     );
@@ -58,7 +58,7 @@ class CartViewBody extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       slivers: [
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        
+
         // الهيدر (عدد المنتجات مثلاً)
         const SliverToBoxAdapter(
           child: Padding(
@@ -66,9 +66,9 @@ class CartViewBody extends StatelessWidget {
             child: CartHeader(),
           ),
         ),
-        
+
         const SliverToBoxAdapter(child: SizedBox(height: 12)),
-        
+
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -94,7 +94,8 @@ class CartViewBody extends StatelessWidget {
 
   // حالة السلة الفارغة المحدثة
   Widget _buildEmptyState() {
-    return FadeInUp( // إذا كان لديك مكتبة animate_do أو استبدلها بـ AnimatedOpacity
+    return FadeInUp(
+      // إذا كان لديك مكتبة animate_do أو استبدلها بـ AnimatedOpacity
       child: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -149,8 +150,12 @@ class CartViewBody extends StatelessWidget {
           Positioned(
             right: 45,
             top: 45,
-            child: Icon(Icons.close, color: AppColors.primary.withOpacity(0.4), size: 30),
-          )
+            child: Icon(
+              Icons.close,
+              color: AppColors.primary.withOpacity(0.4),
+              size: 30,
+            ),
+          ),
         ],
       ),
     );

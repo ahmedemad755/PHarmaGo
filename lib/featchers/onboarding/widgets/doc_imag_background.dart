@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart' show SvgPicture;
 class docimageandbackground extends StatelessWidget {
   const docimageandbackground({super.key, required this.isVisible});
 
-   final bool isVisible;
+  final bool isVisible;
 
   @override
   Widget build(BuildContext context) {

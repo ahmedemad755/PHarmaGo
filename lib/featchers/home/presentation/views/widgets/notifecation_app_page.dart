@@ -15,7 +15,7 @@ class NotificationsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-     getIt<OrdersCubit>().clearNotificationBadge();
+      getIt<OrdersCubit>().clearNotificationBadge();
     });
     return Scaffold(
       backgroundColor: Colors.white,
@@ -35,7 +35,8 @@ class NotificationsView extends StatelessWidget {
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: orders.length,
-              separatorBuilder: (context, index) => const Divider(height: 32, thickness: 0.5),
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 32, thickness: 0.5),
               itemBuilder: (context, index) {
                 return NotificationItem(order: orders[index]);
               },
@@ -53,13 +54,21 @@ class NotificationsView extends StatelessWidget {
     return AppBar(
       title: const Text(
         'الإشعارات',
-        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+        style: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
       ),
       centerTitle: true,
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+        icon: const Icon(
+          Icons.arrow_back_ios_new,
+          color: Colors.black,
+          size: 20,
+        ),
         onPressed: () => Navigator.pop(context),
       ),
     );
@@ -70,7 +79,11 @@ class NotificationsView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_off_outlined, size: 80, color: Colors.grey[300]),
+          Icon(
+            Icons.notifications_off_outlined,
+            size: 80,
+            color: Colors.grey[300],
+          ),
           const SizedBox(height: 16),
           const Text(
             'لا توجد إشعارات حالياً',
@@ -120,12 +133,19 @@ class NotificationItem extends StatelessWidget {
               children: [
                 Text(
                   'تحديث الطلب #${order.orderId.substring(0, 8).toUpperCase()}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   config.message,
-                  style: TextStyle(color: Colors.grey[700], fontSize: 13, height: 1.4),
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Row(

@@ -27,10 +27,28 @@ class _SignupState extends State<Signup> {
   bool _shouldShake = false;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
+  final TextEditingController _addressController = TextEditingController();
+  double? latitude;
+  double? longitude;
+  String? address;
 
   late String email, password, userName, role;
 
   void setTermsAccepted(bool value) => setState(() => _isTermsAccepted = value);
+
+  Future<void> _pickLocationFromMap() async {
+    final result = await Navigator.of(context).pushNamed(AppRoutes.mapScreen);
+
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        address = result['address'];
+        latitude = result['lat'];
+        longitude = result['lng'];
+
+        _addressController.text = address ?? "";
+      });
+    }
+  }
 
   void _submitForm() async {
     if (!_isTermsAccepted) {
@@ -69,6 +87,9 @@ class _SignupState extends State<Signup> {
           email: email,
           password: password,
           name: userName,
+          address: address ?? "",
+          lat: latitude ?? 0.0,
+          lng: longitude ?? 0.0,
           // role: role,
         );
       } catch (e) {
@@ -194,6 +215,29 @@ class _SignupState extends State<Signup> {
                           hintText: 'البريد الإلكتروني',
                           textInputType: TextInputType.emailAddress,
                         ),
+                        const SizedBox(height: 16),
+
+                        CustomTextFormField(
+                          controller: _addressController,
+                          hintText: 'العنوان',
+                          readOnly: true,
+                          onTap: _pickLocationFromMap,
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.map_outlined,
+                              color: Colors.blue,
+                            ),
+                            onPressed: _pickLocationFromMap,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "من فضلك اختر العنوان من الخريطة";
+                            }
+                            return null;
+                          },
+                          onSaved: (value) => address = value,
+                        ),
+                        const SizedBox(height: 20),
                         const SizedBox(height: 16),
                         PasswordField(onSaved: (value) => password = value!),
                         const SizedBox(height: 16),

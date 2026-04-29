@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce/core/drug_engine/services/drug_firestore_service.dart';
 import 'package:e_commerce/core/products_cubit/products_cubit.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo_imp.dart';
@@ -20,7 +22,9 @@ import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/signup/sugnup_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
-import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart' show CartEntity;
+import 'package:e_commerce/featchers/chatbot/presentation/cubit/chat_cubit.dart';
+import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart'
+    show CartEntity;
 import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
@@ -33,12 +37,12 @@ final getIt = GetIt.instance;
 Future<void> setupGetit() async {
   // 1. الأساسيات والخدمات (Services)
   getIt.registerSingleton<FirebaseAuthService>(FirebaseAuthService());
-  
+
   final fireStoreService = FireStoreService();
   getIt.registerSingleton<FireStoreService>(fireStoreService);
   getIt.registerSingleton<DatabaseService>(fireStoreService);
   getIt.registerSingleton<GeminiService>(GeminiService());
-  
+
   // تسجيل خدمة التخزين (Supabase)
   getIt.registerSingleton<StorgeService>(SupabaseStorgeService());
 
@@ -57,10 +61,7 @@ Future<void> setupGetit() async {
 
   // تحديث OrdersRepo ليدعم خدمة التخزين لرفع الروشتات
   getIt.registerSingleton<OrdersRepo>(
-    OrdersRepoImpl(
-      getIt<DatabaseService>(), 
-      getIt<StorgeService>(),
-    ),
+    OrdersRepoImpl(getIt<DatabaseService>(), getIt<StorgeService>()),
   );
 
   getIt.registerSingleton<CartRepo>(CartRepoImpl());
@@ -78,7 +79,7 @@ Future<void> setupGetit() async {
   getIt.registerFactory<SugnupCubit>(() => SugnupCubit(getIt()));
   getIt.registerSingleton<LoginCubit>(LoginCubit(getIt()));
   getIt.registerFactory<OTPCubit>(() => OTPCubit(getIt<AuthRepo>()));
-  
+
   getIt.registerSingleton<CartEntity>(CartEntity([]));
   getIt.registerSingleton<CartCubit>(
     CartCubit(getIt<CartEntity>(), getIt<CartRepo>()),
@@ -92,13 +93,34 @@ Future<void> setupGetit() async {
     () => PrescriptionCubit(getIt<PrescriptionRepo>()),
   );
 
-  
   getIt.registerSingleton<OrdersCubit>(OrdersCubit(getIt<OrdersRepo>()));
 
-  getIt.registerFactory<BannersCubit>(
-    () => BannersCubit(getIt<BannersRepo>()),
-  );
+  getIt.registerFactory<BannersCubit>(() => BannersCubit(getIt<BannersRepo>()));
 
   // داخل ملف injection.dart أو الـ Setup الخاص بالـ DI
-getIt.registerLazySingleton<AlarmsCubit>(() => AlarmsCubit());
+  getIt.registerLazySingleton<AlarmsCubit>(() => AlarmsCubit());
+  // داخل دالة إعداد الـ GetIt (مثلاً setupServiceLocator)
+
+  getIt.registerLazySingleton(() => FirebaseFirestore.instance);
+
+  // Drug Service
+  getIt.registerLazySingleton(
+    () => DrugFirestoreService(getIt<FirebaseFirestore>()),
+  );
+
+  // Chat Cubit
+  getIt.registerFactory(() => ChatCubit(getIt<DrugFirestoreService>()));
+
+  // // 1. Services
+  //   getIt.registerLazySingleton<PlacesWebservices>(() => PlacesWebservices());
+
+  //   // 2. Repositories
+  //   getIt.registerLazySingleton<MapsRepository>(
+  //     () => MapsRepository(getIt<PlacesWebservices>()),
+  //   );
+
+  //   // 3. Cubits
+  //   getIt.registerFactory<MapsCubit>(
+  //     () => MapsCubit(getIt<MapsRepository>()),
+  //   );
 }

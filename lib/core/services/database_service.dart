@@ -15,11 +15,11 @@ abstract class DatabaseService {
     Map<String, dynamic>? query,
   });
 
-Stream<List<Map<String, dynamic>>> getCollectionStream({
-  required String path,
-  // تأكد أن النوع هنا Query من مكتبة cloud_firestore
-  Query Function(Query query)? query, 
-});
+  Stream<List<Map<String, dynamic>>> getCollectionStream({
+    required String path,
+    // تأكد أن النوع هنا Query من مكتبة cloud_firestore
+    Query Function(Query query)? query,
+  });
 
   Future<void> setData({
     required String path,
@@ -33,8 +33,8 @@ Stream<List<Map<String, dynamic>>> getCollectionStream({
   });
 
   Future<void> updateData({
-  required String path,
-  required String documentId,
-  required Map<String, dynamic> data,
-});
+    required String path,
+    required String documentId,
+    required Map<String, dynamic> data,
+  });
 }

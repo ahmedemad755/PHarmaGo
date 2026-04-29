@@ -16,7 +16,7 @@ class PaymentSection extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 24),
-          
+
           // 🔹 إضافة خانة رفع الروشتة هنا فقط إذا كانت مطلوبة
           BlocBuilder<CartCubit, CartState>(
             builder: (context, state) {

@@ -16,18 +16,17 @@ class BannersRepoImpl implements BannersRepo {
     try {
       // جلب البيانات من كولكشن العروض
       // لاحظ أننا يمكننا تمرير query لجلب العروض النشطة فقط والترتيب حسب التاريخ
-      final data = await databaseService.getData(
-        path: BackendPoints.banners,
-        query: {
-          'orderBy': 'created_at',
-          'descending': true,
-        },
-      ) as List<Map<String, dynamic>>;
+      final data =
+          await databaseService.getData(
+                path: BackendPoints.banners,
+                query: {'orderBy': 'created_at', 'descending': true},
+              )
+              as List<Map<String, dynamic>>;
 
       // تحويل البيانات من List<Map> إلى List<BannerEntity>
       // مع فلترة العروض غير النشطة في حال لم تدعم الـ Service فلترة الكويري
       final banners = data
-          .map((e) => BannerModel.fromJson(e, '')) 
+          .map((e) => BannerModel.fromJson(e, ''))
           .where((banner) => banner.isActive) // فلترة النشط فقط
           .toList();
 

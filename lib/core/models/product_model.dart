@@ -1,5 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
-import 'package:e_commerce/core/functions_helper/get_Avg_Rating.dart';
 import 'package:e_commerce/core/models/review_model.dart';
 
 class AddProductModel {
@@ -20,11 +20,14 @@ class AddProductModel {
   final String categoryId; // أضفنا الحقل هنا
   final String pharmacyId; // أضفنا الحقل هنا
   final bool isPrescriptionRequired;
+  final String pharmacyName; // اسم الصيدلية
+  final double pharmacyLat; // خط العرض
+  final double pharmacyLng; // خط الطول
 
   AddProductModel({
     required this.name,
     required this.price,
-      required this.cost, // تم إضافة الحقل الجديد هنا
+    required this.cost, // تم إضافة الحقل الجديد هنا
     required this.code,
     required this.description,
     this.imageurl,
@@ -37,21 +40,21 @@ class AddProductModel {
     this.isPrescriptionRequired = false,
     this.category = 'الأدوية',
     this.categoryId = '', // أضفنا الحقل هنا
-    required this.pharmacyId, // أضفنا الحقل هنا
+    required this.pharmacyId,
+    required this.pharmacyName, // أضف هذا
+    required this.pharmacyLat, // أضف هذا
+    required this.pharmacyLng,
   });
 
   factory AddProductModel.fromJson(Map<String, dynamic> json) {
-    DateTime parseDateFromInt(int dateInt) {
-      String dateString = dateInt.toString();
-      if (dateString.length == 8) {
-        final year = dateString.substring(0, 4);
-        final month = dateString.substring(4, 6);
-        final day = dateString.substring(6, 8);
-        return DateTime.parse('$year-$month-$day');
-      }
+    // دالة مساعدة لتحويل أي نوع تاريخ لـ DateTime بأمان
+    DateTime parseDate(dynamic date) {
+      if (date is Timestamp) return date.toDate();
+      if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
       return DateTime.now();
     }
 
+    // معالجة الـ reviews بأمان
     final List<ReviewModel> reviewsList =
         (json['reviews'] as List<dynamic>?)
             ?.map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
@@ -59,23 +62,34 @@ class AddProductModel {
         [];
 
     return AddProductModel(
-      expirationDate: parseDateFromInt(json['expirationDate'] as int),
-      averageRating: getAvgRating(reviewsList),
-      discountPercentage: (json['discountPercentage'] as num?) ?? 0,
-      sellingcount: (json['sellingcount'] as num?) ?? 0,
-      unitAmount: (json['unitAmount'] as int?) ?? 0,
-      name: json['name'] as String,
-      price: json['price'] as num,
-      cost: (json['cost'] as num?) ?? 0, // تم إضافة الحقل الجديد هنا
-      code: json['code'] as String,
-      description: json['description'] as String,
-      imageurl: json['imageurl'] as String?,
-      reviews: reviewsList,
+      // الحقول الأساسية مع قيم افتراضية في حال عدم الوجود (Null Safety)
+      name: json['name']?.toString() ?? 'بدون اسم',
+      price: json['price'] as num? ?? 0,
+      cost: json['cost'] as num? ?? 0,
+      code: json['code']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      imageurl: json['imageurl']?.toString(),
+
+      // الحقول اللي عاملة المشكلة (التاريخ والـ unitAmount)
+      expirationDate: parseDate(json['expirationDate']),
+      unitAmount: (json['unitAmount'] as num?)?.toInt() ?? 0,
+
+      // حقول الـ Dashboard (التأكد من وجودها)
+      sellingcount: json['sellingcount'] as num? ?? 0,
+      discountPercentage: json['discountPercentage'] as num? ?? 0,
+      isPrescriptionRequired: json['isPrescriptionRequired'] as bool? ?? false,
+
+      // حل مشكلة الحقول الناقصة في الفايربيز (category)
       category: json['category'] as String? ?? 'الأدوية',
       categoryId: json['categoryId'] as String? ?? '',
-      pharmacyId:
-          json['pharmacyId'] as String? ?? 'غير معروف', // سحب المعرف هنا
-      isPrescriptionRequired: json['isPrescriptionRequired'] ?? false,
+      pharmacyId: json['pharmacyId'] as String? ?? 'غير معروف',
+
+      // حماية إضافية للـ reviews والـ rating
+      reviews: reviewsList,
+      averageRating: (json['averageRating'] as num?) ?? 0,
+      pharmacyName: json['pharmacyName'] as String? ?? 'صيدلية مجهولة',
+      pharmacyLat: (json['pharmacyLat'] as num?)?.toDouble() ?? 0.0,
+      pharmacyLng: (json['pharmacyLng'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -96,6 +110,9 @@ class AddProductModel {
       discountPercentage: addProductIntety.discountPercentage,
       category: addProductIntety.category,
       pharmacyId: addProductIntety.pharmacyId, // تحويل المعرف هنا
+      pharmacyName: addProductIntety.pharmacyName, // اسم الصيدلية
+      pharmacyLat: addProductIntety.pharmacyLat, // خط العرض
+      pharmacyLng: addProductIntety.pharmacyLng, // خط الطول
       isPrescriptionRequired: addProductIntety.isPrescriptionRequired,
     );
   }
@@ -116,6 +133,9 @@ class AddProductModel {
       category: category,
       pharmacyId: pharmacyId, // تحويل المعرف هنا
       isPrescriptionRequired: isPrescriptionRequired,
+      pharmacyName: pharmacyName, // اسم الصيدلية
+      pharmacyLat: pharmacyLat, // خط العرض
+      pharmacyLng: pharmacyLng, // خط الطول
     );
   }
 
@@ -129,9 +149,7 @@ class AddProductModel {
       'imageurl': imageurl,
       'averageRating': averageRating,
       'ratingcount': ratingcount,
-      'expirationDate': int.parse(
-        '${expirationDate.year.toString().padLeft(4, '0')}${expirationDate.month.toString().padLeft(2, '0')}${expirationDate.day.toString().padLeft(2, '0')}',
-      ),
+      'expirationDate': Timestamp.fromDate(expirationDate),
       'unitAmount': unitAmount,
       'reviews': reviews.map((e) => e.toJson()).toList(),
       'discountPercentage': discountPercentage,
@@ -139,6 +157,9 @@ class AddProductModel {
       'categoryId': categoryId, // حفظ القسم هنا
       'pharmacyId': pharmacyId, // حفظ المعرف هنا
       'isPrescriptionRequired': isPrescriptionRequired,
+      'pharmacyName': pharmacyName, // اسم الصيدلية
+      'pharmacyLat': pharmacyLat, // خط العرض
+      'pharmacyLng': pharmacyLng, // خط الطول
     };
   }
 }

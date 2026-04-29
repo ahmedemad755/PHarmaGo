@@ -27,7 +27,7 @@ android {
         // تم ترك applicationId هنا كمرجع أساسي، ولكن الـ Flavors ستقوم بتغييره تلقائياً
         applicationId = "com.pharma.go"
         minSdk = 26  
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
@@ -93,7 +93,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
 
     // 3. مكتبات الـ Window لمنع الـ Crash
-    implementation("androidx.window:window:1.0.0")
+    implementation("androidx.window:window:1.2.0")
     implementation("androidx.window:window-java:1.0.0")
     
     // 4. دعم الـ MultiDex

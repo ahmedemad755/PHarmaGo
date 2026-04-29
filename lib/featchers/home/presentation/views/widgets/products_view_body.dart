@@ -6,7 +6,6 @@ import 'package:e_commerce/core/widgets/custom_search_filter_bar_home_products.d
 import 'package:e_commerce/featchers/auth/widgets/app_bar_about_pages.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/products_grid_view_bloc_builder.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -88,15 +87,13 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
               ),
             ),
           ),
-          
+
           // شبكة المنتجات
           const SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverToBoxAdapter(
-              child: ProductsGridViewBlocBuilder(),
-            ),
+            sliver: SliverToBoxAdapter(child: ProductsGridViewBlocBuilder()),
           ),
-          
+
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
@@ -109,10 +106,12 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          final fetched = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
+          final fetched = snapshot.data!.docs
+              .map((doc) => doc['name'].toString())
+              .toList();
           // تحديث القائمة المحلية
           if (_categories.length != fetched.length + 1) {
-             _categories = ['الكل', ...fetched];
+            _categories = ['الكل', ...fetched];
           }
         }
 
@@ -123,7 +122,8 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
             physics: const BouncingScrollPhysics(),
             itemCount: _categories.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) => _buildCategoryItem(_categories[index]),
+            itemBuilder: (context, index) =>
+                _buildCategoryItem(_categories[index]),
           ),
         );
       },
@@ -146,7 +146,15 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.grey.shade200,
           ),
-          boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         alignment: Alignment.center,
         child: Text(

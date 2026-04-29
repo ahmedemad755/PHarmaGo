@@ -29,6 +29,9 @@ class AuthRepoImpl extends AuthRepo {
     required String email,
     required String password,
     required String name,
+    required String address,
+    required double lat,
+    required double lng,
     // required String role,
     // required String cardImageUrl,
   }) async {
@@ -43,6 +46,9 @@ class AuthRepoImpl extends AuthRepo {
         email: email,
         name: name,
         uId: user.uid,
+        address: address,
+        lat: lat,
+        lng: lng,
         // role: role,
 
         // cardImageUrl: cardImageUrl,
@@ -177,7 +183,7 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   // ✅ تنفيذ دالة تسجيل الخروج الجديدة
-@override
+  @override
   Future<Either<Faliur, void>> logout() async {
     try {
       // 1. تسجيل الخروج من فيربيز
@@ -187,16 +193,15 @@ class AuthRepoImpl extends AuthRepo {
       // أضفنا فحصاً بسيطاً هنا للتأكد أن العملية تمت
       await Prefs.remove(kUserData);
 
-      return const Right(null); 
-      
+      return const Right(null);
     } on CustomException catch (e) {
       developer.log('CustomException: ${e.message}', name: 'AuthRepoImpl');
       return Left(ServerFaliur(e.message));
     } catch (e) {
-      // ⚠️ التعديل الأهم: إظهار الخطأ الحقيقي (e.toString) في الرسالة 
+      // ⚠️ التعديل الأهم: إظهار الخطأ الحقيقي (e.toString) في الرسالة
       // لكي نعرف ما هو السبب الفعلي بدلاً من كلمة "فشل عام"
       developer.log('Unexpected Error: ${e.toString()}', name: 'AuthRepoImpl');
-      
+
       return Left(ServerFaliur('حدث خطأ تقني: ${e.toString()}'));
     }
   }
@@ -243,15 +248,10 @@ class AuthRepoImpl extends AuthRepo {
     var jsonData = jsonEncode(UserModel.fromEntity(user).toMap());
     await Prefs.setString(kUserData, jsonData);
   }
-  
+
   // @override
   // Future<Either<Faliur, UserEntity>> signInWithFacebook() {
   //   // TODO: implement signInWithFacebook
   //   throw UnimplementedError();
   // }
-  
-
-
-
-
 }

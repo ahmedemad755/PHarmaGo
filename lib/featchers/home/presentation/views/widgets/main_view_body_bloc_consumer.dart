@@ -12,7 +12,6 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     // إزالة الـ Scaffold الزائد هنا يجعل الصفحات الفرعية "تطفو" فوق خلفية الـ MainVeiw
     return BlocListener<CartCubit, CartState>(
       bloc: getIt<CartCubit>(),
@@ -23,7 +22,11 @@ class MainViewBodyBlocConsumer extends StatelessWidget {
             showBar(context, 'تمت العملية بنجاح', color: AppColors.success);
           }
           if (state is CartItemRemoved) {
-            showBar(context, 'تم حذف العنصر بنجاح', color: AppColors.success.withOpacity(0.7));
+            showBar(
+              context,
+              'تم حذف العنصر بنجاح',
+              color: AppColors.success.withOpacity(0.7),
+            );
           }
         });
       },

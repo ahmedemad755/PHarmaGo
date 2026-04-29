@@ -109,7 +109,7 @@ class OrderDetailsView extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          product.pharmacyName ?? 'صيدلية عامة',
+                          currentOrder.pharmacyName ?? 'صيدلية عامة',
                           style: const TextStyle(
                             color: Colors.blueGrey,
                             fontSize: 12,

@@ -42,12 +42,16 @@ class OrderProductModel {
       name: cartItemEntity.productIntety.name,
       code: cartItemEntity.productIntety.code,
       imageUrl: cartItemEntity.productIntety.imageurl ?? '',
-      price: (cartItemEntity.priceAtSelection ?? cartItemEntity.productIntety.price).toDouble(),
+      price:
+          (cartItemEntity.priceAtSelection ??
+                  cartItemEntity.productIntety.price)
+              .toDouble(),
       cost: cartItemEntity.productIntety.cost.toDouble(),
       quantity: cartItemEntity.quantty,
       pharmacyName: cartItemEntity.pharmacyName,
       // 🔥 نقل الحالة من كيان المنتج لضمان تفعيل التحقق في صفحة الدفع
-      isPrescriptionRequired: cartItemEntity.productIntety.isPrescriptionRequired,
+      isPrescriptionRequired:
+          cartItemEntity.productIntety.isPrescriptionRequired,
     );
   }
 
@@ -60,7 +64,8 @@ class OrderProductModel {
       'cost': cost,
       'quantity': quantity,
       'pharmacyName': pharmacyName,
-      'isPrescriptionRequired': isPrescriptionRequired, // ✅ حفظ الحالة في Firestore
+      'isPrescriptionRequired':
+          isPrescriptionRequired, // ✅ حفظ الحالة في Firestore
     };
   }
 }

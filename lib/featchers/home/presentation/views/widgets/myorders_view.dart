@@ -37,7 +37,8 @@ class OrdersView extends StatelessWidget {
             return ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.orders.length,
-              itemBuilder: (context, index) => OrderCard(order: state.orders[index]),
+              itemBuilder: (context, index) =>
+                  OrderCard(order: state.orders[index]),
             );
           } else if (state is OrdersFailure) {
             debugPrint("❌ Orders Error: ${state.errMessage}");
@@ -87,7 +88,7 @@ class OrderCard extends StatelessWidget {
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -97,7 +98,10 @@ class OrderCard extends StatelessWidget {
             children: [
               Text(
                 'طلب رقم #${order.orderId.substring(0, 8).toUpperCase()}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
               _buildStatusBadge(statusConfig),
             ],
@@ -105,7 +109,11 @@ class OrderCard extends StatelessWidget {
           const Divider(height: 32, thickness: 0.5),
           Row(
             children: [
-              Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey[600]),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 16,
+                color: Colors.grey[600],
+              ),
               const SizedBox(width: 8),
               Text(
                 order.date.split(' ')[0],
@@ -116,7 +124,10 @@ class OrderCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 '${order.totalPrice} جنيه',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ],
           ),
@@ -139,9 +150,12 @@ class OrderCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('تفاصيل الطلب', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'تفاصيل الطلب',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -176,19 +190,39 @@ class OrderCard extends StatelessWidget {
     // توحيد الحالات بناءً على الـ Repo والـ Notifications
     switch (status.toLowerCase()) {
       case 'pending':
-        return _StatusConfig('قيد المراجعة', Colors.orange, Icons.timer_outlined);
+        return _StatusConfig(
+          'قيد المراجعة',
+          Colors.orange,
+          Icons.timer_outlined,
+        );
       case 'processing':
-        return _StatusConfig('جاري التجهيز', Colors.blue, Icons.inventory_2_outlined);
+        return _StatusConfig(
+          'جاري التجهيز',
+          Colors.blue,
+          Icons.inventory_2_outlined,
+        );
       case 'shipping':
       case 'shipped':
-        return _StatusConfig('جاري التوصيل', Colors.purple, Icons.local_shipping_outlined);
+        return _StatusConfig(
+          'جاري التوصيل',
+          Colors.purple,
+          Icons.local_shipping_outlined,
+        );
       case 'delivered':
-        return _StatusConfig('تم الاستلام', Colors.green, Icons.check_circle_outline);
+        return _StatusConfig(
+          'تم الاستلام',
+          Colors.green,
+          Icons.check_circle_outline,
+        );
       case 'cancelled':
       case 'canceled': // الحالتين عشان لو حصل لخبطة في الـ Repo
         return _StatusConfig('ملغي', Colors.red, Icons.cancel_outlined);
       default:
-        return _StatusConfig('تحديث جديد', Colors.grey, Icons.notifications_none);
+        return _StatusConfig(
+          'تحديث جديد',
+          Colors.grey,
+          Icons.notifications_none,
+        );
     }
   }
 }

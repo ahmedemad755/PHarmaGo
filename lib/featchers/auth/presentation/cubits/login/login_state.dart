@@ -30,15 +30,15 @@ class LoginFailure extends LoginState {
   List<Object?> get props => [message];
 }
 
-
 // ✅ حالات تسجيل الخروج الجديدة
 class LogoutLoading extends LoginState {}
+
 class LogoutSuccess extends LoginState {}
+
 class LogoutFailure extends LoginState {
   final String message;
   const LogoutFailure(this.message);
-  
+
   @override
   List<Object?> get props => [message];
 }
-

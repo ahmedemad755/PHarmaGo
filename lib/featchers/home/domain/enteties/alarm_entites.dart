@@ -41,5 +41,6 @@ class AlarmEntity {
 
   // للتعامل مع JSON مباشرة
   String toJson() => json.encode(toMap());
-  factory AlarmEntity.fromJson(String source) => AlarmEntity.fromMap(json.decode(source));
+  factory AlarmEntity.fromJson(String source) =>
+      AlarmEntity.fromMap(json.decode(source));
 }

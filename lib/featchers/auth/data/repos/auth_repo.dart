@@ -8,6 +8,9 @@ abstract class AuthRepo {
     required String email,
     required String password,
     required String name,
+    required String address,
+    required double lat,
+    required double lng,
     // required String role,
   });
 
@@ -37,7 +40,6 @@ abstract class AuthRepo {
 
   // // Apple Sign-In method
   // Future<Either<Faliur, UserEntity>> signInWithApple();
- 
 
   Future<void> verifyPhoneNumber({
     required String phoneNumber,

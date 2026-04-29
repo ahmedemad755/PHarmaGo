@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class CartItemsList extends StatelessWidget {
   const CartItemsList({super.key, required this.carItems});
-  
+
   final List<CartItemEntity> carItems;
 
   @override
@@ -32,11 +32,7 @@ class CustomDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
-      child: Divider(
-        color: Color(0xFFF1F1F5), 
-        thickness: 1.2, 
-        height: 24,
-      ),
+      child: Divider(color: Color(0xFFF1F1F5), thickness: 1.2, height: 24),
     );
   }
 }

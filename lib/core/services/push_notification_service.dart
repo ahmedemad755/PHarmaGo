@@ -19,7 +19,7 @@ class PushNotificationService {
   static const _fcmChannel = AndroidNotificationChannel(
     'fcm_high_importance_channel',
     'إشعارات PharmaGo',
-    description: 'إشعارات الطلبات وتنبيهات الحرارة',
+    description: 'إشعارات حالات الطلبات',
     importance: Importance.max,
   );
 
@@ -32,10 +32,13 @@ class PushNotificationService {
       sound: true,
     );
 
+    // إذا رفض المستخدم الإذن، لا نحاول إعداد القنوات أو الاستماع للرسائل
     if (settings.authorizationStatus == AuthorizationStatus.denied) return;
 
     await _localPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_fcmChannel);
 
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -52,7 +55,7 @@ class PushNotificationService {
   }
 
   // ─── إرسال إشعار يدوي (من التطبيق) ──────────────────────────────────────────
-  
+
   static Future<void> sendOrderNotification({
     required String userToken,
     required String orderId,
@@ -63,9 +66,9 @@ class PushNotificationService {
       // لذا يفضل دائماً جعل هذه الخطوة تتم عبر Cloud Functions.
       // هنا سنحاكي المنطق الذي ستستدعيه:
       debugPrint('🔔 محاولة إرسال إشعار لتحديث الطلب رقم: $orderId');
-      
+
       // إذا كنت تستخدم مكتبة خارجية أو API وسيط للإرسال:
-      // await http.post( ... ); 
+      // await http.post( ... );
     } catch (e) {
       debugPrint('❌ Error sending notification: $e');
     }
@@ -98,23 +101,22 @@ class PushNotificationService {
   }
 
   // ─── Navigation Handler ──────────────────────────────────────────────────────
-
   static void _handleMessageOpenedApp(RemoteMessage message) {
     final data = message.data;
     final type = data['type'] as String?;
-
     if (type == 'order_update' && data.containsKey('orderId')) {
       _navigatorKey?.currentState?.pushNamed(
         AppRoutes.myordersView, // تأكد من وجود هذا المسار في ملف الروتس
         arguments: data['orderId'],
       );
     } else {
-      _navigatorKey?.currentState?.pushNamed(AppRoutes.home); // أو أي صفحة افتراضية أخرى
+      _navigatorKey?.currentState?.pushNamed(
+        AppRoutes.home,
+      ); // أو أي صفحة افتراضية أخرى
     }
   }
 
   // ─── Helpers & Token Management ──────────────────────────────────────────────
-
   static bool _isTemperatureAlert(Map<String, dynamic> data) {
     return data['type'] == 'temperature_alert';
   }

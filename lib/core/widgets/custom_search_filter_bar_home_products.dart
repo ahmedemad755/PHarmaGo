@@ -28,7 +28,7 @@ class CustomSearchFilterBar extends StatelessWidget {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -54,7 +54,10 @@ class CustomSearchFilterBar extends StatelessWidget {
           const VerticalDivider(indent: 12, endIndent: 12, width: 20),
           GestureDetector(
             onTap: onFilterTap,
-            child: const Icon(Icons.filter_list_rounded, color: Color(0xFF007BBB)),
+            child: const Icon(
+              Icons.filter_list_rounded,
+              color: Color(0xFF007BBB),
+            ),
           ),
         ],
       ),

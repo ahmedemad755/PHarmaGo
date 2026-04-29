@@ -108,15 +108,17 @@ class FirebaseAuthService {
     return _firebaseAuth.currentUser != null;
   }
 
-Future<void> logout() async {
+  Future<void> logout() async {
     try {
       await GoogleSignIn().signOut(); // تسجيل الخروج من جوجل
       // await FacebookAuth.instance.logOut(); // تسجيل الخروج من فيسبوك
-      await _firebaseAuth.signOut();  // تسجيل الخروج من Firebase
+      await _firebaseAuth.signOut(); // تسجيل الخروج من Firebase
     } on FirebaseAuthException catch (e) {
       developer.log("[logout] FirebaseAuthException: ${e.code} - ${e.message}");
       // رمي CustomException ليلتقطها الـ Repo
-      throw CustomException(message: e.message ?? 'فشل تسجيل الخروج من Firebase');
+      throw CustomException(
+        message: e.message ?? 'فشل تسجيل الخروج من Firebase',
+      );
     } catch (e) {
       developer.log("[logout] Unknown error: $e");
       rethrow;

@@ -20,28 +20,28 @@ class GlassCard extends StatelessWidget {
     this.gradientColors,
   });
 
-@override
-Widget build(BuildContext context) {
-  return Container(
-    width: width,
-    height: height,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(borderRadius),
-      // بديل الـ Blur: لون أبيض شفاف جداً مع لون خلفية الصفحة
-      color: Colors.white.withOpacity(0.7), 
-      border: Border.all(
-        color: Colors.white.withOpacity(0.4), // حدود بيضاء تعطي إيحاء الزجاج
-        width: 1.5,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          spreadRadius: 2,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        // بديل الـ Blur: لون أبيض شفاف جداً مع لون خلفية الصفحة
+        color: Colors.white.withOpacity(0.7),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.4), // حدود بيضاء تعطي إيحاء الزجاج
+          width: 1.5,
         ),
-      ],
-    ),
-    child: child,
-  );
-}
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
 }

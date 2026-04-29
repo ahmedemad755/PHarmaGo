@@ -1,4 +1,3 @@
-
 import 'package:e_commerce/featchers/home/domain/enteties/BannerEntity.dart';
 
 abstract class BannersState {}

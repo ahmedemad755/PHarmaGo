@@ -21,7 +21,8 @@ class ShippingAddressWidget extends StatelessWidget {
         children: [
           const Icon(Icons.location_pin, color: Color(0xFF1B5E37)),
           const SizedBox(width: 8),
-          Expanded( // أضفنا Expanded لمنع Overflow إذا كان العنوان طويلاً
+          Expanded(
+            // أضفنا Expanded لمنع Overflow إذا كان العنوان طويلاً
             child: Text(
               shippingAddress.toStrings(),
               textAlign: TextAlign.right,

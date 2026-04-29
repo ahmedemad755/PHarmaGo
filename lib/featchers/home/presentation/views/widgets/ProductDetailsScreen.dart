@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_commerce/core/models/pharmacy_model.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
+import 'package:e_commerce/core/functions_helper/get_user_data.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:async'; // تم إضافة هذا للـ StreamSubscription
+import 'dart:async';
+
+import 'package:geolocator/geolocator.dart'; // تم إضافة هذا للـ StreamSubscription
 
 // ✅ تم تحديث الموديل ليشمل بيانات الخصم والسعر النهائي
 class PharmacyOffer {
@@ -63,86 +66,291 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   PharmacyOffer? _selectedOffer;
   List<PharmacyOffer> _offers = [];
-  
+
   // ✅ إضافة subscription للاستماع المباشر
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _offersSubscription;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _userLocationSubscription;
+  double? _userLat;
+  double? _userLng;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _listenToPharmacyOffers(); // ✅ تغيير الدالة للاستماع
+    _initUserLocationFromCache();
+    _listenToUserLocation();
+    _listenToPharmacyOffers();
   }
 
-  // ✅ الدالة المحدثة للاستماع المباشر (Live Updates)
+  void _initUserLocationFromCache() {
+    final user = getUser();
+    if (user.lat != 0.0 || user.lng != 0.0) {
+      _userLat = user.lat;
+      _userLng = user.lng;
+    }
+  }
+
+  void _listenToUserLocation() {
+    final cachedUser = getUser();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? cachedUser.uId;
+    if (userId.isEmpty) return;
+
+    _userLocationSubscription = FirebaseFirestore.instance
+        .collection(BackendPoints.getUserData)
+        .doc(userId)
+        .snapshots()
+        .listen((snapshot) {
+          final data = snapshot.data();
+          final lat = (data?['lat'] as num?)?.toDouble();
+          final lng = (data?['lng'] as num?)?.toDouble();
+
+          if (lat == null || lng == null) return;
+          if (lat == _userLat && lng == _userLng) return;
+
+          _userLat = lat;
+          _userLng = lng;
+          _refreshOffersForSavedUserLocation();
+        });
+  }
+
   void _listenToPharmacyOffers() {
     _offersSubscription = FirebaseFirestore.instance
         .collection(BackendPoints.getProducts)
         .where('code', isEqualTo: widget.product.code)
         .snapshots()
         .listen((querySnapshot) async {
-      
-      List<PharmacyOffer> realOffers = [];
+          List<PharmacyOffer> realOffers = [];
+          Position? userPos;
+          try {
+            // 1. محاولة جلب آخر موقع مسجل بسرعة
+            userPos = await Geolocator.getLastKnownPosition();
 
-      for (var doc in querySnapshot.docs) {
-        final data = doc.data();
-        final String pharmacyId = data['pharmacyId'] ?? '';
-
-        // حساب الخصم
-        final double price = (data['price'] as num).toDouble();
-        final bool hasDiscount = data['hasDiscount'] ?? false;
-        final int discountPercentage = (data['discountPercentage'] as num? ?? 0).toInt();
-        double discountedPrice = price;
-        if (hasDiscount && discountPercentage > 0) {
-          discountedPrice = price - (price * (discountPercentage / 100));
-        }
-
-        // جلب بيانات الصيدلية (يفضل كاشينج هنا لاحقاً لتحسين الأداء)
-        final pharmacyDoc = await FirebaseFirestore.instance
-            .collection(BackendPoints.pharmacies)
-            .doc(pharmacyId)
-            .get();
-
-        if (pharmacyDoc.exists) {
-          final pharmacyInfo = PharmacyModel.fromJson(pharmacyDoc.data()!);
-
-          realOffers.add(
-            PharmacyOffer(
-              id: pharmacyId,
-              name: pharmacyInfo.pharmacyName,
-              address: pharmacyInfo.address,
-              status: pharmacyInfo.status,
-              originalPrice: price,
-              discountedPrice: discountedPrice,
-              distanceKm: 1.2,
-              deliveryTimeMin: 20,
-              rating: 4.5,
-              unitAmount: (data['unitAmount'] as num? ?? 0).toInt(),
-              hasDiscount: hasDiscount,
-            ),
-          );
-        }
-      }
-
-      if (!mounted) return;
-
-      setState(() {
-        _offers = realOffers;
-        // تحديث الاختيار بناءً على البيانات الجديدة
-        if (_selectedOffer != null) {
-          // محاولة الإبقاء على نفس الصيدلية المختارة إذا كانت لا تزال موجودة
-          final stillExists = _offers.any((o) => o.id == _selectedOffer!.id);
-          if (stillExists) {
-            _selectedOffer = _offers.firstWhere((o) => o.id == _selectedOffer!.id);
-          } else {
-            _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
+            // 2. إذا لم يوجد، اطلب الموقع الحالي بدقة عالية
+            if (userPos == null) {
+              userPos = await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.high,
+                timeLimit: const Duration(seconds: 5),
+              );
+            }
+            print("User Location: ${userPos?.latitude}, ${userPos?.longitude}");
+          } catch (e) {
+            debugPrint("Location Error: $e");
           }
-        } else {
-          _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
-        }
-        
-        _isLoading = false;
-      });
+
+          for (var doc in querySnapshot.docs) {
+            final data = doc.data();
+            final String pharmacyId = data['pharmacyId'] ?? '';
+
+            // جلب بيانات الصيدلية الأصلية من كوليكشن الصيدليات
+            final pharmacyDoc = await FirebaseFirestore.instance
+                .collection(BackendPoints.pharmacies)
+                .doc(pharmacyId)
+                .get();
+
+            if (pharmacyDoc.exists) {
+              final pData = pharmacyDoc.data()!;
+
+              // أخذ الإحداثيات من ملف الصيدلية نفسه (lat , lng) كما في بياناتك
+              final double shopLat = (pData['lat'] as num? ?? 0).toDouble();
+              final double shopLng = (pData['lng'] as num? ?? 0).toDouble();
+
+              double distanceInKm = 0;
+              if (userPos != null && shopLat != 0) {
+                double distanceInMeters = Geolocator.distanceBetween(
+                  userPos.latitude,
+                  userPos.longitude,
+                  shopLat,
+                  shopLng,
+                );
+                distanceInKm = distanceInMeters / 1000;
+                print(
+                  "Distance to ${pData['pharmacyName']}: $distanceInMeters meters",
+                );
+              }
+
+              // الفلترة في نطاق 5 كيلو
+              if (userPos == null || distanceInKm <= 5.0) {
+                final double price = (data['price'] as num).toDouble();
+                // ... (باقي كود حساب السعر والخصم)
+
+                realOffers.add(
+                  PharmacyOffer(
+                    id: pharmacyId,
+                    name: pData['pharmacyName'] ?? 'صيدلية غير معروفة',
+                    address: pData['address'] ?? '',
+                    status: pData['status'] ?? '',
+                    originalPrice: price,
+                    discountedPrice: price, // احسب الخصم هنا لو موجود
+                    distanceKm: distanceInKm,
+                    deliveryTimeMin: (distanceInKm * 10).toInt() + 10,
+                    rating: 4.5,
+                    unitAmount: (data['unitAmount'] as num? ?? 0).toInt(),
+                    hasDiscount: data['hasDiscount'] ?? false,
+                  ),
+                );
+              }
+            }
+          }
+
+          // ترتيب
+          realOffers.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+
+          if (!mounted) return;
+          setState(() {
+            _offers = realOffers;
+            if (_offers.isNotEmpty) _selectedOffer = _offers.first;
+            _isLoading = false;
+          });
+          unawaited(_refreshOffersForSavedUserLocation());
+        });
+  }
+
+  // // ✅ الدالة المحدثة للاستماع المباشر (Live Updates)
+  // void _listenToPharmacyOffers() {
+  //   _offersSubscription = FirebaseFirestore.instance
+  //       .collection(BackendPoints.getProducts)
+  //       .where('code', isEqualTo: widget.product.code)
+  //       .snapshots()
+  //       .listen((querySnapshot) async {
+
+  //     List<PharmacyOffer> realOffers = [];
+
+  //     for (var doc in querySnapshot.docs) {
+  //       final data = doc.data();
+  //       final String pharmacyId = data['pharmacyId'] ?? '';
+
+  //       // حساب الخصم
+  //       final double price = (data['price'] as num).toDouble();
+  //       final bool hasDiscount = data['hasDiscount'] ?? false;
+  //       final int discountPercentage = (data['discountPercentage'] as num? ?? 0).toInt();
+  //       double discountedPrice = price;
+  //       if (hasDiscount && discountPercentage > 0) {
+  //         discountedPrice = price - (price * (discountPercentage / 100));
+  //       }
+
+  //       // جلب بيانات الصيدلية (يفضل كاشينج هنا لاحقاً لتحسين الأداء)
+  //       final pharmacyDoc = await FirebaseFirestore.instance
+  //           .collection(BackendPoints.pharmacies)
+  //           .doc(pharmacyId)
+  //           .get();
+
+  //       if (pharmacyDoc.exists) {
+  //         final pharmacyInfo = PharmacyModel.fromJson(pharmacyDoc.data()!);
+
+  //         realOffers.add(
+  //           PharmacyOffer(
+  //             id: pharmacyId,
+  //             name: pharmacyInfo.pharmacyName,
+  //             address: pharmacyInfo.address,
+  //             status: pharmacyInfo.status,
+  //             originalPrice: price,
+  //             discountedPrice: discountedPrice,
+  //             distanceKm: 1.2,
+  //             deliveryTimeMin: 20,
+  //             rating: 4.5,
+  //             unitAmount: (data['unitAmount'] as num? ?? 0).toInt(),
+  //             hasDiscount: hasDiscount,
+  //           ),
+  //         );
+  //       }
+  //     }
+
+  //     if (!mounted) return;
+
+  //     setState(() {
+  //       _offers = realOffers;
+  //       // تحديث الاختيار بناءً على البيانات الجديدة
+  //       if (_selectedOffer != null) {
+  //         // محاولة الإبقاء على نفس الصيدلية المختارة إذا كانت لا تزال موجودة
+  //         final stillExists = _offers.any((o) => o.id == _selectedOffer!.id);
+  //         if (stillExists) {
+  //           _selectedOffer = _offers.firstWhere((o) => o.id == _selectedOffer!.id);
+  //         } else {
+  //           _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
+  //         }
+  //       } else {
+  //         _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
+  //       }
+
+  //       _isLoading = false;
+  //     });
+  //   });
+  // }
+
+  Future<void> _refreshOffersForSavedUserLocation() async {
+    if (_userLat == null || _userLng == null) return;
+
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection(BackendPoints.getProducts)
+        .where('code', isEqualTo: widget.product.code)
+        .get();
+
+    final realOffers = <PharmacyOffer>[];
+
+    for (final doc in querySnapshot.docs) {
+      final data = doc.data();
+      final String pharmacyId = data['pharmacyId'] ?? '';
+      if (pharmacyId.isEmpty) continue;
+
+      final pharmacyDoc = await FirebaseFirestore.instance
+          .collection(BackendPoints.pharmacies)
+          .doc(pharmacyId)
+          .get();
+
+      if (!pharmacyDoc.exists) continue;
+
+      final pData = pharmacyDoc.data()!;
+      final double shopLat = (pData['lat'] as num? ?? 0).toDouble();
+      final double shopLng = (pData['lng'] as num? ?? 0).toDouble();
+      if (shopLat == 0 || shopLng == 0) continue;
+
+      final distanceInKm =
+          Geolocator.distanceBetween(_userLat!, _userLng!, shopLat, shopLng) /
+          1000;
+      if (distanceInKm > 5.0) continue;
+
+      final double price = (data['price'] as num).toDouble();
+      final bool hasDiscount = data['hasDiscount'] ?? false;
+      final int discountPercentage =
+          (data['discountPercentage'] as num? ?? 0).toInt();
+      final double discountedPrice = hasDiscount && discountPercentage > 0
+          ? price - (price * (discountPercentage / 100))
+          : price;
+
+      realOffers.add(
+        PharmacyOffer(
+          id: pharmacyId,
+          name: pData['pharmacyName'] ?? 'صيدلية غير معروفة',
+          address: pData['address'] ?? '',
+          status: pData['status'] ?? '',
+          originalPrice: price,
+          discountedPrice: discountedPrice,
+          distanceKm: distanceInKm,
+          deliveryTimeMin: (distanceInKm * 10).toInt() + 10,
+          rating: 4.5,
+          unitAmount: (data['unitAmount'] as num? ?? 0).toInt(),
+          hasDiscount: hasDiscount,
+        ),
+      );
+    }
+
+    realOffers.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+
+    if (!mounted) return;
+    setState(() {
+      _offers = realOffers;
+      if (_selectedOffer != null) {
+        final selectedStillExists = _offers.any(
+          (offer) => offer.id == _selectedOffer!.id,
+        );
+        _selectedOffer = selectedStillExists
+            ? _offers.firstWhere((offer) => offer.id == _selectedOffer!.id)
+            : (_offers.isNotEmpty ? _offers.first : null);
+      } else {
+        _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
+      }
+      _isLoading = false;
     });
   }
 
@@ -155,25 +363,26 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
 
     if (!_selectedOffer!.isAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("هذه الصيدلية نفذت الكمية")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("هذه الصيدلية نفذت الكمية")));
       return;
     }
 
     context.read<CartCubit>().addProduct(
-          widget.product,
-          quantity: _quantity,
-          pharmacyId: _selectedOffer!.id,
-          pharmacyName: _selectedOffer!.name,
-          priceAtSelection: _selectedOffer!.finalPrice,
-        );
+      widget.product,
+      quantity: _quantity,
+      pharmacyId: _selectedOffer!.id,
+      pharmacyName: _selectedOffer!.name,
+      priceAtSelection: _selectedOffer!.finalPrice,
+    );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _offersSubscription?.cancel(); // ✅ إلغاء الاستماع عند الخروج
+    _userLocationSubscription?.cancel();
     super.dispose();
   }
 
@@ -286,11 +495,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Widget _buildProductHeader() {
     // ✅ هنا أيضاً يجب تحديث الأسعار بناءً على الـ _selectedOffer المباشر
     // بدلاً من الاعتماد على بيانات widget.product الثابتة
-    
+
     final bool hasDiscount = _selectedOffer?.hasDiscount ?? false;
-    final double price = _selectedOffer?.originalPrice ?? widget.product.price.toDouble();
+    final double price =
+        _selectedOffer?.originalPrice ?? widget.product.price.toDouble();
     final double discountedPrice = _selectedOffer?.discountedPrice ?? price;
-    final int discountPercentage = hasDiscount && _selectedOffer != null 
+    final int discountPercentage = hasDiscount && _selectedOffer != null
         ? ((price - discountedPrice) / price * 100).round()
         : 0;
 
@@ -303,7 +513,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
             Expanded(
               child: Text(
                 widget.product.name,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             if (hasDiscount)
@@ -315,9 +528,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
                 child: Text(
                   "خصم $discountPercentage%",
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              )
+              ),
           ],
         ),
         const SizedBox(height: 4),
@@ -368,7 +584,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
         final double displayPrice = offer.finalPrice;
 
         return GestureDetector(
-          onTap: isAvailable ? () => setState(() => _selectedOffer = offer) : null,
+          onTap: isAvailable
+              ? () => setState(() => _selectedOffer = offer)
+              : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(12),
@@ -377,7 +595,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isAvailable
-                    ? (isSelected ? const Color(0xFF007BBB) : Colors.transparent)
+                    ? (isSelected
+                          ? const Color(0xFF007BBB)
+                          : Colors.transparent)
                     : Colors.grey[300]!,
                 width: 2,
               ),
@@ -391,8 +611,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     color: isAvailable ? Colors.blue[50] : Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.store,
-                      color: isAvailable ? const Color(0xFF007BBB) : Colors.grey),
+                  child: Icon(
+                    Icons.store,
+                    color: isAvailable ? const Color(0xFF007BBB) : Colors.grey,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -408,12 +630,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      Text(
+                        "${offer.distanceKm.toStringAsFixed(1)} كم بعيداً عنك",
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2), // مسافة بسيطة
                       Text(
                         offer.address,
                         style: TextStyle(
-                            fontSize: 11,
-                            color: isAvailable ? Colors.grey[600] : Colors.grey[400]),
+                          fontSize: 11,
+                          color: isAvailable
+                              ? Colors.grey[600]
+                              : Colors.grey[400],
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -466,8 +700,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         const SizedBox(height: 8),
         Text(
           widget.product.description,
-          style:
-              TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5),
+          style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5),
         ),
       ],
     );
@@ -507,7 +740,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   Text(
                     '$_quantity',
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add, size: 20),
@@ -521,8 +756,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
               child: ElevatedButton(
                 onPressed: canAdd ? _addToCart : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      canAdd ? const Color(0xFF007BBB) : Colors.grey[400],
+                  backgroundColor: canAdd
+                      ? const Color(0xFF007BBB)
+                      : Colors.grey[400],
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   elevation: 0,
                 ),

@@ -23,17 +23,17 @@ class CartItemActionButtons extends StatelessWidget {
           backgroundColor: AppColors.primaryColor,
           onPressed: () {
             context.read<CartCubit>().updateQuantity(
-                  cartItemEntity.productIntety,
-                  cartItemEntity.quantty + 1,
-                  pharmacyId: cartItemEntity.pharmacyId,
-                );
+              cartItemEntity.productIntety,
+              cartItemEntity.quantty + 1,
+              pharmacyId: cartItemEntity.pharmacyId,
+            );
           },
         ),
-        
+
         // عرض الكمية
-Container(
+        Container(
           constraints: const BoxConstraints(minWidth: 40),
-        
+
           child: Text(
             cartItemEntity.quantty.toString(),
             textAlign: TextAlign.center, // ✅ المكان الصحيح هنا جوه الـ Text
@@ -42,24 +42,30 @@ Container(
         ),
 
         // زر النقصان (-)
-// زر النقصان (-)
+        // زر النقصان (-)
         _ActionButton(
-          icon: cartItemEntity.quantty > 1 ? Icons.remove : Icons.delete_outline,
-          iconColor: cartItemEntity.quantty > 1 ? Colors.grey[700]! : Colors.red,
+          icon: cartItemEntity.quantty > 1
+              ? Icons.remove
+              : Icons.delete_outline,
+          iconColor: cartItemEntity.quantty > 1
+              ? Colors.grey[700]!
+              : Colors.red,
           backgroundColor: const Color(0xFFF3F5F7),
-          onPressed: () async { // أضفنا async هنا
+          onPressed: () async {
+            // أضفنا async هنا
             if (cartItemEntity.quantty > 1) {
               context.read<CartCubit>().updateQuantity(
-                    cartItemEntity.productIntety,
-                    cartItemEntity.quantty - 1,
-                    pharmacyId: cartItemEntity.pharmacyId,
-                  );
+                cartItemEntity.productIntety,
+                cartItemEntity.quantty - 1,
+                pharmacyId: cartItemEntity.pharmacyId,
+              );
             } else {
               // 🚀 الطريقة الصحيحة لإظهار الشيت وانتظار النتيجة
               final bool? confirmDelete = await showModalBottomSheet<bool>(
                 context: context,
                 backgroundColor: Colors.transparent, // لجعل تصميمك الدائري يظهر
-                builder: (context) => DeleteConfirmationSheet( // تأكد من وجود الـ _ قبل الاسم لو كانت داخل نفس الملف
+                builder: (context) => DeleteConfirmationSheet(
+                  // تأكد من وجود الـ _ قبل الاسم لو كانت داخل نفس الملف
                   itemName: cartItemEntity.productIntety.name,
                 ),
               );
@@ -109,11 +115,7 @@ class _ActionButton extends StatelessWidget {
               ),
           ],
         ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 18,
-        ),
+        child: Icon(icon, color: iconColor, size: 18),
       ),
     );
   }

@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '111940326225',
     projectId: 'fruit-hub-8689f',
     storageBucket: 'fruit-hub-8689f.firebasestorage.app',
-    androidClientId: '111940326225-2c3n5hfajldqnur8morsjfsrlhaudfsf.apps.googleusercontent.com',
-    iosClientId: '111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com',
+    androidClientId:
+        '111940326225-2c3n5hfajldqnur8morsjfsrlhaudfsf.apps.googleusercontent.com',
+    iosClientId:
+        '111940326225-56b4a53qp4ulebjed95gs6i3q1ei4ida.apps.googleusercontent.com',
     iosBundleId: 'com.pharma.go',
   );
 }

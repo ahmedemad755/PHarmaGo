@@ -260,9 +260,8 @@ class _ThankYouViewState extends State<ThankYouView>
   }
 
   void _navigateToHome() {
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.home,
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 }

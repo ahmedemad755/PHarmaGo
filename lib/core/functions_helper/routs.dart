@@ -12,6 +12,8 @@ import 'package:e_commerce/featchers/AUTH/presentation/view/oTPVerificationScree
 import 'package:e_commerce/featchers/AUTH/presentation/view/reset_Password.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
 import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/best_seliling_fruites_view.dart';
+import 'package:e_commerce/featchers/chatbot/presentation/cubit/chat_cubit.dart';
+import 'package:e_commerce/featchers/chatbot/presentation/views/chat_screen.dart';
 import 'package:e_commerce/featchers/checkout/data/order_model.dart';
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
@@ -31,6 +33,10 @@ import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_ho
 import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
 import 'package:e_commerce/featchers/onboarding/views/onboarding_view.dart';
 import 'package:e_commerce/featchers/splash/presentation/views/splash_view.dart';
+import 'package:e_commerce/maps/business_logic/cubit/maps/maps_cubit.dart';
+import 'package:e_commerce/maps/data/repo/place_repo.dart';
+import 'package:e_commerce/maps/data/web/place_web_servises.dart';
+import 'package:e_commerce/maps/presentation/screens/map_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,6 +61,7 @@ class AppRoutes {
   static const String notificationsView = 'notificationsView';
   static const String myordersView = 'myordersView';
   static const String orderDetailsView = 'orderDetailsView';
+  static const String mapScreen = 'mapScreen';
 }
 
 // دالة مساعدة لإنشاء مسار تسجيل الدخول
@@ -88,53 +95,73 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case AppRoutes.login:
       return _buildLoginRoute();
 
-case AppRoutes.home:
-      return authGuard(MaterialPageRoute(
-        settings: const RouteSettings(name: AppRoutes.home),
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: getIt<CartCubit>()),
-            BlocProvider.value(value: getIt<ProductsCubit>()),
-            // ✅ أضفنا lazy: false لضمان أن الكيوبيت جاهز قبل بناء أي صفحة داخلية
-            // BlocProvider<AlarmsCubit>(
-            //   create: (context) => getIt<AlarmsCubit>(),
-            //   lazy: false, 
-            // ),
-            BlocProvider.value(
-              value: getIt<OrdersCubit>()
-                ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
+    case AppRoutes.home:
+      return authGuard(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: AppRoutes.home),
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: getIt<CartCubit>()),
+              BlocProvider.value(value: getIt<ProductsCubit>()),
+              // ✅ أضفنا lazy: false لضمان أن الكيوبيت جاهز قبل بناء أي صفحة داخلية
+              // BlocProvider<AlarmsCubit>(
+              //   create: (context) => getIt<AlarmsCubit>(),
+              //   lazy: false,
+              // ),
+              BlocProvider.value(
+                value: getIt<OrdersCubit>()
+                  ..fetchUserOrders(
+                    uID: FirebaseAuth.instance.currentUser?.uid ?? "",
+                  ),
+              ),
+            ],
+            // ✅ استخدم Builder هنا لإنشاء Context جديد "تحت" الـ Providers
+            child: Builder(
+              builder: (innerContext) =>
+                  MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
             ),
-          ],
-          // ✅ استخدم Builder هنا لإنشاء Context جديد "تحت" الـ Providers
-          child: Builder(
-            builder: (innerContext) => MainVeiw(authRepoImpl: getIt<AuthRepoImpl>()),
           ),
         ),
-      ));
+      );
+
+    case AppRoutes.mapScreen:
+      return MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (BuildContext context) =>
+              MapsCubit(MapsRepository(PlacesWebservices())),
+          child: MapScreen(),
+        ),
+      );
 
     case AppRoutes.myordersView:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<OrdersCubit>()
-            ..fetchUserOrders(uID: FirebaseAuth.instance.currentUser?.uid ?? ""),
-          child: const OrdersView(),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: getIt<OrdersCubit>()
+              ..fetchUserOrders(
+                uID: FirebaseAuth.instance.currentUser?.uid ?? "",
+              ),
+            child: const OrdersView(),
+          ),
         ),
-      ));
-
+      );
     case AppRoutes.pharmacyHome:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => getIt<BannersCubit>()..getBanners()),
-            BlocProvider.value(
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => getIt<BannersCubit>()..getBanners()),
+              BlocProvider.value(
                 value: getIt<ProductsCubit>()
                   ..getProducts()
-                  ..fetchBestSelling()),
-            BlocProvider.value(value: getIt<CartCubit>()),
-          ],
-          child: const PharmacyHomeScreenNew(),
+                  ..fetchBestSelling(),
+              ),
+              BlocProvider.value(value: getIt<CartCubit>()),
+            ],
+            child: const PharmacyHomeScreenNew(),
+          ),
         ),
-      ));
+      );
 
     case AppRoutes.bestFruites:
       return MaterialPageRoute(
@@ -146,42 +173,57 @@ case AppRoutes.home:
 
     case AppRoutes.checkout:
       final cartEntity = settings.arguments as CartEntity;
-      return authGuard(MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<CartCubit>(),
-          child: CheckOutView(cartEntity: cartEntity),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: getIt<CartCubit>(),
+            child: CheckOutView(cartEntity: cartEntity),
+          ),
         ),
-      ));
+      );
 
     case AppRoutes.uploadPrescription:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => getIt<PrescriptionCubit>()),
-            BlocProvider.value(value: getIt<CartCubit>()),
-          ],
-          child: const UploadPrescriptionView(),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => getIt<PrescriptionCubit>()),
+              BlocProvider.value(value: getIt<CartCubit>()),
+            ],
+            child: const UploadPrescriptionView(),
+          ),
         ),
-      ));
+      );
 
     case AppRoutes.ChatbootBody:
-      return MaterialPageRoute(builder: (_) => const ChatbootBody());
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => getIt<ChatCubit>(),
+            child: ChatScreen(),
+          ),
+        ),
+      );
 
-case AppRoutes.alarmsMain:
-  return authGuard(MaterialPageRoute(
-    builder: (_) => BlocProvider.value(
-      value: getIt<AlarmsCubit>(), // ✅ هنا قمت بتوفيره لـ MainAlarmsView
-      child: const MainAlarmsView(),
-    ),
-  ));
+    case AppRoutes.alarmsMain:
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: getIt<AlarmsCubit>(), // ✅ هنا قمت بتوفيره لـ MainAlarmsView
+            child: const MainAlarmsView(),
+          ),
+        ),
+      );
 
     case AppRoutes.addAlarm:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<AlarmsCubit>(),
-          child: const AddAlarmView(),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: getIt<AlarmsCubit>(),
+            child: const AddAlarmView(),
+          ),
         ),
-      ));
+      );
 
     case AppRoutes.productDetails:
       if (settings.arguments is AddProductIntety) {
@@ -226,24 +268,28 @@ case AppRoutes.alarmsMain:
       );
 
     case AppRoutes.notificationsView:
-      return authGuard(MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: getIt<OrdersCubit>(),
-          child: const NotificationsView(),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: getIt<OrdersCubit>(),
+            child: const NotificationsView(),
+          ),
         ),
-      ));
+      );
 
     case AppRoutes.orderDetailsView:
       final order = settings.arguments as OrderModel;
-      return authGuard(MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: getIt<OrdersCubit>()),
-            BlocProvider.value(value: getIt<CartCubit>()),
-          ],
-          child: OrderDetailsView(order: order),
+      return authGuard(
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: getIt<OrdersCubit>()),
+              BlocProvider.value(value: getIt<CartCubit>()),
+            ],
+            child: OrderDetailsView(order: order),
+          ),
         ),
-      ));
+      );
 
     default:
       return _errorRoute();

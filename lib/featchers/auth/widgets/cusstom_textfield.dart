@@ -17,6 +17,8 @@ class CustomTextFormField extends StatelessWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final List<TextInputFormatter>? inputFormatters;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomTextFormField({
     super.key,
@@ -31,6 +33,8 @@ class CustomTextFormField extends StatelessWidget {
     this.suffixIcon,
     this.validator,
     this.inputFormatters,
+    this.readOnly = false,
+    this.onTap,
     TextInputType? keyboardType,
     TextInputType? textInputType,
   }) : keyboardType = textInputType ?? keyboardType ?? TextInputType.text;
@@ -45,6 +49,8 @@ class CustomTextFormField extends StatelessWidget {
           keyboardType: keyboardType,
           obscureText: obscureText,
           onSaved: onSaved,
+          readOnly: readOnly,
+          onTap: onTap,
           onChanged: onChanged,
           validator: validator,
           // إضافة الـ formatters للتحكم في المدخلات (مثل منع الأرقام في الاسم)
@@ -58,7 +64,8 @@ class CustomTextFormField extends StatelessWidget {
             prefixIcon: prefixIcon != null
                 ? Icon(prefixIcon, color: AppColors.primary, size: 22)
                 : null,
-            suffixIcon: suffixIcon ??
+            suffixIcon:
+                suffixIcon ??
                 (toggleObscure != null
                     ? GestureDetector(
                         onTap: toggleObscure,
@@ -83,7 +90,10 @@ class CustomTextFormField extends StatelessWidget {
             ),
             // الحدود في حالة الخطأ
             errorBorder: _buildOutlineInputBorder(AppColors.error, width: 1),
-            focusedErrorBorder: _buildOutlineInputBorder(AppColors.error, width: 2),
+            focusedErrorBorder: _buildOutlineInputBorder(
+              AppColors.error,
+              width: 2,
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 14,
@@ -108,10 +118,7 @@ class CustomTextFormField extends StatelessWidget {
   OutlineInputBorder _buildOutlineInputBorder(Color color, {double width = 1}) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(
-        color: color,
-        width: width,
-      ),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 }

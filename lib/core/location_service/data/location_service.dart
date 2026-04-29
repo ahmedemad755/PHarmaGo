@@ -1,5 +1,3 @@
-
-
 // import 'package:introduction_screen/introduction_screen.dart';
 
 // class LocationService {
@@ -16,7 +14,7 @@
 //       permission = await Geolocator.requestPermission();
 //       if (permission == LocationPermission.denied) return null;
 //     }
-    
+
 //     return await Geolocator.getCurrentPosition();
 //   }
 

@@ -14,7 +14,7 @@ class PrescriptionLoading extends PrescriptionState {}
 class PrescriptionAnalyzed extends PrescriptionState {
   final List<MedicineEntity> medicines;
   const PrescriptionAnalyzed(this.medicines);
-  
+
   @override
   List<Object> get props => [medicines];
 }
@@ -22,7 +22,7 @@ class PrescriptionAnalyzed extends PrescriptionState {
 class PrescriptionFailure extends PrescriptionState {
   final String errMessage;
   const PrescriptionFailure(this.errMessage);
-  
+
   @override
   List<Object> get props => [errMessage];
 }

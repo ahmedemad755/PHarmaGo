@@ -6,15 +6,15 @@
 
 //   static Future<void> init() async {
 //     tz.initializeTimeZones();
-    
-//     const AndroidInitializationSettings androidSettings = 
+
+//     const AndroidInitializationSettings androidSettings =
 //         AndroidInitializationSettings('@mipmap/ic_launcher');
-        
+
 //     const InitializationSettings settings = InitializationSettings(
 //       android: androidSettings,
 //       iOS: DarwinInitializationSettings(),
 //     );
-    
+
 //     await _notifications.initialize(settings);
 //   }
 
@@ -32,7 +32,7 @@
 //       _nextInstanceOfTime(time),
 //       const NotificationDetails(
 //         android: AndroidNotificationDetails(
-//           'med_channel', 
+//           'med_channel',
 //           'Medication Alarms',
 //           channelDescription: 'Notifications for medication reminders',
 //           importance: Importance.max,
@@ -51,7 +51,7 @@
 //     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
 //     tz.TZDateTime scheduledDate = tz.TZDateTime(
 //         tz.local, now.year, now.month, now.day, time.hour, time.minute);
-    
+
 //     if (scheduledDate.isBefore(now)) {
 //       scheduledDate = scheduledDate.add(const Duration(days: 1));
 //     }

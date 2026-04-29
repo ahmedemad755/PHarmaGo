@@ -21,13 +21,11 @@ class CartHeader extends StatelessWidget {
         builder: (context, state) {
           final currentCart = context.read<CartCubit>().getCartEntity(state);
           final count = currentCart.cartItems.length;
-          
+
           return Text(
             'لديك $count ${count >= 3 && count <= 10 ? 'منتجات' : 'منتج'} في سلة التسوق',
             textAlign: TextAlign.center,
-            style: TextStyles.bold13.copyWith(
-              color: AppColors.primary,
-            ),
+            style: TextStyles.bold13.copyWith(color: AppColors.primary),
           );
         },
       ),

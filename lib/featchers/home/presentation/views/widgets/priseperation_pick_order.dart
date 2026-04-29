@@ -3,8 +3,7 @@ import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cu
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io'; 
-
+import 'dart:io';
 
 class PrescriptionPicker extends StatelessWidget {
   const PrescriptionPicker({super.key});
@@ -30,7 +29,7 @@ class PrescriptionPicker extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
-                        File(cubit.prescriptionImage!.path), 
+                        File(cubit.prescriptionImage!.path),
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -42,7 +41,11 @@ class PrescriptionPicker extends StatelessWidget {
                     radius: 15,
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       onPressed: () => cubit.setPrescriptionImage(null),
                     ),
                   ),
@@ -53,11 +56,15 @@ class PrescriptionPicker extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   side: const BorderSide(color: Colors.blue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 onPressed: () async {
                   final ImagePicker picker = ImagePicker();
-                  final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
                   if (image != null) {
                     cubit.setPrescriptionImage(image);
                   }

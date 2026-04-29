@@ -5,11 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as b;
 
 class SupabaseStorgeService implements StorgeService {
-  
   // دالة التهيئة مع التأكد من وجود البوكيتات المطلوبة
   static Future<void> initSupabase() async {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
-    
+
     // إنشاء بوكيت الروشتات إذا لم يكن موجوداً
     final storage = SupabaseStorgeService();
     await storage.ensureBucketExists('prescriptions');
@@ -23,7 +22,10 @@ class SupabaseStorgeService implements StorgeService {
 
       if (!exists) {
         // إنشاء بوكيت عام (Public) لسهولة الوصول للروابط
-        await client.storage.createBucket(bucketName, const BucketOptions(public: true));
+        await client.storage.createBucket(
+          bucketName,
+          const BucketOptions(public: true),
+        );
         print('✅ Bucket $bucketName created successfully');
       }
     } catch (e) {
@@ -36,14 +38,17 @@ class SupabaseStorgeService implements StorgeService {
     try {
       final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
       final fileName = b.basename(file.path);
-      final filePath = '${uniqueId}_$fileName'; 
+      final filePath = '${uniqueId}_$fileName';
 
       final bytes = await file.readAsBytes();
-      
+
       await Supabase.instance.client.storage
           .from(bucketName)
-          .uploadBinary(filePath, bytes, 
-              fileOptions: const FileOptions(cacheControl: '3600', upsert: false));
+          .uploadBinary(
+            filePath,
+            bytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
 
       final publicUrl = Supabase.instance.client.storage
           .from(bucketName)

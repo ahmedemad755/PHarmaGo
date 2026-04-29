@@ -23,7 +23,7 @@ class PharmacyHomeScreenNew extends StatefulWidget {
 class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _bannerController = PageController();
-  
+
   String _selectedCategory = 'الكل';
   List<String> _categories = ['الكل'];
   int _currentBannerIndex = 0;
@@ -48,7 +48,9 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding = MediaQuery.of(context).size.width < 600 ? 16.0 : 24.0;
+    final horizontalPadding = MediaQuery.of(context).size.width < 600
+        ? 16.0
+        : 24.0;
 
     return MultiBlocProvider(
       providers: [
@@ -64,7 +66,11 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(child: SizedBox(height: MediaQuery.of(context).padding.top + 10)),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.of(context).padding.top + 10,
+                ),
+              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -73,7 +79,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                     children: [
                       const CustomHomeAppBar(),
                       const SizedBox(height: 16),
-                      
+
                       // استخدام ويدجيت البحث والفلترة الخارجية
                       CustomSearchFilterBar(
                         controller: _searchController,
@@ -93,7 +99,7 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                           );
                         },
                       ),
-                      
+
                       const SizedBox(height: 18),
                       _buildUploadPrescription(),
                       const SizedBox(height: 20),
@@ -118,7 +124,11 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('الأكثر مبيعاً', horizontalPadding, onSeeAll: () {}),
+                    _buildSectionTitle(
+                      'الأكثر مبيعاً',
+                      horizontalPadding,
+                      onSeeAll: () {},
+                    ),
                     const SizedBox(height: 12),
                     _buildHorizontalProductsList(),
                     const SizedBox(height: 24),
@@ -128,11 +138,17 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: const Text('اكتشف منتجاتنا', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'اكتشف منتجاتنا',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: 12,
+                ),
                 sliver: const SliverToBoxAdapter(
                   child: ProductsGridViewBlocBuilder(),
                 ),
@@ -152,7 +168,9 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          final fetched = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
+          final fetched = snapshot.data!.docs
+              .map((doc) => doc['name'].toString())
+              .toList();
           if (_categories.length != fetched.length + 1) {
             _categories = ['الكل', ...fetched];
           }
@@ -176,13 +194,33 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: isSelected ? const Color(0xFF007BBB) : const Color(0xFFF2F6F8),
-                      child: cat == 'الكل' 
-                        ? Icon(Icons.apps, color: isSelected ? Colors.white : const Color(0xFF007BBB))
-                        : Text(cat.substring(0, 1), style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF007BBB))),
+                      backgroundColor: isSelected
+                          ? const Color(0xFF007BBB)
+                          : const Color(0xFFF2F6F8),
+                      child: cat == 'الكل'
+                          ? Icon(
+                              Icons.apps,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF007BBB),
+                            )
+                          : Text(
+                              cat.substring(0, 1),
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF007BBB),
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 8),
-                    Text(cat, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(
+                      cat,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -193,17 +231,30 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget _buildSectionTitle(String title, double padding, {VoidCallback? onSeeAll}) {
-     return Padding(
+  Widget _buildSectionTitle(
+    String title,
+    double padding, {
+    VoidCallback? onSeeAll,
+  }) {
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           if (onSeeAll != null)
             GestureDetector(
               onTap: onSeeAll,
-              child: const Text('عرض الكل', style: TextStyle(color: Color(0xFF007BBB), fontWeight: FontWeight.w600)),
+              child: const Text(
+                'عرض الكل',
+                style: TextStyle(
+                  color: Color(0xFF007BBB),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
         ],
       ),
@@ -213,7 +264,8 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   Widget _buildBannersSlider() {
     return BlocBuilder<BannersCubit, BannersState>(
       builder: (context, state) {
-        if (state is GetBannersLoading) return _buildBannerPlaceholder(isLoading: true);
+        if (state is GetBannersLoading)
+          return _buildBannerPlaceholder(isLoading: true);
         if (state is GetBannersSuccess) {
           final banners = state.banners;
           if (banners.isEmpty) return const SizedBox();
@@ -223,14 +275,21 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
                 height: 160,
                 child: PageView.builder(
                   controller: _bannerController,
-                  onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+                  onPageChanged: (index) =>
+                      setState(() => _currentBannerIndex = index),
                   itemCount: banners.length,
                   itemBuilder: (context, index) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.grey[200]),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.grey[200],
+                    ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(banners[index].imageUrl, fit: BoxFit.cover),
+                      child: Image.network(
+                        banners[index].imageUrl,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
@@ -238,12 +297,21 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(banners.length, (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  height: 8, width: _currentBannerIndex == index ? 18 : 8,
-                  decoration: BoxDecoration(color: _currentBannerIndex == index ? const Color(0xFF007BBB) : Colors.grey[300], borderRadius: BorderRadius.circular(4)),
-                )),
+                children: List.generate(
+                  banners.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 8,
+                    width: _currentBannerIndex == index ? 18 : 8,
+                    decoration: BoxDecoration(
+                      color: _currentBannerIndex == index
+                          ? const Color(0xFF007BBB)
+                          : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
               ),
             ],
           );
@@ -256,8 +324,16 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
   Widget _buildHorizontalProductsList() {
     return BlocBuilder<ProductsCubit, ProductsState>(
       builder: (context, state) {
-        final products = context.read<ProductsCubit>().bestSellingProducts.take(5).toList();
-        if (products.isEmpty) return const SizedBox(height: 50, child: Center(child: Text("لا توجد منتجات")));
+        final products = context
+            .read<ProductsCubit>()
+            .bestSellingProducts
+            .take(5)
+            .toList();
+        if (products.isEmpty)
+          return const SizedBox(
+            height: 50,
+            child: Center(child: Text("لا توجد منتجات")),
+          );
         return SizedBox(
           height: 200,
           child: ListView.separated(
@@ -267,11 +343,34 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) => Container(
               width: 140,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
               child: Column(
                 children: [
-                  Expanded(child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: Image.network(products[index].imageurl ?? '', fit: BoxFit.cover, errorBuilder: (_,__,___)=> const Icon(Icons.medication)))),
-                  Padding(padding: const EdgeInsets.all(8), child: Text(products[index].name, maxLines: 1, style: const TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                      child: Image.network(
+                        products[index].imageurl ?? '',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.medication),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      products[index].name,
+                      maxLines: 1,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -281,20 +380,60 @@ class _PharmacyHomeScreenNewState extends State<PharmacyHomeScreenNew> {
     );
   }
 
-  Widget _buildBannerPlaceholder({required bool isLoading}) => Skeletonizer(enabled: isLoading, child: Container(margin: const EdgeInsets.symmetric(horizontal: 16), height: 160, width: double.infinity, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(16))));
+  Widget _buildBannerPlaceholder({required bool isLoading}) => Skeletonizer(
+    enabled: isLoading,
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: 160,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+  );
 
   Widget _buildUploadPrescription() {
     return GlassCard(
-      width: double.infinity, height: 75, borderRadius: 16, opacity: 0.9,
+      width: double.infinity,
+      height: 75,
+      borderRadius: 16,
+      opacity: 0.9,
       gradientColors: const [Color(0xFFE3F2FD), Color(0xFFF1F8E9)],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            const Icon(Icons.description_outlined, color: Color(0xFF007BBB), size: 30),
+            const Icon(
+              Icons.description_outlined,
+              color: Color(0xFF007BBB),
+              size: 30,
+            ),
             const SizedBox(width: 12),
-            const Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text('هل لديك روشتة؟', style: TextStyle(fontWeight: FontWeight.bold)), Text('ارفعها الآن وسنوفر لك الأدوية', style: TextStyle(color: Colors.black54, fontSize: 12))])),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, AppRoutes.uploadPrescription), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF007BBB)), child: const Text("رفع", style: TextStyle(color: Colors.white))),
+            const Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'هل لديك روشتة؟',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'ارفعها الآن وسنوفر لك الأدوية',
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.uploadPrescription),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF007BBB),
+              ),
+              child: const Text("رفع", style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
       ),

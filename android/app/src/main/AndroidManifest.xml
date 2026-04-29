@@ -13,9 +13,9 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" /> 
 
-<uses-permission android:name="android.android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> 
 <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -24,6 +24,8 @@
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true">
+            <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyDb5NZkpTIxGWIuVZswOwerD554HoD1_kM"/>
         
         <activity
             android:name=".MainActivity"

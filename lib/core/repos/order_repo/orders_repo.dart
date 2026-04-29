@@ -7,7 +7,7 @@ import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart'
 abstract class OrdersRepo {
   // إرسال الطلب النهائي
   Future<Either<Faliur, void>> addOrder({required OrderInputEntity order});
-  
+
   // 🔥 الدالة الجديدة لرفع صورة الروشتة والحصول على الرابط
   Future<Either<Faliur, String>> uploadPrescription(File imageFile);
 

@@ -4,10 +4,7 @@ class RxSymbolPainter extends CustomPainter {
   final Color color;
   final double opacity;
 
-  RxSymbolPainter({
-    this.color = Colors.white,
-    this.opacity = 0.3,
-  });
+  RxSymbolPainter({this.color = Colors.white, this.opacity = 0.3});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -24,12 +21,7 @@ class RxSymbolPainter extends CustomPainter {
     rPath.moveTo(centerX - 40, centerY - 40);
     rPath.lineTo(centerX - 40, centerY + 40);
     rPath.lineTo(centerX - 10, centerY + 40);
-    rPath.quadraticBezierTo(
-      centerX + 10,
-      centerY + 40,
-      centerX + 10,
-      centerY,
-    );
+    rPath.quadraticBezierTo(centerX + 10, centerY + 40, centerX + 10, centerY);
     rPath.lineTo(centerX - 10, centerY);
     rPath.moveTo(centerX + 10, centerY);
     rPath.lineTo(centerX + 30, centerY + 40);
@@ -68,10 +60,7 @@ class RxSymbol extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: RxSymbolPainter(
-        color: color,
-        opacity: opacity,
-      ),
+      painter: RxSymbolPainter(color: color, opacity: opacity),
     );
   }
 }

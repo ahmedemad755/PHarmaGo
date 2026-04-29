@@ -77,11 +77,9 @@ class _GradientButtonState extends State<GradientButton>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: widget.gradientColors ??
-                  [
-                    const Color(0xFF00C6FF),
-                    const Color(0xFF0099FF),
-                  ],
+              colors:
+                  widget.gradientColors ??
+                  [const Color(0xFF00C6FF), const Color(0xFF0099FF)],
             ),
             borderRadius: BorderRadius.circular(widget.borderRadius),
             boxShadow: [
@@ -100,7 +98,8 @@ class _GradientButtonState extends State<GradientButton>
                   children: [
                     Text(
                       widget.label,
-                      style: widget.textStyle ??
+                      style:
+                          widget.textStyle ??
                           const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -109,17 +108,14 @@ class _GradientButtonState extends State<GradientButton>
                           ),
                     ),
                     const SizedBox(width: 12),
-                    Icon(
-                      widget.icon,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    Icon(widget.icon, color: Colors.white, size: 18),
                   ],
                 )
               : Center(
                   child: Text(
                     widget.label,
-                    style: widget.textStyle ??
+                    style:
+                        widget.textStyle ??
                         const TextStyle(
                           color: Colors.white,
                           fontSize: 18,

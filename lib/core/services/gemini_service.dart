@@ -8,17 +8,15 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 class GeminiService {
   late final GenerativeModel _model;
 
-GeminiService() {
-  _model = GenerativeModel(
-    // جرب تغيير المسمى لهذا الشكل الدقيق
-    model: 'gemini-1.5-flash', 
-    apiKey: ApiKeys.geminiApiKey,
-    // إضافة الـ Safety Settings والـ Config تضمن أن المكتبة تستخدم البروتوكول الصحيح
-    generationConfig: GenerationConfig(
-      responseMimeType: 'application/json',
-    ),
-  );
-}
+  GeminiService() {
+    _model = GenerativeModel(
+      // جرب تغيير المسمى لهذا الشكل الدقيق
+      model: 'gemini-1.5-flash',
+      apiKey: ApiKeys.geminiApiKey,
+      // إضافة الـ Safety Settings والـ Config تضمن أن المكتبة تستخدم البروتوكول الصحيح
+      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+    );
+  }
 
   Future<List<MedicineEntity>> analyzeImage(File imageFile) async {
     try {
@@ -31,17 +29,17 @@ GeminiService() {
         If no medicines, return [].
       """;
 
-      final String mimeType = imageFile.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final String mimeType = imageFile.path.endsWith('.png')
+          ? 'image/png'
+          : 'image/jpeg';
 
       final response = await _model.generateContent([
-        Content.multi([
-          TextPart(prompt),
-          DataPart(mimeType, imageBytes),
-        ])
+        Content.multi([TextPart(prompt), DataPart(mimeType, imageBytes)]),
       ]);
 
       final textResponse = response.text;
-      if (textResponse == null || textResponse.isEmpty) throw Exception("رد فارغ من الذكاء الاصطناعي");
+      if (textResponse == null || textResponse.isEmpty)
+        throw Exception("رد فارغ من الذكاء الاصطناعي");
 
       // استخراج الـ JSON باستخدام Regex لضمان الدقة
       final jsonRegExp = RegExp(r'\[.*\]', dotAll: true);
@@ -49,20 +47,23 @@ GeminiService() {
 
       if (match != null) {
         final List<dynamic> decodedList = jsonDecode(match);
-        return decodedList.map((e) => MedicineEntity(
-          name: e['name']?.toString() ?? 'Unknown',
-          dose: e['dose']?.toString() ?? '',
-          frequency: e['frequency']?.toString() ?? '',
-        )).toList();
+        return decodedList
+            .map(
+              (e) => MedicineEntity(
+                name: e['name']?.toString() ?? 'Unknown',
+                dose: e['dose']?.toString() ?? '',
+                frequency: e['frequency']?.toString() ?? '',
+              ),
+            )
+            .toList();
       } else {
         return [];
       }
-
     } catch (e) {
       debugPrint("++++++===============Full Error Log: $e");
       // غيرنا الرسالة عشان تكون معبرة أكتر لو لسه فيه مشكلة في الموديل
       if (e.toString().contains('not found')) {
-         throw Exception("الموديل المختار غير مدعوم، جرب تحديث مكتبة Google AI");
+        throw Exception("الموديل المختار غير مدعوم، جرب تحديث مكتبة Google AI");
       }
       throw Exception("فشل في معالجة النص المستخرج");
     }

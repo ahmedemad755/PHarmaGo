@@ -16,6 +16,9 @@ class SugnupCubit extends Cubit<SugnupState> {
     required String email,
     required String password,
     required String name,
+    required String address,
+    required double lat,
+    required double lng,
     // required String role,
   }) async {
     emit(SugnupLoading());
@@ -34,6 +37,9 @@ class SugnupCubit extends Cubit<SugnupState> {
         email: email,
         password: password,
         name: name,
+        address: address,
+        lat: lat,
+        lng: lng,
         // role: role,
       );
 

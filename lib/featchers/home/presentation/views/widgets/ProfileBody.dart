@@ -1,8 +1,16 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce/constants.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
+import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
+import 'package:e_commerce/core/utils/backend_points.dart';
+import 'package:e_commerce/featchers/AUTH/data/models/user_model.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 // مهم جداً للوصول لـ navigatorKey
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,18 +29,19 @@ class ProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LoginCubit, LoginState>(
-listener: (context, state) {
-    if (state is LogoutSuccess) {
-      // استخدم pushNamedAndRemoveUntil لضمان مسح كل الصفحات القديمة
-      Navigator.pushNamedAndRemoveUntil(
-        context, 
-        AppRoutes.login, 
-        (route) => false,
-      );
-    }
-  },
-  // أضف buildWhen لمنع إعادة البناء عند تسجيل الخروج
-  buildWhen: (previous, current) => current is! LogoutSuccess && current is! LogoutLoading,
+      listener: (context, state) {
+        if (state is LogoutSuccess) {
+          // استخدم pushNamedAndRemoveUntil لضمان مسح كل الصفحات القديمة
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.login,
+            (route) => false,
+          );
+        }
+      },
+      // أضف buildWhen لمنع إعادة البناء عند تسجيل الخروج
+      buildWhen: (previous, current) =>
+          current is! LogoutSuccess && current is! LogoutLoading,
       builder: (context, state) {
         return Scaffold(
           backgroundColor: AppTheme.backgroundColor,
@@ -57,20 +66,44 @@ listener: (context, state) {
                           icon: Icons.notifications_none,
                           title: "الإشعارات",
                           onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.notificationsView);
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.notificationsView,
+                            );
                           },
                         ),
                         _ProfileOption(
                           icon: Icons.shopping_bag_outlined,
                           title: "طلباتي",
                           onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.myordersView);
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.myordersView,
+                            );
                           },
                         ),
                         _ProfileOption(
                           icon: Icons.language,
                           title: "تغيير اللغة",
                           onTap: () {},
+                        ),
+
+                        _ProfileOption(
+                          icon: Icons.location_on_outlined,
+                          title: "تغيير عنوان التوصيل",
+                          onTap: () async {
+                            // 1. فتح الخريطة واستقبال الإحداثيات الجديدة
+                            final result = await Navigator.pushNamed(
+                              context,
+                              AppRoutes.mapScreen,
+                            );
+
+                            if (result != null &&
+                                result is Map<String, dynamic>) {
+                              // 2. تحديث البيانات في الفايربيز (نحتاج ميثود في الكيوبت أو ميثود سريعة)
+                              _updateUserLocation(context, result);
+                            }
+                          },
                         ),
                         _ProfileOption(
                           icon: Icons.security,
@@ -94,8 +127,7 @@ listener: (context, state) {
                       ]),
                       const SizedBox(height: 30),
                       _buildLogoutButton(context, state),
-                      const SizedBox(height: 120
-                      ),
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
@@ -264,6 +296,62 @@ listener: (context, state) {
               ),
             ),
     );
+  }
+
+  Future<void> _updateUserLocation(
+    BuildContext context,
+    Map<String, dynamic> locationData,
+  ) async {
+    final uId = getUser().uId; // هنجيب الـ ID من Helper اللي عندك
+
+    final authUId = FirebaseAuth.instance.currentUser?.uid;
+    final documentId = authUId?.isNotEmpty == true ? authUId! : uId;
+    final address = locationData['address']?.toString() ?? '';
+    final lat = (locationData['lat'] as num?)?.toDouble() ?? 0.0;
+    final lng = (locationData['lng'] as num?)?.toDouble() ?? 0.0;
+
+    if (documentId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تحديد المستخدم الحالي')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection(BackendPoints.addUserData)
+          .doc(documentId)
+          .set({
+            'address': address,
+            'lat': lat,
+            'lng': lng,
+            'uId': documentId,
+          }, SetOptions(merge: true));
+
+      final currentUser = getUser();
+      final updatedUser = UserModel(
+        email: currentUser.email,
+        name: currentUser.name,
+        uId: documentId,
+        address: address,
+        lat: lat,
+        lng: lng,
+      );
+
+      await Prefs.setString(kUserData, jsonEncode(updatedUser.toMap()));
+
+      // تنبيه المستخدم
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تحديث عنوانك المفضل بنجاح')),
+      );
+
+      // يفضل تعمل Re-fetch لبيانات المستخدم عشان الـ Header يتحدث
+    } catch (e) {
+      debugPrint("Update Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تحديث العنوان، حاول مرة أخرى')),
+      );
+    }
   }
 }
 

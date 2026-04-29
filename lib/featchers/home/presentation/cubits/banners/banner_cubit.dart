@@ -10,14 +10,13 @@ class BannersCubit extends Cubit<BannersState> {
   Future<void> getBanners() async {
     emit(GetBannersLoading());
     final result = await bannersRepo.getBanners();
-    
-    result.fold(
-      (failure) => emit(GetBannersFailure(failure.message)),
-      (banners) {
-        // فلترة العروض للتأكد من عرض النشط فقط (زيادة أمان)
-        final activeBanners = banners.where((b) => b.isActive).toList();
-        emit(GetBannersSuccess(activeBanners));
-      },
-    );
+
+    result.fold((failure) => emit(GetBannersFailure(failure.message)), (
+      banners,
+    ) {
+      // فلترة العروض للتأكد من عرض النشط فقط (زيادة أمان)
+      final activeBanners = banners.where((b) => b.isActive).toList();
+      emit(GetBannersSuccess(activeBanners));
+    });
   }
 }

@@ -4,7 +4,8 @@ import 'package:image_picker/image_picker.dart';
 
 class OrderInputEntity {
   final String uID;
-  final CartEntity cartEntity;
+  final CartEntity? cartEntity;
+  final bool isPrescription;
   String pharmacyId; // 🔹 تم إزالة final لتسمح بالتحديث عند الدفع
   bool? payWithCash;
   XFile? prescriptionFile;
@@ -13,10 +14,10 @@ class OrderInputEntity {
   String? userName; // 🔹 لإضافة اسم المستخدم في الطلب
 
   OrderInputEntity(
-    this.cartEntity,
-     {
+    this.cartEntity, {
     required this.uID,
     required this.pharmacyId,
+    this.isPrescription = false,
     this.payWithCash,
     this.prescriptionFile,
     ShippingAddressEntity? shippingAddressEntity,
@@ -25,7 +26,7 @@ class OrderInputEntity {
   }) : shippingAddressEntity = shippingAddressEntity ?? ShippingAddressEntity();
 
   /// 🔹 المجموع الفرعي (السعر الإجمالي قبل التوصيل)
-  double get totalPrice => cartEntity.getTotalPrice().toDouble();
+  double get totalPrice => cartEntity!.getTotalPrice().toDouble();
 
   /// 🔹 تكلفة التوصيل (لو كاش = 50، لو أونلاين = 0)
   double get deliveryPrice => payWithCash == true ? 50.0 : 0.0;
@@ -38,7 +39,7 @@ class OrderInputEntity {
   }
 
   double calculatetotalpriceAfterDiscountAndDelivery() {
-    return cartEntity.getTotalPrice().toDouble() +
+    return cartEntity!.getTotalPrice().toDouble() +
         deliveryPrice -
         shippingdescount();
   }

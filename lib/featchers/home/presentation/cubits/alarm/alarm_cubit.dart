@@ -20,7 +20,9 @@ class AlarmsCubit extends Cubit<AlarmsState> {
       if (jsonString.isNotEmpty) {
         List<dynamic> jsonList = json.decode(jsonString);
         _allAlarms.clear();
-        _allAlarms.addAll(jsonList.map((item) => AlarmEntity.fromMap(item)).toList());
+        _allAlarms.addAll(
+          jsonList.map((item) => AlarmEntity.fromMap(item)).toList(),
+        );
         emit(AlarmsSuccess(List.from(_allAlarms)));
       }
     } catch (e) {
@@ -29,7 +31,9 @@ class AlarmsCubit extends Cubit<AlarmsState> {
   }
 
   Future<void> _saveToPrefs() async {
-    List<Map<String, dynamic>> mapList = _allAlarms.map((a) => a.toMap()).toList();
+    List<Map<String, dynamic>> mapList = _allAlarms
+        .map((a) => a.toMap())
+        .toList();
     String jsonString = json.encode(mapList);
     await Prefs.setString(_storageKey, jsonString);
   }
@@ -39,7 +43,7 @@ class AlarmsCubit extends Cubit<AlarmsState> {
       emit(AlarmsError("يرجى إدخال اسم الدواء"));
       return;
     }
-    
+
     emit(AlarmsLoading());
     try {
       // 1. جدولة المنبه في نظام التشغيل
@@ -53,7 +57,7 @@ class AlarmsCubit extends Cubit<AlarmsState> {
       // 2. حفظ المنبه محلياً
       _allAlarms.add(alarm);
       await _saveToPrefs();
-      
+
       emit(AlarmAddedSuccessfully());
       emit(AlarmsSuccess(List.from(_allAlarms)));
     } catch (e) {
@@ -79,30 +83,32 @@ class AlarmsCubit extends Cubit<AlarmsState> {
   }
 
   void markAsDone(String alarmId, DateTime time) async {
-  try {
-    // 1. البحث عن المنبه وتحديثه
-    int index = _allAlarms.indexWhere((a) => a.id == alarmId);
-    if (index != -1) {
-      String timeKey = DateFormat('yyyy-MM-dd HH:mm').format(time);
-      
-      // إضافة الوقت إذا لم يكن موجوداً مسبقاً
-      if (!_allAlarms[index].completedTimes.contains(timeKey)) {
-        List<String> newCompleted = List.from(_allAlarms[index].completedTimes)..add(timeKey);
-        
-        _allAlarms[index] = AlarmEntity(
-          id: _allAlarms[index].id,
-          medicationName: _allAlarms[index].medicationName,
-          reminderTimes: _allAlarms[index].reminderTimes,
-          dosage: _allAlarms[index].dosage,
-          completedTimes: newCompleted,
-        );
+    try {
+      // 1. البحث عن المنبه وتحديثه
+      int index = _allAlarms.indexWhere((a) => a.id == alarmId);
+      if (index != -1) {
+        String timeKey = DateFormat('yyyy-MM-dd HH:mm').format(time);
 
-        await _saveToPrefs();
-        emit(AlarmsSuccess(List.from(_allAlarms)));
+        // إضافة الوقت إذا لم يكن موجوداً مسبقاً
+        if (!_allAlarms[index].completedTimes.contains(timeKey)) {
+          List<String> newCompleted = List.from(
+            _allAlarms[index].completedTimes,
+          )..add(timeKey);
+
+          _allAlarms[index] = AlarmEntity(
+            id: _allAlarms[index].id,
+            medicationName: _allAlarms[index].medicationName,
+            reminderTimes: _allAlarms[index].reminderTimes,
+            dosage: _allAlarms[index].dosage,
+            completedTimes: newCompleted,
+          );
+
+          await _saveToPrefs();
+          emit(AlarmsSuccess(List.from(_allAlarms)));
+        }
       }
+    } catch (e) {
+      emit(AlarmsError("فشل في تحديث حالة الجرعة"));
     }
-  } catch (e) {
-    emit(AlarmsError("فشل في تحديث حالة الجرعة"));
   }
-}
 }

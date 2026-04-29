@@ -13,6 +13,7 @@ class OrdersSuccess extends OrdersState {
   final bool hasNotification; // ✅ الحقل الجديد
   OrdersSuccess(this.orders, {this.hasNotification = false});
 }
+
 class OrdersFailure extends OrdersState {
   final String errMessage;
   OrdersFailure(this.errMessage);

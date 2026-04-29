@@ -10,5 +10,5 @@ class BackendPoints {
   static const banners = 'banners'; // الكولكشن الخاص بالعروض
   static const bannersImages = 'banners_images';
   static const pharmacies = 'pharmacies';
-  static const  categorys = 'categories';
+  static const categorys = 'categories';
 }

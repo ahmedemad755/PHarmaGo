@@ -11,6 +11,7 @@ class OrderModel {
   final ShippingAddressModel shippingAddressModel;
   final List<OrderProductModel> orderProducts;
   final String paymentMethod;
+  final String? pharmacyName;
   final String orderId;
   final String status;
   final String date;
@@ -21,6 +22,7 @@ class OrderModel {
   OrderModel({
     required this.totalPrice,
     required this.uId,
+    required this.pharmacyName,
     // this.userName,
     required this.orderId,
     required this.shippingAddressModel,
@@ -43,14 +45,21 @@ class OrderModel {
         orderEntity.shippingAddressEntity,
       ),
       // تحويل كل منتج في السلة إلى OrderProductModel
-      orderProducts: orderEntity.cartEntity.cartItems
-          .map((e) => OrderProductModel.fromEntity(cartItemEntity: e))
-          .toList(),
+      orderProducts: orderEntity.isPrescription
+          ? []
+          : orderEntity.cartEntity!.cartItems
+                .map((e) => OrderProductModel.fromEntity(cartItemEntity: e))
+                .toList(),
+
       paymentMethod: orderEntity.payWithCash == true ? 'Cash' : 'Paypal',
-      status: 'pending',
+      status: orderEntity.isPrescription ? 'awaiting_pricing' : 'pending',
       date: DateTime.now().toString(),
       createdAt: FieldValue.serverTimestamp(), // الوقت الفعلي من سيرفر جوجل
       pharmacyId: orderEntity.pharmacyId,
+      pharmacyName: orderEntity.cartEntity!.cartItems.isNotEmpty
+          ? orderEntity.cartEntity!.cartItems.first.pharmacyName ??
+                'صيدلية عامة'
+          : 'صيدلية عامة',
       // أخذ الرابط الذي تم إنشاؤه بعد رفع الصورة في الـ Cubit
       prescriptionImage: orderEntity.prescriptionImageUrl,
       // userName: orderEntity.userName,
@@ -72,25 +81,30 @@ class OrderModel {
       shippingAddressModel: ShippingAddressModel.fromJson(
         json['shippingAddressModel'] as Map<String, dynamic>? ?? {},
       ),
-      orderProducts: (json['orderProducts'] as List<dynamic>?)
-              ?.map((e) => OrderProductModel.fromJson(e as Map<String, dynamic>))
+      pharmacyName: json['pharmacyName']?.toString() ?? 'صيدلية عامة',
+      orderProducts:
+          (json['orderProducts'] as List<dynamic>?)
+              ?.map(
+                (e) => OrderProductModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'orderId': orderId,
-        'totalPrice': totalPrice,
-        'uId': uId,
-        'status': status,
-        'date': date,
-        'createdAt': createdAt ?? FieldValue.serverTimestamp(),
-        'pharmacyId': pharmacyId,
-        'prescriptionImage': prescriptionImage, // سيحفظ كـ URL أو null
-        'shippingAddressModel': shippingAddressModel.toJson(),
-        'orderProducts': orderProducts.map((e) => e.toJson()).toList(),
-        'paymentMethod': paymentMethod,
-        // 'userName': userName,
-      };
+    'orderId': orderId,
+    'totalPrice': totalPrice,
+    'uId': uId,
+    'status': status,
+    'date': date,
+    'createdAt': createdAt ?? FieldValue.serverTimestamp(),
+    'pharmacyId': pharmacyId,
+    'pharmacyName': pharmacyName,
+    'prescriptionImage': prescriptionImage, // سيحفظ كـ URL أو null
+    'shippingAddressModel': shippingAddressModel.toJson(),
+    'orderProducts': orderProducts.map((e) => e.toJson()).toList(),
+    'paymentMethod': paymentMethod,
+    // 'userName': userName,
+  };
 }

@@ -1,9 +1,13 @@
 flutter_native_splash:
-  color: "#F6F6F6"
-  image: assets/Gemini_Generated_Image_puz03npuz03npuz0.png
+  color: "#F7FBFD"
+  color_dark: "#082636"
+  image: assets/pharma_go_splash_icon.png
+  image_dark: assets/pharma_go_splash_brand.png
   fullscreen: true
   android: true
   ios: true
   android_12:
-    color: "#F6F6F6"
-    image: assets/Gemini_Generated_Image_puz03npuz03npuz0.png
+    color: "#F7FBFD"
+    color_dark: "#082636"
+    image: assets/pharma_go_splash_icon.png
+    image_dark: assets/pharma_go_splash_icon.png

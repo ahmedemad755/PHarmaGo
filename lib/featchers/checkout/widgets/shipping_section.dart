@@ -5,14 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ShippingSection extends StatefulWidget {
   const ShippingSection({super.key});
-
   @override
   State<ShippingSection> createState() => _ShippingSectionState();
 }
 
 class _ShippingSectionState extends State<ShippingSection>
     with AutomaticKeepAliveClientMixin {
-  
   int selectedIndex = -1;
 
   @override
@@ -31,8 +29,8 @@ class _ShippingSectionState extends State<ShippingSection>
   Widget build(BuildContext context) {
     super.build(context);
     final order = context.read<OrderInputEntity>();
-    final double totalPrice = order.cartEntity.getTotalPrice().toDouble();
-    
+    final double totalPrice = order.cartEntity!.getTotalPrice().toDouble();
+
     // 🚚 تكلفة الكاش (السعر + 50 توصيل) - يفضل جعل الـ 50 متغيراً ثابتاً في الإعدادات لاحقاً
     final double cashOnDeliveryPrice = totalPrice + 50;
 

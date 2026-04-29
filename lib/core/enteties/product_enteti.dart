@@ -19,13 +19,17 @@ class AddProductIntety extends Equatable {
   final num discountPercentage;
   final String pharmacyId; // تم إضافة الحقل هنا
   final bool isPrescriptionRequired; // تم إضافة الحقل الجديد هنا
+  final String pharmacyName; // اسم الصيدلية
+  final double pharmacyLat; // خط العرض
+  final double pharmacyLng; // خط الطول
+  final double? distanceInKm;
 
   bool get hasDiscount => discountPercentage > 0;
 
-  const AddProductIntety( {
+  const AddProductIntety({
     required this.name,
     required this.price,
-      required this.cost, // تم إضافة الحقل الجديد هنا
+    required this.cost, // تم إضافة الحقل الجديد هنا
     required this.code,
     required this.description,
     this.imageurl,
@@ -39,7 +43,11 @@ class AddProductIntety extends Equatable {
     this.category = 'الأدوية',
     this.categoryId = '',
     required this.pharmacyId, // تم إضافته هنا
+    required this.pharmacyName, // اسم الصيدلية
+    required this.pharmacyLat, // خط العرض
+    required this.pharmacyLng, // خط الطول
     this.isPrescriptionRequired = false, // تم إضافة الحقل الجديد هنا
+    this.distanceInKm,
   });
 
   @override
@@ -55,6 +63,7 @@ class AddProductIntety extends Equatable {
     categoryId,
     pharmacyId, // تم إضافته هنا
     isPrescriptionRequired,
+    distanceInKm,
   ];
 
   // تم الحفاظ على الـ operator == والـ hashCode كما هي مع إضافة الحقل الجديد
@@ -71,8 +80,8 @@ class AddProductIntety extends Equatable {
         other.unitAmount == unitAmount &&
         other.discountPercentage == discountPercentage &&
         other.category == category &&
-other.categoryId == categoryId && 
-      other.pharmacyId == pharmacyId;
+        other.categoryId == categoryId &&
+        other.pharmacyId == pharmacyId;
   }
 
   @override

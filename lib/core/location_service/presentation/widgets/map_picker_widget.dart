@@ -2,7 +2,6 @@
 // import 'package:e_commerce/core/location_service/domain/models/user_location_model.dart';
 // import 'package:flutter/material.dart';
 
-
 // class MapPickerWidget extends StatefulWidget {
 //   final Function(UserLocationModel) onLocationSelected;
 

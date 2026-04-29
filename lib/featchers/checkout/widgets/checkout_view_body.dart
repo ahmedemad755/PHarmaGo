@@ -24,8 +24,9 @@ class CheckoutViewBody extends StatefulWidget {
 class _CheckoutViewBodyState extends State<CheckoutViewBody> {
   late PageController pageController;
   final formKey = GlobalKey<FormState>();
-  final ValueNotifier<AutovalidateMode> valueListenable =
-      ValueNotifier(AutovalidateMode.disabled);
+  final ValueNotifier<AutovalidateMode> valueListenable = ValueNotifier(
+    AutovalidateMode.disabled,
+  );
 
   int currentPageIndex = 0;
 
@@ -118,7 +119,8 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     final orderEntity = context.read<OrderInputEntity>();
 
     if (orderEntity.payWithCash != null) {
-      if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
+      if (cartCubit.isPrescriptionRequired &&
+          cartCubit.prescriptionImage == null) {
         _showPrescriptionRequiredDialog(context);
         return;
       }
@@ -132,12 +134,13 @@ class _CheckoutViewBodyState extends State<CheckoutViewBody> {
     }
   }
 
-void _showPrescriptionRequiredDialog(BuildContext context) {
+  void _showPrescriptionRequiredDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row( // تم إزالة const هنا لاستخدام Expanded بالداخل
+        title: Row(
+          // تم إزالة const هنا لاستخدام Expanded بالداخل
           children: [
             const Icon(Icons.medical_information, color: Colors.red),
             const SizedBox(width: 8),
@@ -145,8 +148,12 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
             Expanded(
               child: Text(
                 'مطلوب روشتة طبية',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis, // يضع نقاط إذا كان النص طويلاً جداً
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow:
+                    TextOverflow.ellipsis, // يضع نقاط إذا كان النص طويلاً جداً
                 maxLines: 1,
               ),
             ),
@@ -164,13 +171,16 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () async {
               Navigator.pop(dialogContext);
               await _pickPrescriptionImage(context);
             },
-            child: const FittedBox( // ✅ حماية إضافية لنص الزر
+            child: const FittedBox(
+              // ✅ حماية إضافية لنص الزر
               child: Text(
                 'رفع الروشتة الآن',
                 style: TextStyle(color: Colors.white),
@@ -217,9 +227,18 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
     final cartCubit = context.read<CartCubit>();
     final orderEntity = context.read<OrderInputEntity>();
 
-    if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
-      showBar(context, 'عذراً، الروشتة مفقودة. تم إرجاعك لرفعها.', color: Colors.orange);
-      pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    if (cartCubit.isPrescriptionRequired &&
+        cartCubit.prescriptionImage == null) {
+      showBar(
+        context,
+        'عذراً، الروشتة مفقودة. تم إرجاعك لرفعها.',
+        color: Colors.orange,
+      );
+      pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.ease,
+      );
       return;
     }
 
@@ -239,7 +258,8 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
 
     String detectedPharmacyId = 'unknown';
     if (cartCubit.currentCart.cartItems.isNotEmpty) {
-      detectedPharmacyId = cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
+      detectedPharmacyId =
+          cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
     }
 
     showDialog(
@@ -251,27 +271,40 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('سيتم الدفع نقداً عند الاستلام.', style: TextStyle(color: Colors.green)),
+            const Text(
+              'سيتم الدفع نقداً عند الاستلام.',
+              style: TextStyle(color: Colors.green),
+            ),
             const Divider(),
             Text('العنوان: ${orderEntity.shippingAddressEntity.address}'),
-            Text('الإجمالي: ${orderEntity.calculatetotalpriceAfterDiscountAndDelivery()} جنيه'),
+            Text(
+              'الإجمالي: ${orderEntity.calculatetotalpriceAfterDiscountAndDelivery()} جنيه',
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('تعديل')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('تعديل'),
+          ),
           ElevatedButton(
             onPressed: () {
-              if (cartCubit.isPrescriptionRequired && cartCubit.prescriptionImage == null) {
+              if (cartCubit.isPrescriptionRequired &&
+                  cartCubit.prescriptionImage == null) {
                 Navigator.pop(dialogContext);
-                showBar(parentContext, 'خطأ: لم يتم العثور على صورة الروشتة!', color: Colors.red);
+                showBar(
+                  parentContext,
+                  'خطأ: لم يتم العثور على صورة الروشتة!',
+                  color: Colors.red,
+                );
                 pageController.jumpToPage(0);
                 return;
               }
 
               Navigator.pop(dialogContext);
               orderEntity.pharmacyId = detectedPharmacyId;
-              orderEntity.prescriptionFile = cartCubit.prescriptionImage; 
-              
+              orderEntity.prescriptionFile = cartCubit.prescriptionImage;
+
               // 🔥 التعديل: إرسال الطلب فقط وانتظار النتيجة في الـ Listener
               addOrderCubit.addOrder(order: orderEntity);
             },
@@ -288,12 +321,15 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
     final cartCubit = context.read<CartCubit>();
 
     if (cartCubit.currentCart.cartItems.isNotEmpty) {
-      orderEntity.pharmacyId = cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
+      orderEntity.pharmacyId =
+          cartCubit.currentCart.cartItems.first.pharmacyId ?? 'unknown';
     }
-    
+
     orderEntity.prescriptionFile = cartCubit.prescriptionImage;
 
-    TransactionModel transactionModel = TransactionModel.fromEntity(orderEntity);
+    TransactionModel transactionModel = TransactionModel.fromEntity(
+      orderEntity,
+    );
 
     PayPalDebugger.checkout(
       context: context,
@@ -304,7 +340,8 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
         // 🔥 التعديل: إرسال الطلب فقط وانتظار النتيجة في الـ Listener
         addOrderCubit.addOrder(order: orderEntity);
       },
-      onError: (error) => showBar(context, "فشلت عملية الدفع!", color: Colors.red),
+      onError: (error) =>
+          showBar(context, "فشلت عملية الدفع!", color: Colors.red),
       onCancel: () => showBar(context, "تم إلغاء عملية الدفع"),
     );
   }
@@ -312,16 +349,16 @@ void _showPrescriptionRequiredDialog(BuildContext context) {
   void _navigateToThankYouPage(BuildContext context) {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => ThankYouView(key: UniqueKey()),
-      ),
+      MaterialPageRoute(builder: (context) => ThankYouView(key: UniqueKey())),
     );
   }
 
   String getNextButtonText(int page, BuildContext context) {
     var orderEntity = context.read<OrderInputEntity>();
     if (page == 2) {
-      return orderEntity.payWithCash == true ? 'إتمام الطلب' : 'الدفع عبر PayPal';
+      return orderEntity.payWithCash == true
+          ? 'إتمام الطلب'
+          : 'الدفع عبر PayPal';
     }
     return 'التالي';
   }

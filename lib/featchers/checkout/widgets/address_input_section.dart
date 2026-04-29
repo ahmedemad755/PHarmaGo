@@ -1,3 +1,4 @@
+import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/core/functions_helper/valedator.dart';
 import 'package:e_commerce/featchers/AUTH/widgets/cusstom_textfield.dart';
 import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
@@ -32,6 +33,26 @@ class _AddressInputSectionState extends State<AddressInputSection>
   final TextEditingController floorController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
+  Future<void> _pickLocationFromMap() async {
+    // بنفتح الشاشة والـ Router هيتولى حقن الـ MapsCubit
+    final result = await Navigator.pushNamed(context, AppRoutes.mapScreen);
+
+    if (!mounted) return;
+
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        // ملء الحقول بالبيانات الراجعة
+        addressController.text = result['address'] ?? '';
+        cityController.text = result['city'] ?? '';
+
+        // تحديث الداتا في الـ Entity بتاع الأوردر
+        final orderEntity = context.read<OrderInputEntity>();
+        orderEntity.shippingAddressEntity.address = addressController.text;
+        orderEntity.shippingAddressEntity.city = cityController.text;
+      });
+    }
+  }
+
   @override
   void dispose() {
     // تنظيف الكنترولرز
@@ -56,16 +77,17 @@ class _AddressInputSectionState extends State<AddressInputSection>
           child: Column(
             children: [
               const SizedBox(height: 24),
-CustomTextFormField(
-  controller: nameController,
-  onSaved: (value) {
-    context.read<OrderInputEntity>().shippingAddressEntity.name = value!;
-  },
-  hintText: 'الاسم كامل (ثلاثي على الأقل)',
-  textInputType: TextInputType.text,
-  // تأكد أنك تنادي الدالة التي أنشأناها بالأعلى
-  validator: (value) => Validators.validateName(value), 
-),
+              CustomTextFormField(
+                controller: nameController,
+                onSaved: (value) {
+                  context.read<OrderInputEntity>().shippingAddressEntity.name =
+                      value!;
+                },
+                hintText: 'الاسم كامل (ثلاثي على الأقل)',
+                textInputType: TextInputType.text,
+                // تأكد أنك تنادي الدالة التي أنشأناها بالأعلى
+                validator: (value) => Validators.validateName(value),
+              ),
               // const SizedBox(height: 16),
               // CustomTextFormField(
               //   controller: emailController,
@@ -78,7 +100,7 @@ CustomTextFormField(
               //   validator: Validators.validateEmail,
               // ),
               // const SizedBox(height: 16),
-                            CustomTextFormField(
+              CustomTextFormField(
                 controller: cityController,
                 onSaved: (value) {
                   context.read<OrderInputEntity>().shippingAddressEntity.city =
@@ -87,8 +109,8 @@ CustomTextFormField(
                 hintText: 'المدينه , القاهرة , الجيزة ...',
                 textInputType: TextInputType.text,
                 validator: Validators.validateCity,
-              ),   
-               const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
               CustomTextFormField(
                 controller: addressController,
                 onSaved: (value) {
@@ -125,6 +147,34 @@ CustomTextFormField(
                 validator: Validators.validatePhone,
               ),
               const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // زرار اختيار الموقع من الخريطة
+              InkWell(
+                onTap: _pickLocationFromMap,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.map, color: Colors.green),
+                      SizedBox(width: 12),
+                      Text(
+                        'تحديد العنوان عبر الخريطة',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
