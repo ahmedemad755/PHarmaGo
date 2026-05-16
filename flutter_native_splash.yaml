@@ -1,7 +1,7 @@
 flutter_native_splash:
   color: "#F7FBFD"
   color_dark: "#082636"
-  image: assets/pharma_go_splash_icon.png
+  image: assets/pharma_go_native_splash_icon.png
   image_dark: assets/pharma_go_splash_brand.png
   fullscreen: true
   android: true
@@ -9,5 +9,5 @@ flutter_native_splash:
   android_12:
     color: "#F7FBFD"
     color_dark: "#082636"
-    image: assets/pharma_go_splash_icon.png
-    image_dark: assets/pharma_go_splash_icon.png
+    image: assets/pharma_go_native_splash_icon.png
+    image_dark: assets/pharma_go_native_splash_icon.png

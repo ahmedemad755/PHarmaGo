@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
+import 'package:e_commerce/core/functions_helper/pharmacy_distance_helper.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
@@ -157,12 +158,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
               double distanceInKm = 0;
               if (userPos != null && shopLat != 0) {
-                double distanceInMeters = Geolocator.distanceBetween(
-                  userPos.latitude,
-                  userPos.longitude,
-                  shopLat,
-                  shopLng,
-                );
+                final distanceInMeters =
+                    calculateDistanceInKm(
+                      fromLat: userPos.latitude,
+                      fromLng: userPos.longitude,
+                      toLat: shopLat,
+                      toLng: shopLng,
+                    ) *
+                    1000;
                 distanceInKm = distanceInMeters / 1000;
                 print(
                   "Distance to ${pData['pharmacyName']}: $distanceInMeters meters",
@@ -170,7 +173,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
               }
 
               // الفلترة في نطاق 5 كيلو
-              if (userPos == null || distanceInKm <= 5.0) {
+              if (userPos == null ||
+                  distanceInKm <= nearbyPharmacyRadiusKm) {
                 final double price = (data['price'] as num).toDouble();
                 // ... (باقي كود حساب السعر والخصم)
 
@@ -305,10 +309,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
       final double shopLng = (pData['lng'] as num? ?? 0).toDouble();
       if (shopLat == 0 || shopLng == 0) continue;
 
-      final distanceInKm =
-          Geolocator.distanceBetween(_userLat!, _userLng!, shopLat, shopLng) /
-          1000;
-      if (distanceInKm > 5.0) continue;
+      final distanceInKm = calculateDistanceInKm(
+        fromLat: _userLat!,
+        fromLng: _userLng!,
+        toLat: shopLat,
+        toLng: shopLng,
+      );
+      if (distanceInKm > nearbyPharmacyRadiusKm) continue;
 
       final double price = (data['price'] as num).toDouble();
       final bool hasDiscount = data['hasDiscount'] ?? false;

@@ -4,7 +4,6 @@ import 'package:e_commerce/maps/data/repo/place_repo.dart';
 import 'package:e_commerce/maps/presentation/widgets/place.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:meta/meta.dart';
-
 part 'maps_state.dart';
 
 class MapsCubit extends Cubit<MapsState> {

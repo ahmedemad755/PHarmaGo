@@ -129,22 +129,14 @@ class _SplashViewBodyState extends State<SplashViewBody>
                         ),
                         SlideTransition(
                           position: _logoSlide,
-                          child: FadeTransition(
-                            opacity: _logoFade,
-                            child: ScaleTransition(
-                              scale: _logoScale,
-                              child: ImageFiltered(
-                                imageFilter: ImageFilter.blur(
-                                  sigmaX: .15,
-                                  sigmaY: .15,
-                                ),
-                                child: Image.asset(
-                                  _brandAsset,
-                                  width: logoSize,
-                                  height: logoSize,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
+                          child: ScaleTransition(
+                            scale: _logoScale,
+                            child: Image.asset(
+                              _brandAsset,
+                              width: logoSize,
+                              height: logoSize,
+                              fit: BoxFit.contain,
+                              opacity: _logoFade,
                             ),
                           ),
                         ),
