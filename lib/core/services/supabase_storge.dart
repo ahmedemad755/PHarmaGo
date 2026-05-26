@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:e_commerce/core/const.dart';
 import 'package:e_commerce/core/services/storge_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,23 +27,24 @@ class SupabaseStorgeService implements StorgeService {
           bucketName,
           const BucketOptions(public: true),
         );
-        print('✅ Bucket $bucketName created successfully');
+        log('Bucket $bucketName created successfully');
       }
-    } catch (e) {
-      print('❌ Error checking/creating bucket: $e');
+    } catch (e, stackTrace) {
+      log('Error checking/creating bucket: $e', stackTrace: stackTrace);
     }
   }
 
   @override
   Future<String?> uploadImage(XFile file, String bucketName) async {
     try {
+      final client = Supabase.instance.client;
       final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
       final fileName = b.basename(file.path);
       final filePath = '${uniqueId}_$fileName';
 
       final bytes = await file.readAsBytes();
 
-      await Supabase.instance.client.storage
+      await client.storage
           .from(bucketName)
           .uploadBinary(
             filePath,
@@ -50,19 +52,42 @@ class SupabaseStorgeService implements StorgeService {
             fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
           );
 
-      final publicUrl = Supabase.instance.client.storage
+      final publicUrl = client.storage
           .from(bucketName)
           .getPublicUrl(filePath);
 
       return publicUrl;
-    } catch (e) {
-      print('Upload Error: $e');
+    } catch (e, stackTrace) {
+      log('Upload Error: $e', stackTrace: stackTrace);
       return null;
     }
   }
 
   @override
   Future<void> deleteFile(String path) async {
-    // منطق الحذف (يتم تمرير المسار كاملاً بما فيه اسم البوكيت)
+    if (path.isEmpty) return;
+    
+    try {
+      final client = Supabase.instance.client;
+      
+      // تحليل مسار الـ URL بالكامل لاستخراج اسم البوكيت ومسار الملف الداخلي بشكل ديناميكي آمن
+      final uri = Uri.tryParse(path);
+      if (uri == null) return;
+      
+      final pathSegments = uri.pathSegments;
+      // التحقق من صلاحية المسار واحتوائه على هيكل روابط تخزين سوبابيس القياسي
+      if (pathSegments.contains('storage/v1/object/public')) {
+        final indexOfPublic = pathSegments.indexOf('public');
+        if (indexOfPublic != -1 && pathSegments.length > indexOfPublic + 2) {
+          final bucketName = pathSegments[indexOfPublic + 1];
+          final filePath = pathSegments.sublist(indexOfPublic + 2).join('/');
+          
+          await client.storage.from(bucketName).remove([filePath]);
+          log('File deleted successfully from bucket: $bucketName, path: $filePath');
+        }
+      }
+    } catch (e, stackTrace) {
+      log('Error deleting file: $e', stackTrace: stackTrace);
+    }
   }
 }

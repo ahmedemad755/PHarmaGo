@@ -11,21 +11,20 @@ import 'package:e_commerce/featchers/AUTH/presentation/view/login_view.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/view/oTPVerificationScreen.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/view/reset_Password.dart';
 import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
-import 'package:e_commerce/featchers/best_selling_fruites/presentations/views/best_seliling_fruites_view.dart';
+import 'package:e_commerce/featchers/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/featchers/alarm/presentation/widgets/add_alarm_view.dart';
 import 'package:e_commerce/featchers/chatbot/presentation/cubit/chat_cubit.dart';
 import 'package:e_commerce/featchers/chatbot/presentation/views/chat_screen.dart';
 import 'package:e_commerce/featchers/checkout/data/order_model.dart';
 import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/myOrders/my_orders_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
 import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/alarmpage.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/chatboot_body.dart';
+import 'package:e_commerce/featchers/alarm/presentation/views/alarmpage.dart' hide AddAlarmView;
 import 'package:e_commerce/featchers/home/presentation/views/widgets/myorders_view.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/notifecation_app_page.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/order_details_view.dart';
@@ -163,13 +162,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case AppRoutes.bestFruites:
-      return MaterialPageRoute(
-        builder: (_) => BlocProvider(
-          create: (_) => getIt<ProductsCubit>()..fetchBestSelling(topN: 5),
-          child: const BestSellingFruitesView(),
-        ),
-      );
+    // case AppRoutes.bestFruites:
+    //   return MaterialPageRoute(
+    //     builder: (_) => BlocProvider(
+    //       create: (_) => getIt<ProductsCubit>()..fetchBestSelling(topN: 5),
+    //       child: const BestSellingFruitesView(),
+    //     ),
+    //   );
 
     case AppRoutes.checkout:
       final cartEntity = settings.arguments as CartEntity;

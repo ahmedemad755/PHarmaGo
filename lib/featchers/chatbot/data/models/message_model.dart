@@ -1,21 +1,19 @@
-// import 'package:e_commerce/featchers/chatbot/domain/entitys/message_entity.dart';
+import 'package:e_commerce/featchers/chatbot/domain/entitys/message_entity.dart';
 
-// class MessageModel extends MessageEntity {
-//   MessageModel(super.text, super.isUser, {
+class MessageModel extends MessageEntity {
+  MessageModel({required String text, required bool isUser}) : super(text, isUser);
 
-//   });
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      text: json['text'] as String,
+      isUser: json['isUser'] as bool,
+    );
+  }
 
-//   factory MessageModel.fromJson(Map<String, dynamic> json) {
-//     return MessageModel(
-//       message: json['message'],
-//       isUser: json['isUser'],
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'message': message,
-//       'isUser': isUser,
-//     };
-//   }
-// }
+  Map<String, dynamic> toJson() {
+    return {
+      'text': text,
+      'isUser': isUser,
+    };
+  }
+}

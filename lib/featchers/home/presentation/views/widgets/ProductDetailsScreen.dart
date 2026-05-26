@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
-import 'package:e_commerce/core/functions_helper/pharmacy_distance_helper.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
 import 'package:e_commerce/core/widgets/custom_network_image.dart';
 import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
@@ -158,14 +157,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
               double distanceInKm = 0;
               if (userPos != null && shopLat != 0) {
-                final distanceInMeters =
-                    calculateDistanceInKm(
-                      fromLat: userPos.latitude,
-                      fromLng: userPos.longitude,
-                      toLat: shopLat,
-                      toLng: shopLng,
-                    ) *
-                    1000;
+                double distanceInMeters = Geolocator.distanceBetween(
+                  userPos.latitude,
+                  userPos.longitude,
+                  shopLat,
+                  shopLng,
+                );
                 distanceInKm = distanceInMeters / 1000;
                 print(
                   "Distance to ${pData['pharmacyName']}: $distanceInMeters meters",
@@ -173,8 +170,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
               }
 
               // الفلترة في نطاق 5 كيلو
-              if (userPos == null ||
-                  distanceInKm <= nearbyPharmacyRadiusKm) {
+              if (userPos == null || distanceInKm <= 5.0) {
                 final double price = (data['price'] as num).toDouble();
                 // ... (باقي كود حساب السعر والخصم)
 
@@ -210,77 +206,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
         });
   }
 
-  // // ✅ الدالة المحدثة للاستماع المباشر (Live Updates)
-  // void _listenToPharmacyOffers() {
-  //   _offersSubscription = FirebaseFirestore.instance
-  //       .collection(BackendPoints.getProducts)
-  //       .where('code', isEqualTo: widget.product.code)
-  //       .snapshots()
-  //       .listen((querySnapshot) async {
-
-  //     List<PharmacyOffer> realOffers = [];
-
-  //     for (var doc in querySnapshot.docs) {
-  //       final data = doc.data();
-  //       final String pharmacyId = data['pharmacyId'] ?? '';
-
-  //       // حساب الخصم
-  //       final double price = (data['price'] as num).toDouble();
-  //       final bool hasDiscount = data['hasDiscount'] ?? false;
-  //       final int discountPercentage = (data['discountPercentage'] as num? ?? 0).toInt();
-  //       double discountedPrice = price;
-  //       if (hasDiscount && discountPercentage > 0) {
-  //         discountedPrice = price - (price * (discountPercentage / 100));
-  //       }
-
-  //       // جلب بيانات الصيدلية (يفضل كاشينج هنا لاحقاً لتحسين الأداء)
-  //       final pharmacyDoc = await FirebaseFirestore.instance
-  //           .collection(BackendPoints.pharmacies)
-  //           .doc(pharmacyId)
-  //           .get();
-
-  //       if (pharmacyDoc.exists) {
-  //         final pharmacyInfo = PharmacyModel.fromJson(pharmacyDoc.data()!);
-
-  //         realOffers.add(
-  //           PharmacyOffer(
-  //             id: pharmacyId,
-  //             name: pharmacyInfo.pharmacyName,
-  //             address: pharmacyInfo.address,
-  //             status: pharmacyInfo.status,
-  //             originalPrice: price,
-  //             discountedPrice: discountedPrice,
-  //             distanceKm: 1.2,
-  //             deliveryTimeMin: 20,
-  //             rating: 4.5,
-  //             unitAmount: (data['unitAmount'] as num? ?? 0).toInt(),
-  //             hasDiscount: hasDiscount,
-  //           ),
-  //         );
-  //       }
-  //     }
-
-  //     if (!mounted) return;
-
-  //     setState(() {
-  //       _offers = realOffers;
-  //       // تحديث الاختيار بناءً على البيانات الجديدة
-  //       if (_selectedOffer != null) {
-  //         // محاولة الإبقاء على نفس الصيدلية المختارة إذا كانت لا تزال موجودة
-  //         final stillExists = _offers.any((o) => o.id == _selectedOffer!.id);
-  //         if (stillExists) {
-  //           _selectedOffer = _offers.firstWhere((o) => o.id == _selectedOffer!.id);
-  //         } else {
-  //           _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
-  //         }
-  //       } else {
-  //         _selectedOffer = _offers.isNotEmpty ? _offers.first : null;
-  //       }
-
-  //       _isLoading = false;
-  //     });
-  //   });
-  // }
 
   Future<void> _refreshOffersForSavedUserLocation() async {
     if (_userLat == null || _userLng == null) return;
@@ -309,13 +234,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
       final double shopLng = (pData['lng'] as num? ?? 0).toDouble();
       if (shopLat == 0 || shopLng == 0) continue;
 
-      final distanceInKm = calculateDistanceInKm(
-        fromLat: _userLat!,
-        fromLng: _userLng!,
-        toLat: shopLat,
-        toLng: shopLng,
-      );
-      if (distanceInKm > nearbyPharmacyRadiusKm) continue;
+      final distanceInKm =
+          Geolocator.distanceBetween(_userLat!, _userLng!, shopLat, shopLng) /
+          1000;
+      if (distanceInKm > 5.0) continue;
 
       final double price = (data['price'] as num).toDouble();
       final bool hasDiscount = data['hasDiscount'] ?? false;

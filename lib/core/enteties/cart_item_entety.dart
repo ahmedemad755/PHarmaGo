@@ -6,7 +6,6 @@ import 'package:equatable/equatable.dart';
 class CartItemEntity extends Equatable {
   final AddProductIntety productIntety;
   final int quantty;
-  // أضفنا هذه الحقول لدعم فلو الصيدليات
   final String? pharmacyId;
   final File? prescriptionFile;
   final bool isPrescription;
@@ -43,12 +42,13 @@ class CartItemEntity extends Equatable {
     );
   }
 
-  // نستخدم السعر المختار من الصيدلية، وإذا لم يوجد نستخدم سعر المنتج الافتراضي
+  // حساب السعر الإجمالي بناء على حالة المنتج والسعر المحدد
   num calculateTotalPrice() {
     if (isPrescription) return 0;
     return (priceAtSelection ?? productIntety.price) * quantty;
   }
 
+  // حساب الوزن الإجمالي أو الحجم الكلي للمنتج
   num calculateTotalWeight() {
     return productIntety.unitAmount * quantty;
   }
@@ -64,6 +64,15 @@ class CartItemEntity extends Equatable {
     return this;
   }
 
+  // تحديث مصفوفة الخصائص لتشمل كافة المتغيرات لضمان استجابة واجهة المستخدم فور التغيير
   @override
-  List<Object?> get props => [productIntety, quantty, pharmacyId];
+  List<Object?> get props => [
+        productIntety,
+        quantty,
+        pharmacyId,
+        prescriptionFile,
+        isPrescription,
+        pharmacyName,
+        priceAtSelection,
+      ];
 }

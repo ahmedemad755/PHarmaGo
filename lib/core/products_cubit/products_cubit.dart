@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:e_commerce/core/enteties/product_enteti.dart';
 import 'package:e_commerce/core/repos/products_repo/products_repo.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:meta/meta.dart';
 
 part 'products_state.dart';
@@ -23,17 +24,18 @@ class ProductsCubit extends Cubit<ProductsState> {
   ProductsCubit(this.productsRepo) : super(ProductsInitial());
 
   final ProductsRepo productsRepo;
-  Position? _userPosition;
   int get productsLength => _allProducts.length;
 
   List<AddProductIntety> _allProducts = [];
   List<AddProductIntety> _bestSellingProducts = [];
 
   String _currentSearchQuery = '';
-  // 🔹 تم تغيير القيمة الافتراضية إلى 'الكل' لضمان ظهور المنتج الجديد عند الفتح
   String _selectedCategory = 'الكل';
   String _selectedSort = 'relevance';
   num _minDiscountValue = 0;
+
+  // معرف خاص بالاشتراك في الـ Stream لضمان إغلاقه بأمان
+  StreamSubscription? _bestSellingSubscription;
 
   List<AddProductIntety> get allProducts => _allProducts;
   List<AddProductIntety> get bestSellingProducts => _bestSellingProducts;
@@ -42,18 +44,24 @@ class ProductsCubit extends Cubit<ProductsState> {
   num get minDiscountValue => _minDiscountValue;
 
   void fetchBestSelling({int topN = 10}) {
-    productsRepo.fetchBestSellingProductsStream(topN: topN).listen((result) {
-      result.fold((failure) => emit(ProductsFailure(failure.message)), (
-        products,
-      ) {
-        _bestSellingProducts = _getUniqueProducts(products);
-        if (state is ProductsSuccess) {
-          _applyFilters();
-        } else if (state is ProductsInitial || state is ProductsLoading) {
-          _allProducts = _bestSellingProducts;
-          _applyFilters();
-        }
-      });
+    // إلغاء أي اشتراك قديم قبل بدء اشتراك جديد لمنع التكرار في الذاكرة
+    _bestSellingSubscription?.cancel();
+
+    _bestSellingSubscription = productsRepo
+        .fetchBestSellingProductsStream(topN: topN)
+        .listen((result) {
+      result.fold(
+        (failure) => emit(ProductsFailure(failure.message)),
+        (products) {
+          _bestSellingProducts = _getUniqueProducts(products);
+          if (state is ProductsSuccess) {
+            _applyFilters();
+          } else if (state is ProductsInitial || state is ProductsLoading) {
+            _allProducts = _bestSellingProducts;
+            _applyFilters();
+          }
+        },
+      );
     });
   }
 
@@ -61,12 +69,13 @@ class ProductsCubit extends Cubit<ProductsState> {
     emit(ProductsLoading());
     final result = await productsRepo.getProducts();
 
-    result.fold((failure) => emit(ProductsFailure(failure.message)), (
-      products,
-    ) {
-      _allProducts = _getUniqueProducts(products);
-      _applyFilters();
-    });
+    result.fold(
+      (failure) => emit(ProductsFailure(failure.message)),
+      (products) {
+        _allProducts = _getUniqueProducts(products);
+        _applyFilters();
+      },
+    );
   }
 
   List<AddProductIntety> _getUniqueProducts(
@@ -126,7 +135,6 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     Iterable<AddProductIntety> currentFilteredList = sourceProducts;
 
-    // 🔹 التعديل: إذا كان القسم هو 'الكل' لا يتم تطبيق فلتر القسم
     if (_selectedCategory != 'الكل') {
       currentFilteredList = currentFilteredList.where(
         (product) => product.matchesCategory(_selectedCategory),
@@ -159,5 +167,12 @@ class ProductsCubit extends Cubit<ProductsState> {
     }
 
     emit(ProductsSuccess(sortedList));
+  }
+
+  // دالة تدمير الكيوبيت القياسية لإغلاق كافة الاشتراكات المفتوحة ومنع تسريب الذاكرة
+  @override
+  Future<void> close() {
+    _bestSellingSubscription?.cancel();
+    return super.close();
   }
 }

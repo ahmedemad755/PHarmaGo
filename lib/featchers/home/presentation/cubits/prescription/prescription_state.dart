@@ -10,7 +10,7 @@ class PrescriptionInitial extends PrescriptionState {}
 
 class PrescriptionLoading extends PrescriptionState {}
 
-// الحالة دي لما الذكاء الاصطناعي يرجع لستة أدوية
+// الحالة دي لما  يرجع لستة أدوية
 class PrescriptionAnalyzed extends PrescriptionState {
   final List<MedicineEntity> medicines;
   const PrescriptionAnalyzed(this.medicines);

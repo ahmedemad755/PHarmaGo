@@ -6,14 +6,23 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_production.dart",
-      "args": ["--flavor", "production"]
+      "args": ["--flavor", "production"],
+"toolArgs": [
+        "--dart-define",
+        "ANTHROPIC_API_KEY=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"
+      ]
     },
     {
       "name": "Pharma Go (Staging)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_staging.dart",
-      "args": ["--flavor", "staging"]
+      "args": ["--flavor", "staging"],
+ "toolArgs": [
+        "--dart-define",
+        "ANTHROPIC_API_KEY=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"
+      ]
     }
+    
   ]
 }

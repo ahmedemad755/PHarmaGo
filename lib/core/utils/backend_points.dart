@@ -4,6 +4,8 @@ class BackendPoints {
   static const isUserexist = 'user';
   static const getProducts = 'products';
   static const getBestSellingProducts = 'products';
+  static const globalProducts = 'global_products';
+  static const inventory = 'inventory';
   static const orders = 'orders';
   static const String categoryMedicine = 'الأدوية';
   static const String categoryMedicalEquipment = 'أجهزة صحية';

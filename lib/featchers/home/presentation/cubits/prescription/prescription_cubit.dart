@@ -1,7 +1,4 @@
-
-
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:e_commerce/core/repos/pripresetion_repo/prescription_repo.dart';
 import 'package:e_commerce/featchers/home/domain/enteties/medicine_entity.dart';

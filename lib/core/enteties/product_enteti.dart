@@ -50,6 +50,55 @@ class AddProductIntety extends Equatable {
     this.distanceInKm,
   });
 
+  AddProductIntety copyWith({
+    String? name,
+    num? price,
+    num? cost,
+    String? code,
+    String? description,
+    String? imageurl,
+    DateTime? expirationDate,
+    int? unitAmount,
+    num? averageRating,
+    int? ratingcount,
+    num? sellingcount,
+    List<ReviewEntite>? reviews,
+    String? category,
+    String? categoryId,
+    num? discountPercentage,
+    String? pharmacyId,
+    bool? isPrescriptionRequired,
+    String? pharmacyName,
+    double? pharmacyLat,
+    double? pharmacyLng,
+    double? distanceInKm,
+  }) {
+    return AddProductIntety(
+      name: name ?? this.name,
+      price: price ?? this.price,
+      cost: cost ?? this.cost,
+      code: code ?? this.code,
+      description: description ?? this.description,
+      imageurl: imageurl ?? this.imageurl,
+      expirationDate: expirationDate ?? this.expirationDate,
+      unitAmount: unitAmount ?? this.unitAmount,
+      averageRating: averageRating ?? this.averageRating,
+      ratingcount: ratingcount ?? this.ratingcount,
+      sellingcount: sellingcount ?? this.sellingcount,
+      reviews: reviews ?? this.reviews,
+      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
+      discountPercentage: discountPercentage ?? this.discountPercentage,
+      pharmacyId: pharmacyId ?? this.pharmacyId,
+      isPrescriptionRequired:
+          isPrescriptionRequired ?? this.isPrescriptionRequired,
+      pharmacyName: pharmacyName ?? this.pharmacyName,
+      pharmacyLat: pharmacyLat ?? this.pharmacyLat,
+      pharmacyLng: pharmacyLng ?? this.pharmacyLng,
+      distanceInKm: distanceInKm ?? this.distanceInKm,
+    );
+  }
+
   @override
   List<Object?> get props => [
     code,
@@ -81,7 +130,8 @@ class AddProductIntety extends Equatable {
         other.discountPercentage == discountPercentage &&
         other.category == category &&
         other.categoryId == categoryId &&
-        other.pharmacyId == pharmacyId;
+        other.pharmacyId == pharmacyId &&
+        other.isPrescriptionRequired == isPrescriptionRequired;
   }
 
   @override
@@ -96,5 +146,6 @@ class AddProductIntety extends Equatable {
     discountPercentage,
     category,
     pharmacyId,
+    isPrescriptionRequired,
   );
 }

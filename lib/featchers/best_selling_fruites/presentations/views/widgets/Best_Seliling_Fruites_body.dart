@@ -1,8 +1,8 @@
 import 'package:e_commerce/featchers/home/presentation/views/widgets/products_grid_view_bloc_builder.dart';
 import 'package:flutter/material.dart';
 
-class BestSelilingFruitesBody extends StatelessWidget {
-  const BestSelilingFruitesBody({super.key});
+class BestSelilingBody extends StatelessWidget {
+  const BestSelilingBody({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,4 @@
-import 'package:e_commerce/featchers/home/presentation/views/widgets/alarmpage.dart';
+import 'package:e_commerce/featchers/alarm/presentation/views/alarmpage.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/cart_view.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/chatbootView.dart';
 import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen_new.dart';
