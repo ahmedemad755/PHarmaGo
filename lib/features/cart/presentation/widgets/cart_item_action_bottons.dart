@@ -1,4 +1,4 @@
-import 'package:e_commerce/core/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_item_entety.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/app_text_styles.dart';
 import 'package:e_commerce/Features/cart/presentation/cubits/cart_cubit/cart_cubit.dart';

@@ -1,10 +1,5 @@
-import 'dart:convert' show jsonEncode;
-import 'dart:core';
-
-import 'package:e_commerce/constants.dart';
-import 'package:e_commerce/core/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_item_entety.dart';
 import 'package:e_commerce/Features/products/domain/entityes/product_enteti.dart';
-import 'package:e_commerce/core/services/preferences/shared_prefs_service.dart';
 
 ///CartEntity
 ///يمثل السلة ككل
@@ -22,11 +17,6 @@ class CartEntity {
     final newCartItems = List<CartItemEntity>.from(cartItems);
     newCartItems.add(cartItemEntity);
     return CartEntity(newCartItems);
-  }
-
-  /// تحديث السلة في SharedPreferences
-  Future<void> updateCartInStorage() async {
-    await Prefs.setString(kCartData, jsonEncode(cartItems));
   }
 
   CartEntity removeCarItem(CartItemEntity carItem) {

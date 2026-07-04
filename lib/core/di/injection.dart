@@ -4,8 +4,16 @@ import 'package:e_commerce/core/drug_engine/services/drug_firestore_service.dart
 import 'package:e_commerce/Features/products/presentation/cubit/products_cubit.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo_imp.dart';
-import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
-import 'package:e_commerce/core/repos/cart_repo/cart_repo_impl.dart';
+import 'package:e_commerce/Features/cart/data/datasource/local/cart_local_datasource.dart';
+import 'package:e_commerce/Features/cart/data/datasource/local/cart_local_datasource_impl.dart';
+import 'package:e_commerce/Features/cart/data/repositories/cart_repo_impl.dart';
+import 'package:e_commerce/Features/cart/domain/repositories/cart_repo.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/add_product_to_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/delete_cart_item_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/get_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/save_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/update_quantity_usecase.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo_impl.dart';
 import 'package:e_commerce/core/repos/pripresetion_repo/prescription_repo.dart';
@@ -139,7 +147,30 @@ Future<void> setupGetit() async {
     OrdersRepoImpl(getIt<DatabaseService>(), getIt<StorgeService>()),
   );
 
-  getIt.registerSingleton<CartRepo>(CartRepoImpl());
+  getIt.registerLazySingleton<CartLocalDataSource>(
+    () => CartLocalDataSourceImpl(),
+  );
+  getIt.registerSingleton<CartRepo>(
+    CartRepoImpl(getIt<CartLocalDataSource>()),
+  );
+  getIt.registerLazySingleton<GetCartUseCase>(
+    () => GetCartUseCase(getIt<CartRepo>()),
+  );
+  getIt.registerLazySingleton<SaveCartUseCase>(
+    () => SaveCartUseCase(getIt<CartRepo>()),
+  );
+  getIt.registerLazySingleton<ClearCartUseCase>(
+    () => ClearCartUseCase(getIt<CartRepo>()),
+  );
+  getIt.registerLazySingleton<DeleteCartItemUseCase>(
+    () => const DeleteCartItemUseCase(),
+  );
+  getIt.registerLazySingleton<UpdateQuantityUseCase>(
+    () => UpdateQuantityUseCase(getIt<DeleteCartItemUseCase>()),
+  );
+  getIt.registerLazySingleton<AddProductToCartUseCase>(
+    () => const AddProductToCartUseCase(),
+  );
 
   // getIt.registerSingleton<PrescriptionRepo>(
   //   PrescriptionRepoImpl(getIt<GeminiService>()),
@@ -173,7 +204,16 @@ Future<void> setupGetit() async {
 
   getIt.registerSingleton<CartEntity>(CartEntity([]));
   getIt.registerSingleton<CartCubit>(
-    CartCubit(getIt<CartEntity>(), getIt<CartRepo>()),
+    CartCubit(
+      getIt<CartEntity>(),
+      getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
+      getCartUseCase: getIt<GetCartUseCase>(),
+      saveCartUseCase: getIt<SaveCartUseCase>(),
+      clearCartUseCase: getIt<ClearCartUseCase>(),
+      addProductToCartUseCase: getIt<AddProductToCartUseCase>(),
+      updateQuantityUseCase: getIt<UpdateQuantityUseCase>(),
+      deleteCartItemUseCase: getIt<DeleteCartItemUseCase>(),
+    ),
   );
 
   getIt.registerFactory<ProductsCubit>(

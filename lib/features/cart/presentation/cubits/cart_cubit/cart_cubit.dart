@@ -1,29 +1,52 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:e_commerce/core/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/add_product_to_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/delete_cart_item_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/get_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/save_cart_usecase.dart';
+import 'package:e_commerce/Features/cart/domain/usecases/update_quantity_usecase.dart';
 import 'package:e_commerce/Features/products/domain/entityes/product_enteti.dart';
-import 'package:e_commerce/Features/products/data/model/product_model.dart';
-import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
 import 'package:e_commerce/Features/cart/domain/enteties/cart_entety.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart'; // تأكد من إضافة الـ package
 import 'package:meta/meta.dart';
 
 part 'cart_state.dart';
 
 class CartCubit extends Cubit<CartState> {
-  final CartRepo _cartRepo;
+  CartCubit(
+    CartEntity cartEntity, {
+    required GetCurrentUserUseCase getCurrentUserUseCase,
+    required GetCartUseCase getCartUseCase,
+    required SaveCartUseCase saveCartUseCase,
+    required ClearCartUseCase clearCartUseCase,
+    required AddProductToCartUseCase addProductToCartUseCase,
+    required UpdateQuantityUseCase updateQuantityUseCase,
+    required DeleteCartItemUseCase deleteCartItemUseCase,
+  }) : _getCurrentUserUseCase = getCurrentUserUseCase,
+       _getCartUseCase = getCartUseCase,
+       _saveCartUseCase = saveCartUseCase,
+       _clearCartUseCase = clearCartUseCase,
+       _addProductToCartUseCase = addProductToCartUseCase,
+       _updateQuantityUseCase = updateQuantityUseCase,
+       _deleteCartItemUseCase = deleteCartItemUseCase,
+       super(CartInitial(cartEntity)) {
+    _restoreCartOnInit();
+  }
+
+  final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final GetCartUseCase _getCartUseCase;
+  final SaveCartUseCase _saveCartUseCase;
+  final ClearCartUseCase _clearCartUseCase;
+  final AddProductToCartUseCase _addProductToCartUseCase;
+  final UpdateQuantityUseCase _updateQuantityUseCase;
+  final DeleteCartItemUseCase _deleteCartItemUseCase;
 
   // 📸 متغير لحمل صورة الروشتة المختارة
   XFile? prescriptionImage;
-
-  CartCubit(CartEntity cartEntity, CartRepo cartRepo)
-    : _cartRepo = cartRepo,
-      super(CartInitial(cartEntity)) {
-    _restoreCartOnInit();
-  }
 
   // ✅ Getter للتحقق هل السلة تحتوي على منتج يتطلب روشتة
   bool get isPrescriptionRequired => currentCart.cartItems.any(
@@ -59,32 +82,16 @@ class CartCubit extends Cubit<CartState> {
     print(
       "🛒 ADDING TO CART: Is Prescription Required: ${productEntity.isPrescriptionRequired}",
     );
-    final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
 
-    final existingItemIndex = currentCartItems.indexWhere(
-      (item) =>
-          item.productIntety.code == productEntity.code &&
-          item.pharmacyId == pharmacyId,
+    final updatedCart = _addProductToCartUseCase(
+      currentCart,
+      productEntity,
+      quantity: quantity,
+      pharmacyId: pharmacyId,
+      pharmacyName: pharmacyName,
+      priceAtSelection: priceAtSelection,
     );
 
-    if (existingItemIndex != -1) {
-      final existingItem = currentCartItems[existingItemIndex];
-      currentCartItems[existingItemIndex] = existingItem.copyWith(
-        quantty: existingItem.quantty + quantity,
-      );
-    } else {
-      currentCartItems.add(
-        CartItemEntity(
-          productIntety: productEntity,
-          quantty: quantity,
-          pharmacyId: pharmacyId,
-          pharmacyName: pharmacyName,
-          priceAtSelection: priceAtSelection,
-        ),
-      );
-    }
-
-    final updatedCart = CartEntity(currentCartItems);
     _saveCartToRepository(updatedCart);
     emit(CartItemAdded(updatedCart));
   }
@@ -99,24 +106,20 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    final List<CartItemEntity> currentCartItems = List.from(
-      currentCart.cartItems,
+    final cartBeforeUpdate = currentCart;
+    final updatedCart = _updateQuantityUseCase(
+      cartBeforeUpdate,
+      productEntity,
+      newQuantity,
+      pharmacyId: pharmacyId,
     );
 
-    final existingItemIndex = currentCartItems.indexWhere(
-      (item) =>
-          item.productIntety.code == productEntity.code &&
-          item.pharmacyId == pharmacyId,
-    );
+    // نفس الأصل بالظبط: لو المنتج مش موجود فى السلة، الـ UseCase بترجع
+    // نفس الكائن من غير تغيير، فمفيش داعي نحفظ أو نعمل emit.
+    if (identical(updatedCart, cartBeforeUpdate)) return;
 
-    if (existingItemIndex != -1) {
-      currentCartItems[existingItemIndex] = currentCartItems[existingItemIndex]
-          .copyWith(quantty: newQuantity);
-
-      final updatedCart = CartEntity(currentCartItems);
-      _saveCartToRepository(updatedCart);
-      emit(CartUpdated(updatedCart));
-    }
+    _saveCartToRepository(updatedCart);
+    emit(CartUpdated(updatedCart));
   }
 
   void addPrescriptionToCart(
@@ -172,25 +175,29 @@ class CartCubit extends Cubit<CartState> {
     AddProductIntety productEntity, {
     String? pharmacyId,
   }) {
-    final currentCartItems = List<CartItemEntity>.from(currentCart.cartItems);
-    currentCartItems.removeWhere(
-      (item) =>
-          item.productIntety.code == productEntity.code &&
-          item.pharmacyId == pharmacyId,
+    final updatedCart = _deleteCartItemUseCase(
+      currentCart,
+      productEntity,
+      pharmacyId: pharmacyId,
     );
 
-    final updatedCart = CartEntity(currentCartItems);
     _saveCartToRepository(updatedCart);
     emit(CartItemRemoved(updatedCart));
   }
 
+  // الكيوبت ميعرفش Firebase؛ بيسأل GetCurrentUserUseCase بس عشان يجيب الـ uid.
+  Future<String?> _currentUserId() async {
+    final result = await _getCurrentUserUseCase();
+    return result.fold((_) => null, (user) => user?.uId);
+  }
+
   Future<void> clearCart() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final userId = await _currentUserId();
       prescriptionImage = null; // مسح الصورة عند تفريغ السلة
       emit(CartUpdated(const CartEntity([])));
-      if (user != null) {
-        await _cartRepo.clearCart(user.uid);
+      if (userId != null) {
+        await _clearCartUseCase(userId);
       }
       emit(CartInitial(const CartEntity([])));
     } catch (e) {
@@ -199,79 +206,31 @@ class CartCubit extends Cubit<CartState> {
   }
 
   Future<void> loadCartFromRepository() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    final userId = await _currentUserId();
+    if (userId == null) {
       emit(CartUpdated(const CartEntity([])));
       return;
     }
 
     try {
-      final cartJson = await _cartRepo.getCartData(user.uid);
-      if (cartJson == null || cartJson.isEmpty) {
-        emit(CartUpdated(const CartEntity([])));
-        return;
-      }
-
-      final List<dynamic> decoded = jsonDecode(cartJson) as List<dynamic>;
-      final cartItems = decoded.map<CartItemEntity>((itemData) {
-        final map = itemData as Map<String, dynamic>;
-        final productJson = map['product'] as Map<String, dynamic>;
-        final product = ProductModel.fromJson(productJson).toEntity();
-
-        return CartItemEntity(
-          productIntety: product,
-          quantty: map['quantity'] as int,
-          pharmacyId: map['pharmacyId'],
-          pharmacyName: map['pharmacyName'],
-          priceAtSelection: (map['priceAtSelection'] as num?)?.toDouble(),
-        );
-      }).toList();
-
-      emit(CartUpdated(CartEntity(cartItems)));
+      final cart = await _getCartUseCase(userId);
+      emit(CartUpdated(cart));
     } catch (_) {
       emit(CartUpdated(const CartEntity([])));
     }
   }
 
   Future<void> _restoreCartOnInit() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await loadCartFromRepository();
-    }
+    // loadCartFromRepository بالفعل بتتعامل مع حالة عدم تسجيل الدخول.
+    await loadCartFromRepository();
   }
 
   Future<void> _saveCartToRepository(CartEntity cart) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final userId = await _currentUserId();
+    if (userId == null) return;
 
     try {
-      final cartData = cart.cartItems.map((item) {
-        // تحويل الـ Entity لموديل ثم لـ Map
-        Map<String, dynamic> productMap = ProductModel.fromentity(
-          item.productIntety,
-        ).toJson();
-
-        // 🔥 معالجة التواريخ داخل الـ Product Map لتجنب خطأ الـ Json
-        productMap.forEach((key, value) {
-          if (value is DateTime) {
-            productMap[key] = value.toIso8601String();
-          } else if (value.runtimeType.toString() == 'Timestamp') {
-            // التعامل مع Timestamp الخاص بفايربيز لو موجود
-            productMap[key] = value.toDate().toIso8601String();
-          }
-        });
-
-        return {
-          'product': productMap,
-          'quantity': item.quantty,
-          'pharmacyId': item.pharmacyId,
-          'pharmacyName': item.pharmacyName,
-          'priceAtSelection': item.priceAtSelection,
-        };
-      }).toList();
-
-      // الآن الحفظ سيتم بنجاح لأن كل القيم أصبحت String/Num
-      await _cartRepo.saveCartData(user.uid, jsonEncode(cartData));
+      await _saveCartUseCase(userId, cart);
     } catch (e) {
       print("❌ Error saving cart: ${e.toString()}");
     }

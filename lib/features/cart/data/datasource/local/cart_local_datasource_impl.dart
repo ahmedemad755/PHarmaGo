@@ -1,7 +1,7 @@
-import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
+import 'package:e_commerce/Features/cart/data/datasource/local/cart_local_datasource.dart';
 import 'package:e_commerce/core/services/preferences/shared_prefs_service.dart';
 
-class CartRepoImpl extends CartRepo {
+class CartLocalDataSourceImpl implements CartLocalDataSource {
   static const String _baseKey = 'cart_data_v3_';
   static const String _guestKey = 'cart_data_guest';
 
@@ -10,12 +10,12 @@ class CartRepoImpl extends CartRepo {
       userId == null ? _guestKey : '$_baseKey$userId';
 
   @override
-  Future<void> saveCartData(String? userId, String cartJson) async {
+  Future<void> saveCart(String? userId, String cartJson) async {
     await Prefs.setString(_keyForUser(userId), cartJson);
   }
 
   @override
-  Future<String?> getCartData(String? userId) async {
+  Future<String?> loadCart(String? userId) async {
     final stored = Prefs.getString(_keyForUser(userId));
     if (stored.isEmpty) return null;
     return stored;

@@ -1,4 +1,4 @@
-import 'package:e_commerce/core/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_item_entety.dart';
 import 'package:e_commerce/core/functions_helper/get_currunce.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 

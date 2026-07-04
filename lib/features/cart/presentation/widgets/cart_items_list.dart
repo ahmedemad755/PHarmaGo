@@ -1,4 +1,4 @@
-import 'package:e_commerce/core/enteties/cart_item_entety.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_item_entety.dart';
 import 'package:e_commerce/Features/cart/presentation/widgets/cart_item.dart';
 import 'package:flutter/material.dart';
 
