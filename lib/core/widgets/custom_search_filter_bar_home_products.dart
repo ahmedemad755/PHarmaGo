@@ -33,33 +33,54 @@ class CustomSearchFilterBar extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Color(0xFF007BBB)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              textAlign: TextAlign.right,
-              onChanged: onSearchChanged,
-              onSubmitted: onSearchSubmitted,
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                border: InputBorder.none,
-                isDense: true,
+      // استخدام Directionality لضمان ثبات الاتجاه العربي من اليمين للشمال
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Row(
+          children: [
+            // 1. أيقونة البحث في البداية (يمين)
+            const Icon(Icons.search, color: Color(0xFF007BBB)),
+            const SizedBox(width: 8),
+            
+            // 2. خانة الكتابة
+            Expanded(
+              child: TextField(
+                controller: controller,
+                textAlign: TextAlign.right,
+                onChanged: onSearchChanged,
+                onSubmitted: onSearchSubmitted,
+                style: const TextStyle(fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  border: InputBorder.none,
+                  isDense: true,
+                  // إزالة أي Padding داخلي إضافي يفسد المحاذاة العمودية
+                  contentPadding: EdgeInsets.zero, 
+                ),
               ),
             ),
-          ),
-          const VerticalDivider(indent: 12, endIndent: 12, width: 20),
-          GestureDetector(
-            onTap: onFilterTap,
-            child: const Icon(
-              Icons.filter_list_rounded,
-              color: Color(0xFF007BBB),
+            
+            // 3. الفاصل الرأسي
+            const VerticalDivider(indent: 12, endIndent: 12, width: 20),
+            
+            // 4. زر الفلتر مع تأثير الـ Ripple عند الضغط (يسار)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onFilterTap,
+                borderRadius: BorderRadius.circular(8),
+                child: const Padding(
+                  padding: EdgeInsets.all(4.0),
+                  child: Icon(
+                    Icons.filter_list_rounded,
+                    color: Color(0xFF007BBB),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
-import 'package:e_commerce/core/services/custom_bloc_observer.dart';
-import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
+import 'package:e_commerce/core/bloc/custom_bloc_observer.dart';
+import 'package:e_commerce/core/services/preferences/shared_prefs_service.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
 import 'package:e_commerce/firebase_options.dart';

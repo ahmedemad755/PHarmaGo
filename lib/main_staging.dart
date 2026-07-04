@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/routs.dart';
-import 'package:e_commerce/core/services/custom_bloc_observer.dart';
-import 'package:e_commerce/core/services/notification_service_local_push/push_notification_service.dart';
-import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
-import 'package:e_commerce/core/services/supabase_storge.dart';
-import 'package:e_commerce/core/services/notification_service_local_push/local_notification_service.dart';
+import 'package:e_commerce/core/bloc/custom_bloc_observer.dart';
+import 'package:e_commerce/core/services/notification/local_notification_service.dart';
+import 'package:e_commerce/core/services/notification/push_notification_service.dart';
+import 'package:e_commerce/core/services/preferences/shared_prefs_service.dart';
+import 'package:e_commerce/core/services/storage/supabase_storage_service.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
 import 'package:e_commerce/core/utils/gradient_background.dart';
 import 'package:e_commerce/firebase_options.dart';
@@ -15,8 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-
+import 'package:timezone/data/latest.dart' as tz; 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -24,6 +23,7 @@ void main() async {
     () async {
       // 1. ضمان جاهزية المحرك
       WidgetsFlutterBinding.ensureInitialized();
+      // await dotenv.load(fileName: ".env");
 
       // 2. تهيئة التوقيت (مهمة للمنبهات)
       tz.initializeTimeZones();

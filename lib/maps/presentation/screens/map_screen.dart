@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:e_commerce/core/widgets/custom_search_filter_bar_home_products.dart';
 import 'package:e_commerce/maps/business_logic/cubit/maps/maps_cubit.dart';
 import 'package:e_commerce/maps/data/models/placesugestion.dart';
 import 'package:e_commerce/maps/helpers/location_helper.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:material_floating_search_bar_2/material_floating_search_bar_2.dart';
 import 'package:uuid/uuid.dart';
 
 class MapScreen extends StatefulWidget {
@@ -22,7 +22,9 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   Position? position;
   final Completer<GoogleMapController> _mapControllerCompleter = Completer();
-  FloatingSearchBarController controller = FloatingSearchBarController();
+  
+  // 2. استبدال الـ Controller القديم بـ TextEditingController القياسي
+  final TextEditingController _searchController = TextEditingController();
 
   List<PlaceSuggestion> places = [];
   Set<Marker> markers = {};
@@ -34,6 +36,12 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _getMyCurrentLocation();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // تنظيف الـ Controller عند إغلاق الشاشة
+    super.dispose();
   }
 
   Future<void> _getMyCurrentLocation() async {
@@ -48,14 +56,13 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // في ملف map_screen.dart ضيف الميثود دي
   Future<String> _getAddressFromLatLng(LatLng position) async {
     final String googleApiKey = "AIzaSyBqylu7OAYPkQC8HfSBTjrg8vDWeHkApvQ";
     final url =
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$googleApiKey&language=ar';
 
     try {
-      final response = await Dio().get(url); // محتاج تعمل import لـ dio
+      final response = await Dio().get(url);
       if (response.statusCode == 200 && response.data['results'].isNotEmpty) {
         return response.data['results'][0]['formatted_address'];
       }
@@ -83,7 +90,7 @@ class _MapScreenState extends State<MapScreen> {
     return GoogleMap(
       mapType: MapType.normal,
       myLocationEnabled: true,
-      zoomControlsEnabled: false, // قفلناها عشان الزرار ميزحمش الشاشة
+      zoomControlsEnabled: false,
       myLocationButtonEnabled: false,
       initialCameraPosition: CameraPosition(
         target: LatLng(position!.latitude, position!.longitude),
@@ -94,7 +101,6 @@ class _MapScreenState extends State<MapScreen> {
           _mapControllerCompleter.complete(controller);
         }
       },
-      // تحديث الإحداثيات كل ما المستخدم يحرك الخريطة
       onCameraMove: (CameraPosition cameraPosition) {
         _currentMapCenter = cameraPosition.target;
       },
@@ -104,25 +110,47 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // تم إلغاء الـ AppBar التقليدي لتوسيع مساحة الرؤية
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // الـ Map في الخلفية
           position != null
               ? buildMap()
               : const Center(
                   child: CircularProgressIndicator(color: Colors.blue),
                 ),
 
-          // 1. شريط البحث
-          buildFloatingSearchBar(),
+          // 3. شريط البحث المخصص مع قائمة الاقتراحات منسدلة تحته
+          Positioned(
+            top: 50,
+            left: 20,
+            right: 20,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomSearchFilterBar(
+                  controller: _searchController,
+                  hintText: 'ابحث عن منطقة أو شارع..',
+                  onFilterTap: () {
+                    // كود الفلترة إذا أردت فتح BottomSheet لاحقاً
+                  },
+                  onSearchChanged: (query) {
+                    final sessionToken = const Uuid().v4();
+                    BlocProvider.of<MapsCubit>(context)
+                        .emitPlaceSuggestions(query, sessionToken);
+                  },
+                ),
+                const SizedBox(height: 5),
+                // عرض الاقتراحات مباشرة أسفل شريط البحث
+                buildSuggestionsBloc(),
+              ],
+            ),
+          ),
 
-          // 2. أيقونة الماركر الثابتة في منتصف الشاشة
+          // 4. أيقونة الماركر الثابتة في منتصف الشاشة
           Center(
             child: Padding(
-              padding: const EdgeInsets.only(
-                bottom: 35,
-              ), // لضبط سن الماركر على النقطة
+              padding: const EdgeInsets.only(bottom: 35),
               child: Icon(
                 Icons.location_on,
                 color: Colors.red.shade700,
@@ -131,14 +159,14 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
 
-          // 3. زرار التأكيد في الأسفل
+          // 5. أزرار التحكم السفلى وزر التأكيد
           Positioned(
             bottom: 30,
             left: 20,
             right: 20,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // زرار "مكاني الحالي" فوق زرار التأكيد
                 Align(
                   alignment: Alignment.centerRight,
                   child: FloatingActionButton(
@@ -168,18 +196,18 @@ class _MapScreenState extends State<MapScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    // وتعديل زرار التأكيد يكون كدا:
                     onPressed: () async {
-                      // نجيب العنوان الفعلي من الإحداثيات قبل ما نقفل
                       String fullAddress = await _getAddressFromLatLng(
                         _currentMapCenter,
                       );
 
-                      Navigator.pop(context, {
-                        'lat': _currentMapCenter.latitude,
-                        'lng': _currentMapCenter.longitude,
-                        'address': fullAddress, // العنوان الحقيقي هيتبعت هنا
-                      });
+                      if (mounted) {
+                        Navigator.pop(context, {
+                          'lat': _currentMapCenter.latitude,
+                          'lng': _currentMapCenter.longitude,
+                          'address': fullAddress,
+                        });
+                      }
                     },
                     child: const Text(
                       'تأكيد موقع الصيدلية',
@@ -195,7 +223,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
 
-          // Listener للبحث
+          // Listener لمراقبة الحالة والانتقال للمكان المحدد
           BlocListener<MapsCubit, MapsState>(
             listener: (context, state) {
               if (state is PlaceLocationLoaded) {
@@ -209,49 +237,52 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // --- دوال الـ Search Bar كما هي في كودك مع تعديل بسيط ---
-  Widget buildFloatingSearchBar() {
-    return FloatingSearchBar(
-      controller: controller,
-      elevation: 6,
-      hint: 'ابحث عن منطقة أو شارع..',
-      margins: const EdgeInsets.fromLTRB(20, 50, 20, 0),
-      onQueryChanged: (query) {
-        final sessionToken = const Uuid().v4();
-        BlocProvider.of<MapsCubit>(
-          context,
-        ).emitPlaceSuggestions(query, sessionToken);
-      },
-      builder: (context, transition) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Material(elevation: 4, child: buildSuggestionsBloc()),
-        );
-      },
-    );
-  }
-
+  // 6. عرض قائمة الاقتراحات بناءً على الـ BLoC State الحالي
   Widget buildSuggestionsBloc() {
     return BlocBuilder<MapsCubit, MapsState>(
       builder: (context, state) {
-        if (state is PlacesLoaded) {
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            itemCount: state.places.length,
-            itemBuilder: (ctx, index) {
-              return InkWell(
-                onTap: () {
-                  controller.close();
-                  final sessionToken = const Uuid().v4();
-                  BlocProvider.of<MapsCubit>(context).emitPlaceLocation(
-                    state.places[index].placeId,
-                    sessionToken,
-                  );
-                },
-                child: PlaceItem(suggestion: state.places[index]),
-              );
-            },
+        if (state is PlacesLoaded && state.places.isNotEmpty) {
+          return Container(
+            constraints: const BoxConstraints(maxHeight: 240), // تحديد أقصى ارتفاع للقائمة
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              physics: const ClampingScrollPhysics(),
+              itemCount: state.places.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (ctx, index) {
+                return InkWell(
+                  onTap: () {
+                    // إغلاق الكيبورد وتنظيف الاقتراحات عبر إرسال حدث فارغ أو تغيير النص
+                    FocusScope.of(context).unfocus();
+                    _searchController.text = state.places[index].description;
+                    
+                    final sessionToken = const Uuid().v4();
+                    BlocProvider.of<MapsCubit>(context).emitPlaceLocation(
+                      state.places[index].placeId,
+                      sessionToken,
+                    );
+                    
+                    // لتصفير القائمة بعد الاختيار
+                    setState(() {
+                      state.places.clear(); 
+                    });
+                  },
+                  child: PlaceItem(suggestion: state.places[index]),
+                );
+              },
+            ),
           );
         }
         return const SizedBox.shrink();

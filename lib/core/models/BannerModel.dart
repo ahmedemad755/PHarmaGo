@@ -1,4 +1,4 @@
-import 'package:e_commerce/featchers/home/domain/enteties/BannerEntity.dart';
+import 'package:e_commerce/Features/home/domain/enteties/BannerEntity.dart';
 
 class BannerModel extends BannerEntity {
   BannerModel({

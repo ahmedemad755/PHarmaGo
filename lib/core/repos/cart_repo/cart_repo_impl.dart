@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/repos/cart_repo/cart_repo.dart';
-import 'package:e_commerce/core/services/shared_prefs_singelton.dart';
+import 'package:e_commerce/core/services/preferences/shared_prefs_service.dart';
 
 class CartRepoImpl extends CartRepo {
   static const String _baseKey = 'cart_data_v3_';

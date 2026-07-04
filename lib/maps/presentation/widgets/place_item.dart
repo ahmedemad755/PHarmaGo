@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class PlaceItem extends StatelessWidget {
   final PlaceSuggestion suggestion;
 
-  const PlaceItem({Key? key, required this.suggestion}) : super(key: key);
+  const PlaceItem({super.key, required this.suggestion});
 
   @override
   Widget build(BuildContext context) {

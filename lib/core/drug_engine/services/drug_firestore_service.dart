@@ -15,17 +15,16 @@ class DrugFirestoreService {
 
     final drugs = <DrugModel>[];
 
-for (final doc in snapshot.docs) {
-  final data = doc.data();
-  final drug = DrugModel.fromJson(data);
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final drug = DrugModel.fromJson(data);
 
-  // حذف شرط market == 'EG' مؤقتاً لأن الـ Data المرفوعة من الـ FDA لا تحتوي عليه
-  if (drug.hasReadableNames && drug.name.toLowerCase() != 'unknown') {
-    drugs.add(drug);
-  }
+      if (drug.hasReadableNames && data['market'] == 'EG') {
+        drugs.add(drug);
+      }
 
-  if (drugs.length == 3) break;
-}
+      if (drugs.length == 3) break;
+    }
 
     return drugs;
   }

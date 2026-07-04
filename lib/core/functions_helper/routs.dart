@@ -1,37 +1,36 @@
+import 'package:e_commerce/Features/alarm/presentation/widgets/add_alarm_view.dart';
+import 'package:e_commerce/Features/products/domain/entityes/product_enteti.dart';
+import 'package:e_commerce/Features/products/presentation/cubit/products_cubit.dart';
 import 'package:e_commerce/core/di/injection.dart';
-import 'package:e_commerce/core/enteties/product_enteti.dart';
-import 'package:e_commerce/core/products_cubit/products_cubit.dart';
-import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo.dart';
-import 'package:e_commerce/featchers/AUTH/data/repos/auth_repo_impl.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/cubits/login/login_cubit.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/cubits/signup/sugnup_cubit.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/view/forgot_password_view.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/view/login_view.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/view/oTPVerificationScreen.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/view/reset_Password.dart';
-import 'package:e_commerce/featchers/AUTH/presentation/view/signup.view.dart';
-import 'package:e_commerce/featchers/alarm/cubits/alarm/alarm_cubit.dart';
-import 'package:e_commerce/featchers/alarm/presentation/widgets/add_alarm_view.dart';
-import 'package:e_commerce/featchers/chatbot/presentation/cubit/chat_cubit.dart';
-import 'package:e_commerce/featchers/chatbot/presentation/views/chat_screen.dart';
-import 'package:e_commerce/featchers/checkout/data/order_model.dart';
-import 'package:e_commerce/featchers/checkout/presentation/views/check_out_view.dart';
-import 'package:e_commerce/featchers/home/domain/enteties/cart_entety.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/banners/banner_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/cart_cubit/cart_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/myOrders/my_orders_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/cubits/prescription/prescription_cubit.dart';
-import 'package:e_commerce/featchers/home/presentation/views/main_veiw.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/ProductDetailsScreen.dart';
-import 'package:e_commerce/featchers/alarm/presentation/views/alarmpage.dart' hide AddAlarmView;
-import 'package:e_commerce/featchers/home/presentation/views/widgets/myorders_view.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/notifecation_app_page.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/order_details_view.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/pharmacy_home_screen_new.dart';
-import 'package:e_commerce/featchers/home/presentation/views/widgets/uploadPrescription.dart';
-import 'package:e_commerce/featchers/onboarding/views/onboarding_view.dart';
-import 'package:e_commerce/featchers/splash/presentation/views/splash_view.dart';
+import 'package:e_commerce/Features/auth/data/repositories/auth_repo_impl.dart';
+import 'package:e_commerce/Features/auth/presentation/cubits/login/login_cubit.dart';
+import 'package:e_commerce/Features/auth/presentation/cubits/signup/sugnup_cubit.dart';
+import 'package:e_commerce/Features/auth/presentation/cubits/vereficationotp/vereficationotp_cubit.dart';
+import 'package:e_commerce/Features/auth/presentation/view/forgot_password_view.dart';
+import 'package:e_commerce/Features/auth/presentation/view/login_view.dart';
+import 'package:e_commerce/Features/auth/presentation/view/oTPVerificationScreen.dart';
+import 'package:e_commerce/Features/auth/presentation/view/reset_Password.dart';
+import 'package:e_commerce/Features/auth/presentation/view/signup.view.dart';
+import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/cart/domain/enteties/cart_entety.dart';
+import 'package:e_commerce/Features/cart/presentation/cubits/cart_cubit/cart_cubit.dart';
+import 'package:e_commerce/Features/chatbot/presentation/cubit/chat_cubit.dart';
+import 'package:e_commerce/Features/chatbot/presentation/views/chat_screen.dart';
+import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/checkout/presentation/views/check_out_view.dart';
+import 'package:e_commerce/Features/home/presentation/cubits/banners/banner_cubit.dart';
+import 'package:e_commerce/Features/alarm/presentation/views/alarmpage.dart';
+import 'package:e_commerce/Features/home/presentation/view/main_veiw.dart';
+import 'package:e_commerce/Features/orders/presentation/view/myorders_view.dart';
+import 'package:e_commerce/Features/home/presentation/view/notifecation_app_page.dart';
+import 'package:e_commerce/Features/orders/presentation/view/order_details_view.dart';
+import 'package:e_commerce/Features/home/presentation/view/pharmacy_home_screen_body.dart';
+import 'package:e_commerce/Features/prescription/presentation/view/uploadPrescription.dart';
+import 'package:e_commerce/Features/onboarding/views/onboarding_view.dart';
+import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_cubit.dart';
+import 'package:e_commerce/Features/prescription/presentation/cubits/prescription/prescription_cubit.dart';
+import 'package:e_commerce/Features/products/presentation/view/product_details_view.dart';
+import 'package:e_commerce/Features/splash/presentation/views/splash_view.dart';
 import 'package:e_commerce/maps/business_logic/cubit/maps/maps_cubit.dart';
 import 'package:e_commerce/maps/data/repo/place_repo.dart';
 import 'package:e_commerce/maps/data/web/place_web_servises.dart';
@@ -67,8 +66,8 @@ class AppRoutes {
 Route<dynamic> _buildLoginRoute() {
   return MaterialPageRoute(
     settings: const RouteSettings(name: AppRoutes.login),
-    builder: (_) => BlocProvider(
-      create: (context) => LoginCubit(getIt<AuthRepo>()),
+    builder: (_) => BlocProvider.value(
+      value: getIt<LoginCubit>(),
       child: const LoginView(),
     ),
   );
@@ -261,7 +260,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case AppRoutes.signup:
       return MaterialPageRoute(
         builder: (_) => BlocProvider(
-          create: (context) => SugnupCubit(getIt<AuthRepo>()),
+          create: (context) => getIt<SugnupCubit>(),
           child: const Signup(),
         ),
       );

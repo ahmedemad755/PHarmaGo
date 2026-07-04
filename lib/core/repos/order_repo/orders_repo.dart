@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
-import 'package:e_commerce/featchers/checkout/data/order_model.dart';
-import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
+import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/checkout/domain/enteteis/order_entity.dart';
 
 abstract class OrdersRepo {
   // إرسال الطلب النهائي

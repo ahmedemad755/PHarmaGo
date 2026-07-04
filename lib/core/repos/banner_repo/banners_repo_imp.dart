@@ -3,9 +3,9 @@ import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
 import 'package:e_commerce/core/models/BannerModel.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo.dart';
-import 'package:e_commerce/core/services/database_service.dart';
+import 'package:e_commerce/core/services/database/database_service.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
-import 'package:e_commerce/featchers/home/domain/enteties/BannerEntity.dart';
+import 'package:e_commerce/Features/home/domain/enteties/BannerEntity.dart';
 
 class BannersRepoImpl implements BannersRepo {
   final DatabaseService databaseService;

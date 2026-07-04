@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:e_commerce/core/errors/faliur.dart';
 import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
-import 'package:e_commerce/core/services/storge_service.dart';
-import 'package:e_commerce/core/services/database_service.dart';
+import 'package:e_commerce/core/services/database/database_service.dart';
+import 'package:e_commerce/core/services/storage/storage_service.dart';
 import 'package:e_commerce/core/utils/backend_points.dart';
-import 'package:e_commerce/featchers/checkout/data/order_model.dart';
-import 'package:e_commerce/featchers/checkout/domain/enteteis/order_entity.dart';
+import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/checkout/domain/enteteis/order_entity.dart';
 import 'package:image_picker/image_picker.dart';
 
 class OrdersRepoImpl implements OrdersRepo {

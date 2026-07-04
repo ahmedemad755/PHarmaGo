@@ -2,7 +2,7 @@
 // import 'package:dartz/dartz.dart';
 // import 'package:e_commerce/core/repos/pripresetion_repo/prescription_repo.dart';
 // import 'package:e_commerce/core/services/gemini_service.dart';
-// import 'package:e_commerce/featchers/home/domain/enteties/medicine_entity.dart';
+// import 'package:e_commerce/featchers/prescription/domain/enteties/medicine_entity.dart';
 
 // class PrescriptionRepoImpl implements PrescriptionRepo {
 //   // final GeminiService _geminiService;

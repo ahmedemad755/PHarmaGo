@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:e_commerce/core/enteties/product_enteti.dart';
+import 'package:e_commerce/Features/products/domain/entityes/product_enteti.dart';
 import 'package:equatable/equatable.dart';
 
 class CartItemEntity extends Equatable {

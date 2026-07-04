@@ -1,6 +1,6 @@
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
-import 'package:e_commerce/featchers/AUTH/widgets/customProgressLoading.dart';
-import 'package:e_commerce/featchers/checkout/presentation/manger/add_order_cubit/add_order_cubit.dart';
+import 'package:e_commerce/Features/auth/widgets/customProgressLoading.dart';
+import 'package:e_commerce/Features/checkout/presentation/manger/add_order_cubit/add_order_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
