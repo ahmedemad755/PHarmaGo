@@ -1,117 +1,404 @@
-# PHarma_GO
+# 💊 PharmaGo
 
-A new Flutter project.
+A Smart Pharmacy Management & Healthcare Ecosystem built with **Flutter** and **Firebase**, following **Clean Architecture**, **Repository Pattern**, **SOLID Principles**, and **Cubit (flutter_bloc)**.
 
-## Screenshots
+---
+
+# 🚀 Tech Stack
+
+- Flutter
+- Dart
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- SharedPreferences
+- flutter_bloc (Cubit)
+- GetIt (Dependency Injection)
+- Dartz (Either)
+- Clean Architecture
+- Repository Pattern
+
+---
+
+# ✨ Features
+
+## 🔐 Authentication
+
+- Email & Password Authentication
+- Google Sign-In
+- Phone OTP Verification
+- Password Reset
+- Email Verification
+- Delete Account with Re-authentication
+
+---
+
+## 🛍 Products
+
+- Display Products
+- Product Details
+- Real-time Best Selling Products
+- Search by Name
+- Search by Product Code
+- Category Filtering
+- Discount Filtering
+- Price Sorting
+- Firestore Integration
+
+---
+
+## 📱 Screenshots
+
+### Authentication
 
 <table>
-  <tr>
-    <td align="center"><img src="assets/readme/login.png" width="200"/><br/>Login</td>
-    <td align="center"><img src="assets/readme/signup.png" width="200"/><br/>Signup</td>
-    <td align="center"><img src="assets/readme/otp.png" width="200"/><br/>OTP</td>
-    <td align="center"><img src="assets/readme/forgetpass.png" width="200"/><br/>Forgot Password</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="assets/readme/home.png" width="200"/><br/>Home</td>
-    <td align="center"><img src="assets/readme/profile.png" width="200"/><br/>Profile</td>
-    <td align="center"><img src="assets/readme/logout.png" width="200"/><br/>Logout</td>
-    <td></td>
-  </tr>
+<tr>
+<td align="center">
+<img src="assets/readme/login.png" width="200"/><br/>
+Login
+</td>
+
+<td align="center">
+<img src="assets/readme/signup.png" width="200"/><br/>
+Signup
+</td>
+
+<td align="center">
+<img src="assets/readme/otp.png" width="200"/><br/>
+OTP Verification
+</td>
+
+<td align="center">
+<img src="assets/readme/forgetpass.png" width="200"/><br/>
+Forgot Password
+</td>
+
+</tr>
+
+<tr>
+
+<td align="center">
+<img src="assets/readme/profile.png" width="200"/><br/>
+Profile
+</td>
+
+<td align="center">
+<img src="assets/readme/logout.png" width="200"/><br/>
+Logout
+</td>
+
+<td></td>
+<td></td>
+
+</tr>
+
 </table>
 
-## Architecture — Auth Feature (Clean Architecture Reference)
+---
 
-The `auth` feature (`lib/featchers/auth/`) is the reference implementation for how
-every feature in this app should be layered. When building a new feature, mirror
-this structure rather than inventing a new one.
+### Products
+
+<table>
+
+<tr>
+
+<td align="center">
+<img src="assets/readme/product_screan.png" width="220"/><br/>
+Products
+</td>
+
+<td align="center">
+<img src="assets/readme/filttering_products.png" width="220"/><br/>
+Search & Filtering
+</td>
+
+<td align="center">
+<img src="assets/readme/product_detailes_screan.png" width="220"/><br/>
+Product Details
+</td>
+
+</tr>
+
+</table>
+
+---
+
+# 🏛 Architecture
+
+The project follows **Clean Architecture** to separate business logic from presentation and data access.
+
+```
+Presentation
+│
+├── Cubit
+│
+Domain
+│
+├── Entity
+├── Repository
+└── UseCases
+│
+Data
+│
+├── Repository Implementation
+├── Remote DataSource
+├── Local DataSource
+└── Models
+```
+
+---
+
+# 🔐 Authentication Feature
 
 ```
 lib/featchers/auth/
 ├── data/
 │   ├── datasources/
-│   │   ├── local/          # AuthLocalDataSource — SharedPreferences cache only
-│   │   └── remote/         # AuthRemoteDataSource — Firebase Auth / Google / Phone
-│   ├── models/              # UserModel (extends UserEntity; fromJson/toJson/fromFirebaseUser)
-│   └── repositories/        # AuthRepoImpl — composes Remote + Local + Firestore
+│   │   ├── local/
+│   │   └── remote/
+│   ├── models/
+│   └── repositories/
 ├── domain/
-│   ├── entites/              # UserEntity — plain Dart, no Firebase/framework types
-│   ├── repositories/         # AuthRepo — abstract contract only
-│   └── usecases/             # One class per action, each a thin call() over AuthRepo
+│   ├── entites/
+│   ├── repositories/
+│   └── usecases/
 └── presentation/
-    ├── cubits/                # LoginCubit, SugnupCubit, OTPCubit
+    ├── cubits/
     └── view/
 ```
 
-### Responsibility per layer
+## Responsibilities
 
-- **RemoteDataSource** — talks to Firebase Auth only (email/password, Google, phone
-  OTP, delete/reauth, email verification). Never touches Firestore.
-- **LocalDataSource** — caches/reads/clears the signed-in `UserModel` via `Prefs`
-  (SharedPreferences). Knows nothing about Firebase — Firebase manages its own
-  session persistence separately.
-- **Repository (`AuthRepoImpl`)** — the only class allowed to compose Remote +
-  Local + Firestore (`DatabaseService`) together. Every method funnels through one
-  private `_guard<T>()` helper, so error handling/rollback isn't duplicated
-  per-method.
-- **UseCases** — one class per user action (`LoginUseCase`, `SignupUseCase`,
-  `GoogleLoginUseCase`, `LogoutUseCase`, `VerifyPhoneUseCase`, `VerifyOtpUseCase`,
-  `ResetPasswordUseCase`, `DeleteAccountUseCase`, `CheckEmailExistsUseCase`,
-  `GetCurrentUserUseCase`, `SendEmailVerificationUseCase`). Each just delegates to
-  `AuthRepo` — no logic of its own.
-- **Cubits** — depend on UseCases, never on `AuthRepo` or Firebase directly.
+### RemoteDataSource
 
-### Example flow (login)
+- Firebase Authentication
+- Google Sign-In
+- Phone Authentication
+- Password Reset
+- Email Verification
+
+### LocalDataSource
+
+- Cache User
+- Read Cached User
+- Clear Cache
+
+### Repository
+
+- Coordinates Remote + Local + Firestore
+- Converts Exceptions to Failures
+- Converts Models to Entities
+
+### UseCases
+
+Each business action has its own UseCase.
+
+Examples:
+
+- LoginUseCase
+- SignupUseCase
+- LogoutUseCase
+- GoogleLoginUseCase
+- VerifyPhoneUseCase
+- VerifyOtpUseCase
+- ResetPasswordUseCase
+- DeleteAccountUseCase
+- GetCurrentUserUseCase
+- CheckEmailExistsUseCase
+- SendEmailVerificationUseCase
+
+### Cubits
+
+Cubits depend only on **UseCases**.
+
+---
+
+## Authentication Flow
 
 ```
-LoginView → LoginCubit → LoginUseCase → AuthRepo → AuthRemoteDataSource (Firebase Auth)
-                                                  → DatabaseService (Firestore profile)
-                                                  → AuthLocalDataSource (local cache)
+LoginView
+
+↓
+
+LoginCubit
+
+↓
+
+LoginUseCase
+
+↓
+
+AuthRepository
+
+↓
+
+AuthRemoteDataSource
+      │
+      ├── Firebase Authentication
+      ├── Firestore
+      └── Local Cache
 ```
 
-### Dependency injection (GetIt)
+---
 
-All wiring lives in `lib/core/di/injection.dart`, registered in this order:
+# 🛍 Products Feature
 
-1. Low-level services (`GoogleAuthService`, `PhoneAuthService`, `AccountService`,
-   `DatabaseService`, `StorageService`)
-2. DataSources (`AuthRemoteDataSource`, `AuthLocalDataSource`)
-3. Repository (`AuthRepoImpl`)
-4. UseCases — one `registerLazySingleton` per usecase (cheap, stateless wrappers)
-5. Cubits — registered with the lifetime matching how they're meant to be consumed:
-   - `registerSingleton` for app-wide cubits (`LoginCubit`)
-   - `registerFactory` for screen-scoped cubits (`SugnupCubit`, `OTPCubit`)
+```
+lib/Features/products/
+├── data/
+│   ├── datasource/
+│   │   ├── remote/
+│   │   └── local/
+│   ├── model/
+│   └── repositories/
+├── domain/
+│   ├── entityes/
+│   ├── repositories/
+│   └── usecases/
+└── presentation/
+    ├── cubit/
+    ├── view/
+    └── widgets/
+```
 
-### ⚠️ BlocProvider vs BlocProvider.value
+## Responsibilities
 
-The one rule worth calling out explicitly, because getting it wrong causes a
-runtime crash that only shows up after navigation, not at compile time:
+### RemoteDataSource
 
-- A cubit registered as a **GetIt singleton** must always be provided with
-  `BlocProvider.value`:
-  ```dart
-  BlocProvider.value(value: getIt<LoginCubit>(), child: ...)
-  ```
-- A cubit registered as a **GetIt factory** (fresh instance per screen) uses the
-  plain constructor:
-  ```dart
-  BlocProvider(create: (_) => getIt<SugnupCubit>(), child: ...)
-  ```
+- Reads Products from Firestore
+- Streams Best Selling Products
 
-`BlocProvider(create: ...)` always assumes it owns the instance it creates and
-calls `.close()` on it when the widget is disposed. Doing that to a singleton
-kills it for the rest of the app — the next screen that reuses it will crash with
-`StateError: Cannot emit new states after calling close`. `BlocProvider.value`
-never closes what you hand it.
+### Repository
 
-## Getting Started
+- Converts ProductModel → ProductEntity
+- Handles Either & Failures
 
-This project is a starting point for a Flutter application.
+### UseCases
 
-A few resources to get you started if this is your first Flutter project:
+- GetProductsUseCase
+- GetBestSellingProductsUseCase
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### ProductsCubit
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Responsible for:
+
+- Loading Products
+- Loading Best Selling Products
+- Search
+- Category Filtering
+- Discount Filtering
+- Price Sorting
+
+---
+
+## Products Flow
+
+```
+ProductsView
+
+↓
+
+ProductsCubit
+
+↓
+
+GetProductsUseCase
+
+↓
+
+ProductsRepository
+
+↓
+
+ProductsRemoteDataSource
+
+↓
+
+DatabaseService
+
+↓
+
+Cloud Firestore
+```
+
+---
+
+# 🧩 Dependency Injection
+
+The project uses **GetIt**.
+
+Registration order:
+
+1. Core Services
+2. DataSources
+3. Repositories
+4. UseCases
+5. Cubits
+
+---
+
+# ⚠ BlocProvider vs BlocProvider.value
+
+Singleton Cubits should always use:
+
+```dart
+BlocProvider.value(
+  value: getIt<LoginCubit>(),
+)
+```
+
+Factory Cubits should use:
+
+```dart
+BlocProvider(
+  create: (_) => getIt<SugnupCubit>(),
+)
+```
+
+This prevents the runtime error:
+
+```
+StateError:
+Cannot emit new states after calling close
+```
+
+---
+
+# 📈 Future Improvements
+
+- Offline Cache (Hive)
+- Pagination
+- Infinite Scrolling
+- Server-side Search
+- Server-side Filtering
+
+---
+
+# 📂 Project Structure
+
+```
+lib/
+│
+├── core/
+├── Features/
+│
+├── auth/
+├── products/
+├── cart/
+├── orders/
+├── profile/
+│
+└── main.dart
+```
+
+---
+
+# 👨‍💻 Author
+
+**Ahmed Emad**
+
+Flutter Developer
+
+- GitHub: https://github.com/ahmedemad755
+- LinkedIn: https://www.linkedin.com/in/ahmed-emad-flutter/
+- 
