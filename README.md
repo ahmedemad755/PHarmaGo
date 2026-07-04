@@ -391,6 +391,142 @@ lib/
 └── main.dart
 ```
 
+## 🛒 Cart
+
+- Add Products to Cart
+- Update Product Quantity
+- Remove Items from Cart
+- Clear Cart
+- Persistent Cart using SharedPreferences
+- Prescription Support
+- Local Cart Storage
+- Clean Architecture
+- UseCases + Cubit
+
+---
+
+### Cart
+
+<table>
+
+<tr>
+
+<td align="center">
+<img src="assets/readme/cart_view.png" width="220"/><br/>
+Cart
+</td>
+
+<td align="center">
+<img src="assets/readme/deleteitem_fromcart.png" width="220"/><br/>
+Delete Item
+</td>
+
+</tr>
+
+</table>
+
+---
+
+# 🛒 Cart Feature
+
+```text
+lib/Features/cart/
+├── data/
+│   ├── datasource/
+│   │   └── local/
+│   ├── models/
+│   └── repositories/
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+└── presentation/
+    ├── cubits/
+    ├── view/
+    └── widgets/
+```
+
+## Responsibilities
+
+### LocalDataSource
+
+- Save Cart
+- Read Cart
+- Clear Cart
+- SharedPreferences Storage
+
+### Repository
+
+- Handles Local Storage
+- Converts Models ↔ Entities
+- Provides Cart Operations
+
+### UseCases
+
+- AddProductToCartUseCase
+- UpdateQuantityUseCase
+- DeleteCartItemUseCase
+- GetCartUseCase
+- SaveCartUseCase
+- ClearCartUseCase
+
+### CartCubit
+
+Responsible for:
+
+- Add Product
+- Remove Product
+- Update Quantity
+- Load Saved Cart
+- Save Cart Automatically
+- Clear Cart
+- Handle Prescription Image
+
+---
+
+## Cart Flow
+
+```text
+CartView
+
+↓
+
+CartCubit
+
+↓
+
+UseCases
+
+↓
+
+CartRepository
+
+↓
+
+CartLocalDataSource
+
+↓
+
+SharedPreferences
+```
+
+---
+
+## Cart Persistence
+
+The shopping cart is stored locally using **SharedPreferences**, allowing users to keep their cart contents even after restarting the application.
+
+Current implementation:
+
+- Per-user cart persistence
+- Automatic cart restoration
+- Automatic save after every update
+- Local storage only (offline)
+
+Future improvement:
+
+- Synchronize cart with Firestore after user authentication for multi-device support.
+
 ---
 
 # 👨‍💻 Author
