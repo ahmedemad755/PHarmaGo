@@ -4,6 +4,7 @@ import 'package:e_commerce/core/drug_engine/services/drug_firestore_service.dart
 import 'package:e_commerce/Features/products/presentation/cubit/products_cubit.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo.dart';
 import 'package:e_commerce/core/repos/banner_repo/banners_repo_imp.dart';
+import 'package:e_commerce/Features/checkout/presentation/manger/add_order_cubit/add_order_cubit.dart';
 import 'package:e_commerce/Features/cart/data/datasource/local/cart_local_datasource.dart';
 import 'package:e_commerce/Features/cart/data/datasource/local/cart_local_datasource_impl.dart';
 import 'package:e_commerce/Features/cart/data/repositories/cart_repo_impl.dart';
@@ -14,9 +15,16 @@ import 'package:e_commerce/Features/cart/domain/usecases/delete_cart_item_usecas
 import 'package:e_commerce/Features/cart/domain/usecases/get_cart_usecase.dart';
 import 'package:e_commerce/Features/cart/domain/usecases/save_cart_usecase.dart';
 import 'package:e_commerce/Features/cart/domain/usecases/update_quantity_usecase.dart';
-import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
-import 'package:e_commerce/core/repos/order_repo/orders_repo_impl.dart';
-import 'package:e_commerce/core/repos/pripresetion_repo/prescription_repo.dart';
+import 'package:e_commerce/Features/orders/data/datasource/remote/orders_remote_datasource.dart';
+import 'package:e_commerce/Features/orders/data/datasource/remote/orders_remote_datasource_impl.dart';
+import 'package:e_commerce/Features/orders/domain/repositories/orders_repo.dart';
+import 'package:e_commerce/Features/orders/data/repositories/orders_repo_impl.dart';
+import 'package:e_commerce/Features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:e_commerce/Features/orders/domain/usecases/create_order_usecase.dart';
+import 'package:e_commerce/Features/orders/domain/usecases/fetch_orders_usecase.dart';
+import 'package:e_commerce/Features/orders/domain/usecases/upload_prescription_usecase.dart';
+import 'package:e_commerce/Features/prescription/domain/repositories/prescription_repo.dart';
+import 'package:e_commerce/Features/prescription/domain/usecases/analyze_prescription_usecase.dart';
 import 'package:e_commerce/Features/products/data/datasource/remote/products_remote_datasource.dart';
 import 'package:e_commerce/Features/products/data/datasource/remote/products_remote_datasource_impl.dart';
 import 'package:e_commerce/Features/products/domain/repositories/products_repo.dart';
@@ -30,7 +38,15 @@ import 'package:e_commerce/core/services/database/cloud_fire_store_service.dart'
 import 'package:e_commerce/core/services/database/database_service.dart';
 import 'package:e_commerce/core/services/storage/storage_service.dart';
 import 'package:e_commerce/core/services/storage/supabase_storage_service.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/alarm/data/datasource/local/alarms_local_datasource.dart';
+import 'package:e_commerce/Features/alarm/data/datasource/local/alarms_local_datasource_impl.dart';
+import 'package:e_commerce/Features/alarm/data/repositories/alarms_repo_impl.dart';
+import 'package:e_commerce/Features/alarm/domain/repositories/alarms_repo.dart';
+import 'package:e_commerce/Features/alarm/domain/usecases/add_alarm_usecase.dart';
+import 'package:e_commerce/Features/alarm/domain/usecases/get_alarms_usecase.dart';
+import 'package:e_commerce/Features/alarm/domain/usecases/mark_alarm_as_done_usecase.dart';
+import 'package:e_commerce/Features/alarm/domain/usecases/remove_alarm_usecase.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/Features/auth/data/datasources/local/auth_local_datasource.dart';
 import 'package:e_commerce/Features/auth/data/datasources/local/auth_local_datasource_impl.dart';
 import 'package:e_commerce/Features/auth/data/datasources/remote/auth_remote_datasource.dart';
@@ -143,8 +159,26 @@ Future<void> setupGetit() async {
   );
 
   // تحديث OrdersRepo ليدعم خدمة التخزين لرفع الروشتات
+  getIt.registerLazySingleton<OrdersRemoteDataSource>(
+    () => OrdersRemoteDataSourceImpl(
+      getIt<DatabaseService>(),
+      getIt<StorgeService>(),
+    ),
+  );
   getIt.registerSingleton<OrdersRepo>(
-    OrdersRepoImpl(getIt<DatabaseService>(), getIt<StorgeService>()),
+    OrdersRepoImpl(getIt<OrdersRemoteDataSource>()),
+  );
+  getIt.registerLazySingleton<CreateOrderUseCase>(
+    () => CreateOrderUseCase(getIt<OrdersRepo>()),
+  );
+  getIt.registerLazySingleton<UploadPrescriptionUseCase>(
+    () => UploadPrescriptionUseCase(getIt<OrdersRepo>()),
+  );
+  getIt.registerLazySingleton<FetchOrdersUseCase>(
+    () => FetchOrdersUseCase(getIt<OrdersRepo>()),
+  );
+  getIt.registerLazySingleton<CancelOrderUseCase>(
+    () => CancelOrderUseCase(getIt<OrdersRepo>()),
   );
 
   getIt.registerLazySingleton<CartLocalDataSource>(
@@ -172,6 +206,8 @@ Future<void> setupGetit() async {
     () => const AddProductToCartUseCase(),
   );
 
+  // ملحوظة: خدمة Gemini AI متوقفة حالياً (الكود بتاعها متعمل عليه Comment) لذلك
+  // PrescriptionRepoImpl مش متسجلة هنا. لما يتم تفعيلها تاني:
   // getIt.registerSingleton<PrescriptionRepo>(
   //   PrescriptionRepoImpl(getIt<GeminiService>()),
   // );
@@ -223,17 +259,53 @@ Future<void> setupGetit() async {
     ),
   );
 
+  getIt.registerFactory<AnalyzePrescriptionUseCase>(
+    () => AnalyzePrescriptionUseCase(getIt<PrescriptionRepo>()),
+  );
   getIt.registerFactory<PrescriptionCubit>(
-    () => PrescriptionCubit(getIt<PrescriptionRepo>()),
+    () => PrescriptionCubit(getIt<AnalyzePrescriptionUseCase>()),
   );
 
-  getIt.registerSingleton<OrdersCubit>(OrdersCubit(getIt<OrdersRepo>()));
+  getIt.registerSingleton<OrdersCubit>(
+    OrdersCubit(
+      fetchOrdersUseCase: getIt<FetchOrdersUseCase>(),
+      cancelOrderUseCase: getIt<CancelOrderUseCase>(),
+      uploadPrescriptionUseCase: getIt<UploadPrescriptionUseCase>(),
+      createOrderUseCase: getIt<CreateOrderUseCase>(),
+    ),
+  );
+  getIt.registerFactory<AddOrderCubit>(
+    () => AddOrderCubit(getIt<CreateOrderUseCase>()),
+  );
 
   getIt.registerFactory<BannersCubit>(() => BannersCubit(getIt<BannersRepo>()));
 
-  // داخل ملف injection.dart أو الـ Setup الخاص بالـ DI
-  getIt.registerLazySingleton<AlarmsCubit>(() => AlarmsCubit());
-  // داخل دالة إعداد الـ GetIt (مثلاً setupServiceLocator)
+  getIt.registerLazySingleton<AlarmsLocalDataSource>(
+    () => AlarmsLocalDataSourceImpl(),
+  );
+  getIt.registerSingleton<AlarmsRepo>(
+    AlarmsRepoImpl(getIt<AlarmsLocalDataSource>()),
+  );
+  getIt.registerLazySingleton<GetAlarmsUseCase>(
+    () => GetAlarmsUseCase(getIt<AlarmsRepo>()),
+  );
+  getIt.registerLazySingleton<AddAlarmUseCase>(
+    () => AddAlarmUseCase(getIt<AlarmsRepo>()),
+  );
+  getIt.registerLazySingleton<RemoveAlarmUseCase>(
+    () => RemoveAlarmUseCase(getIt<AlarmsRepo>()),
+  );
+  getIt.registerLazySingleton<MarkAlarmAsDoneUseCase>(
+    () => MarkAlarmAsDoneUseCase(getIt<AlarmsRepo>()),
+  );
+  getIt.registerLazySingleton<AlarmsCubit>(
+    () => AlarmsCubit(
+      getAlarmsUseCase: getIt<GetAlarmsUseCase>(),
+      addAlarmUseCase: getIt<AddAlarmUseCase>(),
+      removeAlarmUseCase: getIt<RemoveAlarmUseCase>(),
+      markAlarmAsDoneUseCase: getIt<MarkAlarmAsDoneUseCase>(),
+    ),
+  );
 
   getIt.registerLazySingleton(() => FirebaseFirestore.instance);
 

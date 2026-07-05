@@ -1,9 +1,11 @@
 import 'package:e_commerce/core/functions_helper/routs.dart';
-import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_entity.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_status.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_cubit.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class OrdersView extends StatelessWidget {
   const OrdersView({super.key});
@@ -68,7 +70,7 @@ class OrdersView extends StatelessWidget {
 }
 
 class OrderCard extends StatelessWidget {
-  final OrderModel order;
+  final OrderEntity order;
   const OrderCard({super.key, required this.order});
 
   @override
@@ -116,7 +118,7 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                order.date.split(' ')[0],
+                DateFormat('yyyy/MM/dd').format(order.createdAt),
                 style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const Spacer(),
@@ -186,42 +188,46 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  _StatusConfig _getStatusConfig(String status) {
+  _StatusConfig _getStatusConfig(OrderStatus status) {
     // توحيد الحالات بناءً على الـ Repo والـ Notifications
-    switch (status.toLowerCase()) {
-      case 'pending':
+    switch (status) {
+      case OrderStatus.pending:
         return _StatusConfig(
           'قيد المراجعة',
           Colors.orange,
           Icons.timer_outlined,
         );
-      case 'processing':
+      case OrderStatus.accepted:
+        return _StatusConfig(
+          'تم القبول',
+          Colors.blue,
+          Icons.inventory_2_outlined,
+        );
+      case OrderStatus.preparing:
         return _StatusConfig(
           'جاري التجهيز',
           Colors.blue,
           Icons.inventory_2_outlined,
         );
-      case 'shipping':
-      case 'shipped':
+      case OrderStatus.delivering:
         return _StatusConfig(
           'جاري التوصيل',
           Colors.purple,
           Icons.local_shipping_outlined,
         );
-      case 'delivered':
+      case OrderStatus.delivered:
         return _StatusConfig(
           'تم الاستلام',
           Colors.green,
           Icons.check_circle_outline,
         );
-      case 'cancelled':
-      case 'canceled': // الحالتين عشان لو حصل لخبطة في الـ Repo
+      case OrderStatus.cancelled:
         return _StatusConfig('ملغي', Colors.red, Icons.cancel_outlined);
-      default:
+      case OrderStatus.awaitingPricing:
         return _StatusConfig(
-          'تحديث جديد',
-          Colors.grey,
-          Icons.notifications_none,
+          'في انتظار تسعير الصيدلية',
+          Colors.deepOrange,
+          Icons.receipt_long_outlined,
         );
     }
   }

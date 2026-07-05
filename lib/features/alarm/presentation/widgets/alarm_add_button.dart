@@ -1,6 +1,6 @@
 import 'package:e_commerce/Features/alarm/presentation/widgets/add_alarm_view.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/Features/auth/widgets/custombotton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -11,12 +11,12 @@ import 'package:e_commerce/Features/auth/presentation/view/login_view.dart';
 import 'package:e_commerce/Features/auth/presentation/view/oTPVerificationScreen.dart';
 import 'package:e_commerce/Features/auth/presentation/view/reset_Password.dart';
 import 'package:e_commerce/Features/auth/presentation/view/signup.view.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/Features/cart/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/Features/cart/presentation/cubits/cart_cubit/cart_cubit.dart';
 import 'package:e_commerce/Features/chatbot/presentation/cubit/chat_cubit.dart';
 import 'package:e_commerce/Features/chatbot/presentation/views/chat_screen.dart';
-import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_entity.dart';
 import 'package:e_commerce/Features/checkout/presentation/views/check_out_view.dart';
 import 'package:e_commerce/Features/home/presentation/cubits/banners/banner_cubit.dart';
 import 'package:e_commerce/Features/alarm/presentation/views/alarmpage.dart';
@@ -276,7 +276,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case AppRoutes.orderDetailsView:
-      final order = settings.arguments as OrderModel;
+      final order = settings.arguments as OrderEntity;
       return authGuard(
         MaterialPageRoute(
           builder: (_) => MultiBlocProvider(

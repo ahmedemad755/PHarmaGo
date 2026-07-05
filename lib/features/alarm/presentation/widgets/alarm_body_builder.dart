@@ -1,7 +1,7 @@
 
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_state.dart';
-import 'package:e_commerce/Features/alarm/entities/alarm_entites.dart';
+import 'package:e_commerce/Features/alarm/domain/entities/alarm_entity.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_state.dart';
 import 'package:e_commerce/Features/alarm/presentation/widgets/alarm_action_area.dart';
 import 'package:e_commerce/Features/alarm/presentation/widgets/alarm_empty_state.dart';
 import 'package:e_commerce/Features/alarm/presentation/widgets/dismissiblealarm_item.dart';

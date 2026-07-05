@@ -1,5 +1,6 @@
 import 'package:e_commerce/core/functions_helper/routs.dart';
 import 'package:e_commerce/Features/best_selling_fruites/presentations/views/widgets/notifecation_widgets.dart'; // تأكد من اسم الملف
+import 'package:e_commerce/Features/orders/domain/entities/order_status.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_cubit.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_state.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,7 @@ AppBar buildAppBar(
                   if (state is OrdersSuccess) {
                     // عد الطلبات النشطة فقط
                     count = state.orders
-                        .where((o) => o.status.toLowerCase() != 'delivered')
+                        .where((o) => o.status != OrderStatus.delivered)
                         .length;
                   }
                   return NotifecationWidgets(

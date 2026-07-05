@@ -1,4 +1,4 @@
-import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_entity.dart';
 import 'package:meta/meta.dart';
 
 @immutable
@@ -9,7 +9,7 @@ class OrdersInitial extends OrdersState {}
 class OrdersLoading extends OrdersState {}
 
 class OrdersSuccess extends OrdersState {
-  final List<OrderModel> orders;
+  final List<OrderEntity> orders;
   final bool hasNotification; // ✅ الحقل الجديد
   OrdersSuccess(this.orders, {this.hasNotification = false});
 }

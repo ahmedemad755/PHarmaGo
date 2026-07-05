@@ -1,8 +1,8 @@
 import 'package:e_commerce/Features/alarm/presentation/widgets/alarm_card.dart';
 import 'package:e_commerce/core/functions_helper/build_overlay_bar.dart';
 import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
-import 'package:e_commerce/Features/alarm/entities/alarm_entites.dart';
+import 'package:e_commerce/Features/alarm/domain/entities/alarm_entity.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/Features/alarm/presentation/widgets/alarm_delete_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

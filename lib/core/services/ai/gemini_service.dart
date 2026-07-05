@@ -2,7 +2,7 @@
 // import 'dart:io';
 // import 'package:flutter/material.dart'; // مهم عشان debugPrint
 // import 'package:e_commerce/core/utils/app_key.dart' as ApiKeys;
-// import 'package:e_commerce/featchers/prescription/domain/enteties/medicine_entity.dart';
+// import 'package:e_commerce/Features/prescription/domain/entities/medicine_entity.dart';
 // import 'package:google_generative_ai/google_generative_ai.dart';
 
 // class GeminiService {

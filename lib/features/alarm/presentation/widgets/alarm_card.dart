@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/Features/alarm/entities/alarm_entites.dart';
+import 'package:e_commerce/Features/alarm/domain/entities/alarm_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

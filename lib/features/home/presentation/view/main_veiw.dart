@@ -1,6 +1,6 @@
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/Features/auth/data/repositories/auth_repo_impl.dart';
-import 'package:e_commerce/Features/alarm/cubits/alarm/alarm_cubit.dart';
+import 'package:e_commerce/Features/alarm/presentation/cubits/alarm/alarm_cubit.dart';
 import 'package:e_commerce/Features/home/presentation/view/main_view_body_bloc_consumer.dart';
 import 'package:e_commerce/Features/home/presentation/widgets/CustomBottomNavigationBar.dart';
 import 'package:flutter/material.dart';
@@ -67,8 +67,8 @@ class _MainVeiwState extends State<MainVeiw> {
   @override
   Widget build(BuildContext context) {
     // ✅ تم إزالة الـ MultiBlocProvider لأن الـ Cubits تأتي الآن من AppRouter
-    return BlocProvider(
-      create: (context) => getIt<AlarmsCubit>(),
+    return BlocProvider.value(
+      value: getIt<AlarmsCubit>(),
       child: Scaffold(
         backgroundColor: const Color(0xFFFBFBFB),
         extendBody: true,

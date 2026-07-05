@@ -6,7 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // ستحتاج لإضافته في pubspec لضبط التاريخ
 
 // استيرادات من مشروعك
-import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_entity.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_status.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_cubit.dart';
 
 class NotificationsView extends StatelessWidget {
@@ -96,7 +97,7 @@ class NotificationsView extends StatelessWidget {
 }
 
 class NotificationItem extends StatelessWidget {
-  final OrderModel order;
+  final OrderEntity order;
 
   const NotificationItem({super.key, required this.order});
 
@@ -152,7 +153,7 @@ class NotificationItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _formatOrderDate(order.date),
+                      _formatOrderDate(order.createdAt),
                       style: const TextStyle(color: Colors.grey, fontSize: 11),
                     ),
                     const Text(
@@ -173,33 +174,40 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
-  NotificationConfig _getNotificationConfig(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
+  NotificationConfig _getNotificationConfig(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.awaitingPricing:
+        return NotificationConfig(
+          Icons.receipt_long_outlined,
+          Colors.deepOrange,
+          'روشتتك قيد المراجعة الآن، سنرسل لك السعر النهائي قريباً.',
+        );
+      case OrderStatus.pending:
         return NotificationConfig(
           Icons.timer_outlined,
           Colors.orange,
           'طلبك قيد المراجعة الآن، سنقوم بتحديثك قريباً.',
         );
-      case 'processing':
+      case OrderStatus.accepted:
+      case OrderStatus.preparing:
         return NotificationConfig(
           Icons.inventory_2_outlined,
           Colors.blue,
           'جاري تجهيز طلبك وتغليفه بكل حب في مخازننا.',
         );
-      case 'shipped':
+      case OrderStatus.delivering:
         return NotificationConfig(
           Icons.local_shipping_outlined,
           Colors.purple,
           'طلبك الآن في الطريق إليك مع مندوب الشحن.',
         );
-      case 'delivered':
+      case OrderStatus.delivered:
         return NotificationConfig(
           Icons.check_circle_outline,
           Colors.green,
           'تم تسليم طلبك بنجاح. نأمل أن تنال المنتجات إعجابك!',
         );
-      default:
+      case OrderStatus.cancelled:
         return NotificationConfig(
           Icons.notifications_none,
           Colors.grey,
@@ -208,13 +216,8 @@ class NotificationItem extends StatelessWidget {
     }
   }
 
-  String _formatOrderDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('yyyy/MM/dd - hh:mm a').format(date);
-    } catch (e) {
-      return dateStr;
-    }
+  String _formatOrderDate(DateTime date) {
+    return DateFormat('yyyy/MM/dd - hh:mm a').format(date);
   }
 }
 

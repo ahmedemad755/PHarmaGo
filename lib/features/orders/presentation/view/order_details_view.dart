@@ -1,18 +1,19 @@
-import 'package:e_commerce/Features/checkout/data/order_model.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_entity.dart';
+import 'package:e_commerce/Features/orders/domain/entities/order_status.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_cubit.dart';
 import 'package:e_commerce/Features/orders/presentation/cubits/myOrders/my_orders_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OrderDetailsView extends StatelessWidget {
-  final OrderModel order;
+  final OrderEntity order;
   const OrderDetailsView({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OrdersCubit, OrdersState>(
       builder: (context, state) {
-        OrderModel currentOrder = order;
+        OrderEntity currentOrder = order;
         if (state is OrdersSuccess) {
           try {
             currentOrder = state.orders.firstWhere(
@@ -57,7 +58,8 @@ class OrderDetailsView extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildPaymentSummary(currentOrder),
                 const SizedBox(height: 32),
-                if (currentOrder.status == 'pending')
+                if (currentOrder.status == OrderStatus.pending ||
+                    currentOrder.status == OrderStatus.awaitingPricing)
                   _buildCancelButton(context, currentOrder),
                 const SizedBox(height: 16),
               ],
@@ -68,7 +70,7 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildProductsList(OrderModel currentOrder) {
+  Widget _buildProductsList(OrderEntity currentOrder) {
     return Column(
       children: currentOrder.orderProducts.map((product) {
         return Container(
@@ -138,11 +140,21 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderStepIndicator(String status) {
-    int currentStep = 1;
-    if (status == 'shipping' || status == 'shipped') currentStep = 2;
-    if (status == 'delivered') currentStep = 3;
-    if (status == 'cancelled') currentStep = 0;
+  Widget _buildOrderStepIndicator(OrderStatus status) {
+    int currentStep;
+    switch (status) {
+      case OrderStatus.awaitingPricing:
+      case OrderStatus.pending:
+      case OrderStatus.accepted:
+      case OrderStatus.preparing:
+        currentStep = 1;
+      case OrderStatus.delivering:
+        currentStep = 2;
+      case OrderStatus.delivered:
+        currentStep = 3;
+      case OrderStatus.cancelled:
+        currentStep = 0;
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -156,7 +168,7 @@ class OrderDetailsView extends StatelessWidget {
           _buildStep(
             Icons.receipt_long,
             "تم الطلب",
-            currentStep >= 1 || status == 'cancelled',
+            currentStep >= 1 || status == OrderStatus.cancelled,
           ),
           _buildLine(currentStep >= 2),
           _buildStep(Icons.local_shipping, "شحن", currentStep >= 2),
@@ -193,8 +205,8 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressCard(OrderModel currentOrder) {
-    final addr = currentOrder.shippingAddressModel;
+  Widget _buildAddressCard(OrderEntity currentOrder) {
+    final addr = currentOrder.shippingAddress;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,7 +242,7 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentSummary(OrderModel currentOrder) {
+  Widget _buildPaymentSummary(OrderEntity currentOrder) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -254,7 +266,7 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildCancelButton(BuildContext context, OrderModel currentOrder) {
+  Widget _buildCancelButton(BuildContext context, OrderEntity currentOrder) {
     return SizedBox(
       width: double.infinity,
       height: 50,

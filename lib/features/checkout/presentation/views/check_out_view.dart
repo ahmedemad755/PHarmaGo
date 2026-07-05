@@ -2,7 +2,6 @@ import 'package:e_commerce/Features/auth/widgets/build_app_bar.dart';
 import 'package:e_commerce/core/di/injection.dart';
 import 'package:e_commerce/core/functions_helper/BlocStateHandler.dart';
 import 'package:e_commerce/core/functions_helper/get_user_data.dart';
-import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
 
 import 'package:e_commerce/Features/cart/domain/enteties/cart_entety.dart';
 import 'package:e_commerce/Features/checkout/domain/enteteis/order_entity.dart'
@@ -49,7 +48,7 @@ class _CheckOutViewState extends State<CheckOutView> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AddOrderCubit(getIt.get<OrdersRepo>()),
+      create: (context) => getIt<AddOrderCubit>(),
       child: Scaffold(
         appBar: buildAppBar(context, title: 'الشحن', showNotification: false),
         body: Provider.value(

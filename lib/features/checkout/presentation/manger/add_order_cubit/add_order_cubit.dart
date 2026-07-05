@@ -1,22 +1,22 @@
 import 'package:bloc/bloc.dart';
-import 'package:e_commerce/core/repos/order_repo/orders_repo.dart';
+import 'package:e_commerce/Features/orders/domain/usecases/create_order_usecase.dart';
 import 'package:e_commerce/Features/checkout/domain/enteteis/order_entity.dart';
 import 'package:equatable/equatable.dart';
 
 part 'add_order_state.dart';
 
 class AddOrderCubit extends Cubit<AddOrderState> {
-  final OrdersRepo ordersRepo;
+  AddOrderCubit(this._createOrderUseCase) : super(AddOrderInitial());
 
-  AddOrderCubit(this.ordersRepo) : super(AddOrderInitial());
+  final CreateOrderUseCase _createOrderUseCase;
 
   Future<void> addOrder({required OrderInputEntity order}) async {
     if (isClosed) return;
     emit(AddOrderLoading());
 
     try {
-      // نرسل الأوردر فوراً والـ Repo هو من سيتولى رفع الصورة لو وجدت
-      final result = await ordersRepo.addOrder(order: order);
+      // نرسل الأوردر فوراً والـ UseCase هو من سيتولى رفع الصورة لو وجدت
+      final result = await _createOrderUseCase(order: order);
 
       if (isClosed) return;
 
